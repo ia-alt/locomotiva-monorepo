@@ -1,0 +1,59 @@
+# Dependências (Monorepo)
+node_modules/
+jspm_packages/
+
+# Expo / React Native
+.expo/
+web-build/
+expo-env.d.ts
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+apps/mobile/ios/
+apps/mobile/android/
+
+# Build outputs e Typescript
+dist/
+out/
+build/
+*.tsbuildinfo
+
+# Logs e Debug
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+hs-err-pid*
+
+# Ambiente e Chaves (Não comitar!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+*.pem
+
+# Editor de Código
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Cobertura de Testes
+coverage/
+.nyc_output/
+
+# Pastas Temporárias e Gerados
+.tmp/
+tmp/
+/generated/prisma

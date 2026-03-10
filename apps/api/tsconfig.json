@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "ignoreDeprecations": "5.0",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "paths": {
+      "src/*": ["src/*"],
+      "@core/*": ["src/modules/_core/*"],
+      "@di/*": ["src/modules/_di_container/*"],
+      "@booking/*": ["src/modules/booking/*"],
+      "@coworking/*": ["src/modules/coworking/*"],
+      "@identy/*": ["src/modules/identity/*"],
+      "@notifications/*": ["src/modules/notifications/*"],
+      "@operating-hours/*": ["src/modules/operating-hours/*"],
+      "@env": ["src/modules/env.ts"]
+    },
+    "composite": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

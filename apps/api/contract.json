@@ -1,0 +1,298 @@
+{
+  "identy": {
+    "registerUser": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/auth/register"
+        }
+      }
+    },
+    "getMe": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/auth/me"
+        }
+      }
+    },
+    "login": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/auth/login"
+        }
+      }
+    },
+    "requestPasswordReset": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/auth/request-password-reset"
+        }
+      }
+    },
+    "changePassword": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PUT",
+          "path": "/auth/change-password"
+        }
+      }
+    },
+    "executePasswordReset": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/auth/execute-password-reset"
+        }
+      }
+    }
+  },
+  "coworking": {
+    "checkin": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/coworking/checkin"
+        }
+      }
+    },
+    "checkout": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/coworking/checkout"
+        }
+      }
+    },
+    "adminCheckin": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/coworking/admin/checkin"
+        }
+      }
+    },
+    "adminCheckout": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/coworking/admin/checkout"
+        }
+      }
+    },
+    "autoCheckoutAll": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/coworking/auto-checkout-all"
+        }
+      }
+    },
+    "listUserAccessLogs": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/coworking/access-logs/mine"
+        }
+      }
+    },
+    "listAllAccessLogs": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/coworking/access-logs"
+        }
+      }
+    },
+    "configure": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PUT",
+          "path": "/coworking/settings"
+        }
+      }
+    },
+    "countActiveAccessLogs": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/coworking/access-logs/count"
+        }
+      }
+    }
+  },
+  "booking": {
+    "createRoom": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/bookings/rooms"
+        }
+      }
+    },
+    "listRooms": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/bookings/rooms"
+        }
+      }
+    },
+    "updateRoom": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PUT",
+          "path": "/bookings/rooms/{roomId}"
+        }
+      }
+    },
+    "setRoomEnabled": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PUT",
+          "path": "/bookings/rooms/{roomId}/enabled"
+        }
+      }
+    },
+    "requestBooking": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/bookings"
+        }
+      }
+    },
+    "processBookingRequest": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/bookings/{bookingId}/process"
+        }
+      }
+    },
+    "cancelBooking": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/bookings/{bookingId}/cancel"
+        }
+      }
+    },
+    "adminCancelBooking": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/bookings/{bookingId}/admin-cancel"
+        }
+      }
+    },
+    "findBookings": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/bookings"
+        }
+      }
+    },
+    "findMyBookings": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/bookings/mine"
+        }
+      }
+    },
+    "listAvailableSlotsByDay": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/bookings/rooms/{roomId}/free-slots/{day}"
+        }
+      }
+    },
+    "sendBookingRemindersOfTomorrow": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/bookings/send-reminders-of-tomorrow"
+        }
+      }
+    },
+    "setDefaultOperatingSchedule": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PUT",
+          "path": "/bookings/rooms/{roomId}/operating-schedule"
+        }
+      }
+    },
+    "addOperatingHoursOverride": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PUT",
+          "path": "/bookings/rooms/{roomId}/operating-override"
+        }
+      }
+    }
+  }
+}

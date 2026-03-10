@@ -1,0 +1,79 @@
+import { UserRepository } from "src/modules/identity/domain/repositories";
+import { User } from "src/modules/identity/domain/entities";
+import { Prisma, PrismaClient, User as UserDb } from "@core/infra/database/prisma";
+import { UniqueId } from "@core/base-classes";
+import { EmailAddress, OnlyDate } from "@core/value-objects";
+import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
+import { BirthDate } from "src/modules/identity/domain/value-objects/birth-date";
+
+export class PrismaUserRepository implements UserRepository {
+    constructor(private readonly prisma: PrismaClient) { }
+
+    async findById(id: UniqueId): Promise<User | null> {
+        const user = await this.prisma.user.findUnique({ where: { id: id.value } });
+        if (!user) return null;
+        return this.userDbToEntity(user);
+    }
+
+    async save(user: User): Promise<void> {
+        const json = user.toJSON();
+        await this.prisma.user.upsert({
+            where: { id: json.id },
+            update: {
+                name: json.name,
+                email: json.email,
+                cpf: json.cpf,
+                birthDate: new Date(json.birthDate),
+                userType: json.userType,
+                passwordHash: user.getPasswordHash(),
+                lastPasswordResetDate: user.getLastPasswordResetDate(),
+            },
+            create: {
+                id: json.id,
+                name: json.name,
+                email: json.email,
+                cpf: json.cpf,
+                birthDate: new Date(json.birthDate),
+                userType: json.userType,
+                passwordHash: user.getPasswordHash(),
+                lastPasswordResetDate: user.getLastPasswordResetDate(),
+            },
+        });
+    }
+
+    async findManyByIds(ids: UniqueId[]): Promise<User[]> {
+        const users = await this.prisma.user.findMany({
+            where: {
+                id: { in: ids.map(id => id.value) },
+            },
+        });
+        return users.map(user => this.userDbToEntity(user));
+    }
+
+    async findByEmailOrCpf(emailOrCpf: EmailAddress | Cpf): Promise<User | null> {
+        let where: Prisma.UserWhereInput;
+
+        if (emailOrCpf instanceof EmailAddress) {
+            where = { email: emailOrCpf.toString() };
+        } else {
+            where = { cpf: emailOrCpf.value };
+        }
+
+        const user = await this.prisma.user.findFirst({ where });
+        if (!user) return null;
+        return this.userDbToEntity(user);
+    }
+
+    userDbToEntity(user: UserDb): User {
+        return new User(
+            UniqueId.fromString(user.id),
+            user.name,
+            EmailAddress.fromString(user.email),
+            Cpf.fromString(user.cpf),
+            BirthDate.fromDate(user.birthDate),
+            user.userType as User.UserType,
+            user.passwordHash,
+            user.lastPasswordResetDate
+        );
+    }
+}

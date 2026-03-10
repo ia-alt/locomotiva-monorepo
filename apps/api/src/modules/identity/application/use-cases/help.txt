@@ -1,0 +1,19 @@
+solicitar recuperar senha
+- input: email
+- output: void
+
+busca usuario
+gera o token de reset de senha
+corpoDoEmail = constroi o email (user, tokenDeResert)
+envia o email
+
+------
+
+executar recuperação de senha
+- input: tokenDeResert, senha
+- output: void
+
+const userId = verifica se o token não expirou e pega os dados do usuario
+busca usuario
+faz o hash da senha
+atualiza a senha do usuario

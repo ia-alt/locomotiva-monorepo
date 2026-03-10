@@ -1,0 +1,56 @@
+import { BookingRepository } from "@booking/domain/repositories";
+import { DatePeriod, OnlyDate } from "@core/value-objects";
+import { UniqueId } from "@core/base-classes";
+import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
+import { Booking } from "../entities";
+import { RoomUnavailableError } from "../errors";
+
+class BookingService {
+    constructor(
+        private readonly bookingRepository: BookingRepository,
+        private readonly spaceOperatingHoursService: SpaceOperatingHoursService,
+    ) { }
+
+    async createBookingRequest(params: Booking.CreateParams): Promise<Booking> {
+        const isAvailable = await this.checkAvailability(params.roomId, params.period);
+
+        if (!isAvailable) {
+            throw new RoomUnavailableError();
+        }
+
+        const booking = Booking.create(params);
+        await this.bookingRepository.save(booking);
+        return booking;
+    }
+
+
+    async checkAvailability(roomId: UniqueId, period: DatePeriod): Promise<boolean> {
+        const day = OnlyDate.fromDate(period.value.from);
+        const bookings = await this.bookingRepository.findByDay({
+            day,
+            roomId,
+            status: Booking.ActiveStatus,
+        });
+        const usedSlots = bookings.map(x => x.period);
+        const overlapsSome = usedSlots.some(x => x.overlaps(period));
+        return !overlapsSome;
+    }
+
+    async getAvailableSlotsByRoom(roomId: UniqueId, day: OnlyDate): Promise<DatePeriod[]> {
+        const dailyAvailability = await this.spaceOperatingHoursService.getAvailabilityForDay(roomId, day);
+        if (!dailyAvailability) {
+            return [];
+        }
+        const roomOperatingHours = dailyAvailability.toDatePeriod(day);
+
+        const bookings = await this.bookingRepository.findByDay({
+            day,
+            roomId,
+            status: Booking.ActiveStatus,
+        });
+        const freeSlots = roomOperatingHours.flatMap(x => x.subtractAll(bookings.map(x => x.period)));
+        return freeSlots;
+    }
+}
+
+export { BookingService }
