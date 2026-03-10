@@ -6,8 +6,12 @@ import InicioScreen from '../screens/private/InicioScreen';
 import ReservasScreen from '../screens/private/ReservasScreen';
 import PerfilScreen from '../screens/private/PerfilScreen';
 
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import CriarReservaScreen from '../screens/private/CriarReservaScreen';
+
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
+const Stack = createNativeStackNavigator();
 
 function BottomTabs() {
     return (
@@ -38,7 +42,7 @@ function BottomTabs() {
     );
 }
 
-export default function PrivateNavigator() {
+function DrawerRoutes() {
     return (
         <Drawer.Navigator initialRouteName="Menu principal">
             <Drawer.Screen
@@ -49,5 +53,22 @@ export default function PrivateNavigator() {
                 }}
             />
         </Drawer.Navigator>
+    );
+}
+
+export default function PrivateNavigator() {
+    return (
+        <Stack.Navigator initialRouteName="Drawer">
+            <Stack.Screen
+                name="Drawer"
+                component={DrawerRoutes}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="CriarReserva"
+                component={CriarReservaScreen}
+                options={{ title: 'Nova Reserva' }}
+            />
+        </Stack.Navigator>
     );
 }
