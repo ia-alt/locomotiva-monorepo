@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
 import RoomSelector from '../../components/RoomSelector';
+import AvailabilityTimeline from '../../components/AvailabilityTimeline';
 
 export default function CriarReservaScreen() {
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+    const [selectedDate] = useState(new Date());
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <RoomSelector
                 selectedRoomId={selectedRoomId}
                 setSelectedRoomId={setSelectedRoomId}
             />
-        </View>
+
+            <AvailabilityTimeline
+                roomId={selectedRoomId}
+                date={selectedDate}
+                onSelectBlock={(from, to) => {
+                    console.log("Selected block from", from, "to", to);
+                }}
+            />
+        </ScrollView>
     );
 }
 
