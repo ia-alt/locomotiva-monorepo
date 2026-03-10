@@ -4,8 +4,14 @@
   "workspaces": [
     "apps/*"
   ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @locomotiva/api\" \"npm run dev -w @locomotiva/admin\" \"npm run dev -w @locomotiva/mobile\""
+  },
   "dependencies": {
     "react-native-worklets": "^0.7.4",
     "react-native-worklets-core": "^1.6.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
