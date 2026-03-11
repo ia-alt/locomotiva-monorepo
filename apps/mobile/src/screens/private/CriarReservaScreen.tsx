@@ -24,11 +24,6 @@ export default function CriarReservaScreen() {
                 setSelectedDate={setSelectedDate}
             />
 
-            <TimeSelector
-                startTime={startTime}
-                endTime={endTime}
-            />
-
             <AvailabilityTimeline
                 roomId={selectedRoomId}
                 date={selectedDate}
@@ -42,6 +37,11 @@ export default function CriarReservaScreen() {
                         setEndTime(calculatedEndTime);
                     }
                 }}
+            />
+
+            <TimeSelector
+                startTime={startTime}
+                endTime={endTime}
             />
         </ScrollView>
     );

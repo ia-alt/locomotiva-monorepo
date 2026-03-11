@@ -126,6 +126,7 @@ export default function AvailabilityTimeline({ roomId, date, onSelectBlock }: Av
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Disponibilidade</Text>
+            <Text style={styles.instructionText}>Selecione um bloco de tempo disponível:</Text>
 
             <Surface style={styles.timelineWrapper} elevation={0}>
                 {isLoading ? (
@@ -206,7 +207,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#374151',
+        marginBottom: 4,
+    },
+    instructionText: {
+        fontSize: 14,
+        color: '#6B7280',
         marginBottom: 12,
+        fontWeight: '500',
     },
     emptyCard: {
         padding: 24,
