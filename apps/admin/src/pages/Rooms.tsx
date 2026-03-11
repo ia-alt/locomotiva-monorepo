@@ -1,81 +1,29 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, Grid, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, FormControlLabel, Switch } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { orpc } from '../services/api';
 import { RoomCard, type Room } from '../components/rooms/RoomCard';
 import { EditRoomDialog } from '../components/rooms/EditRoomDialog';
+import { OperatingHoursDialog } from '../components/rooms/OperatingHoursDialog';
+import { useRooms } from '../hooks/useRooms';
 
 const RoomsPage: React.FC = () => {
-  const queryClient = useQueryClient();
+  const { rooms, isLoading, isError, error, findRoom, createRoom, isCreating, createError, deleteRoom } = useRooms();
+
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  
+  const [isOperatingHoursOpen, setIsOperatingHoursOpen] = useState(false);
+  const [roomForOperatingHours, setRoomForOperatingHours] = useState<Room | null>(null);
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState<string | null>(null);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createCapacity, setCreateCapacity] = useState<number | string>('');
-  const [createEnabled, setCreateEnabled] = useState<boolean>(true);
-  const [createError, setCreateError] = useState<string | null>(null);
-
-  // Integração com Backend (oRPC listRooms)
-  const { data: rooms, isLoading, isError, error } = useQuery({
-    queryKey: ['rooms'],
-    queryFn: async () => {
-      return await orpc.booking.listRooms({});
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (roomId: string) => {
-      await orpc.booking.deleteRoom({ roomId });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms'] });
-      setDeleteDialogOpen(false);
-      setRoomToDelete(null);
-    },
-    onError: (err) => {
-        console.error("Failed to delete room:", err);
-        alert("Erro ao excluir sala. Verifique o console.");
-    }
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (input: { name: string; capacity: number; enabled: boolean }) => {
-      return await orpc.booking.createRoom({
-        name: input.name,
-        capacity: input.capacity,
-        enabled: input.enabled,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms'] });
-      setIsCreateOpen(false);
-      setCreateName('');
-      setCreateCapacity('');
-      setCreateEnabled(true);
-      setCreateError(null);
-    },
-    onError: (err) => {
-      console.error('Failed to create room:', err);
-      setCreateError(err instanceof Error ? err.message : 'Falha ao criar sala');
-    },
-  });
-
-  const handleCreate = () => {
-    setIsCreateOpen(true);
-  };
-
-  const handleCloseCreate = () => {
-    setIsCreateOpen(false);
-    setCreateError(null);
-  };
+  const [createEnabled, setCreateEnabled] = useState(true);
 
   const handleEdit = (id: string) => {
-    const room = rooms?.find((r: Room) => r.id === id);
+    const room = findRoom(id);
     if (room) {
       setSelectedRoom(room);
       setIsEditOpen(true);
@@ -89,18 +37,37 @@ const RoomsPage: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (roomToDelete) {
-        deleteMutation.mutate(roomToDelete);
+      deleteRoom(roomToDelete, {
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          setRoomToDelete(null);
+        },
+        onError: () => alert('Erro ao excluir sala. Verifique o console.'),
+      });
     }
   };
 
-  const handleCancelDelete = () => {
-    setDeleteDialogOpen(false);
-    setRoomToDelete(null);
+  const handleOperatingHours = (id: string) => {
+    const room = findRoom(id);
+    if (room) {
+      setRoomForOperatingHours(room);
+      setIsOperatingHoursOpen(true);
+    }
   };
 
-  const handleCloseEdit = () => {
-    setIsEditOpen(false);
-    setSelectedRoom(null);
+  const handleSubmitCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    createRoom(
+      { name: createName, capacity: Number(createCapacity), enabled: createEnabled },
+      {
+        onSuccess: () => {
+          setIsCreateOpen(false);
+          setCreateName('');
+          setCreateCapacity('');
+          setCreateEnabled(true);
+        },
+      },
+    );
   };
 
   return (
@@ -115,10 +82,10 @@ const RoomsPage: React.FC = () => {
             Gerencie os espaços disponíveis no Locomotiva Hub.
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          onClick={handleCreate}
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setIsCreateOpen(true)}
           sx={{ bgcolor: 'primary.main' }}
         >
           Nova Sala
@@ -136,17 +103,18 @@ const RoomsPage: React.FC = () => {
         </Alert>
       ) : (
         <Grid container spacing={3}>
-          {rooms?.map((room: Room) => (
+          {rooms.map((room: Room) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={room.id}>
-              <RoomCard 
-                room={room} 
+              <RoomCard
+                room={room}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onOperatingHours={handleOperatingHours}
               />
             </Grid>
           ))}
-          
-          {rooms?.length === 0 && (
+
+          {rooms.length === 0 && (
             <Grid size={{ xs: 12 }}>
               <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 4 }}>
                 Nenhuma sala encontrada.
@@ -157,9 +125,9 @@ const RoomsPage: React.FC = () => {
       )}
 
       {/* Dialog de Criação */}
-      <Dialog 
-        open={isCreateOpen} 
-        onClose={handleCloseCreate}
+      <Dialog
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
         fullWidth
         maxWidth="sm"
         slotProps={{
@@ -169,21 +137,10 @@ const RoomsPage: React.FC = () => {
               backgroundColor: 'rgba(0, 0, 0, 0.2)',
             },
           },
-          paper: {
-            sx: { borderRadius: 2 },
-          },
+          paper: { sx: { borderRadius: 2 } },
         }}
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createMutation.mutate({
-              name: createName,
-              capacity: Number(createCapacity),
-              enabled: createEnabled,
-            });
-          }}
-        >
+        <form onSubmit={handleSubmitCreate}>
           <DialogTitle sx={{ fontWeight: 'bold' }}>Nova Sala</DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -228,34 +185,42 @@ const RoomsPage: React.FC = () => {
             </Box>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleCloseCreate} color="inherit">
+            <Button onClick={() => setIsCreateOpen(false)} color="inherit">
               Cancelar
             </Button>
             <Button
               type="submit"
               variant="contained"
               color="primary"
-              disabled={createMutation.isPending}
-              startIcon={createMutation.isPending ? <CircularProgress size={20} /> : null}
+              disabled={isCreating}
+              startIcon={isCreating ? <CircularProgress size={20} /> : null}
             >
-              {createMutation.isPending ? 'Criando...' : 'Criar Sala'}
+              {isCreating ? 'Criando...' : 'Criar Sala'}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
 
       {/* Dialog de Edição */}
-      <EditRoomDialog 
+      <EditRoomDialog
         key={selectedRoom?.id}
-        open={isEditOpen} 
-        onClose={handleCloseEdit} 
-        room={selectedRoom} 
+        open={isEditOpen}
+        onClose={() => { setIsEditOpen(false); setSelectedRoom(null); }}
+        room={selectedRoom}
+      />
+
+      {/* Dialog de Horários de Funcionamento */}
+      <OperatingHoursDialog
+        key={roomForOperatingHours?.id}
+        open={isOperatingHoursOpen}
+        onClose={() => { setIsOperatingHoursOpen(false); setRoomForOperatingHours(null); }}
+        room={roomForOperatingHours}
       />
 
       {/* Dialog de Confirmação de Exclusão */}
       <Dialog
         open={deleteDialogOpen}
-        onClose={handleCancelDelete}
+        onClose={() => { setDeleteDialogOpen(false); setRoomToDelete(null); }}
       >
         <DialogTitle>Confirmar Exclusão</DialogTitle>
         <DialogContent>
@@ -264,7 +229,7 @@ const RoomsPage: React.FC = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
+          <Button onClick={() => { setDeleteDialogOpen(false); setRoomToDelete(null); }} color="primary">
             Cancelar
           </Button>
           <Button onClick={handleConfirmDelete} color="error" autoFocus>

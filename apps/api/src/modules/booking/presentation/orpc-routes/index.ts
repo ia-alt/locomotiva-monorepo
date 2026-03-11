@@ -13,6 +13,7 @@ import { listAvailableSlotsByDayRoute } from "./routes/list-available-slots-by-d
 import { sendBookingRemindersOfTomorrowRoute } from "./routes/send-booking-reminders-of-tomorrow";
 import { setDefaultOperatingScheduleRoute } from "./routes/set-default-operating-schedule";
 import { addOperatingHoursOverrideRoute } from "./routes/add-operating-hours-override";
+import { getRoomOperatingScheduleRoute } from "./routes/get-room-operating-schedule";
 
 export const bookingRouter = {
     createRoom: createRoomRoute,
@@ -32,4 +33,5 @@ export const bookingRouter = {
     sendBookingRemindersOfTomorrow: sendBookingRemindersOfTomorrowRoute,
     setDefaultOperatingSchedule: setDefaultOperatingScheduleRoute,
     addOperatingHoursOverride: addOperatingHoursOverrideRoute,
+    getRoomOperatingSchedule: getRoomOperatingScheduleRoute,
 };

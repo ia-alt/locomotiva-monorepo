@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, IconButton, Chip } from '@mui/material';
-import { People as PeopleIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { People as PeopleIcon, Edit as EditIcon, Delete as DeleteIcon, AccessTime as AccessTimeIcon } from '@mui/icons-material';
 
 // Definindo a interface baseada no retorno do backend (Room.JsonSchema)
 export interface Room {
@@ -14,12 +14,13 @@ interface RoomCardProps {
   room: Room;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onOperatingHours: (id: string) => void;
 }
 
-export const RoomCard: React.FC<RoomCardProps> = ({ room, onEdit, onDelete }) => {
+export const RoomCard: React.FC<RoomCardProps> = ({ room, onEdit, onDelete, onOperatingHours }) => {
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {/* Placeholder Image - Box cinza claro */}
+      {/* Imagem
       <Box 
         sx={{ 
           height: 140, 
@@ -29,8 +30,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onEdit, onDelete }) =>
           justifyContent: 'center' 
         }}
       >
-        {/* imagem aqui */}
-      </Box>
+        
+      </Box>*/}
 
       <CardContent sx={{ flexGrow: 1, pb: 6 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -53,24 +54,32 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onEdit, onDelete }) =>
           </Typography>
         </Box>
 
-        {/* Descrição curta placeholder (não vem do backend ainda) */}
+        {/* Descrição curta placeholder (não vem do backend ainda)*/}
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Sem descrição disponível.
         </Typography>
       </CardContent>
 
-      {/* Ações: Editar e Excluir */}
+      {/* Ações: Horários, Editar e Excluir */}
       <Box sx={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 1 }}>
-        <IconButton 
-          size="small" 
+        <IconButton
+          size="small"
+          onClick={() => onOperatingHours(room.id)}
+          color="default"
+          aria-label="operating-hours"
+        >
+          <AccessTimeIcon />
+        </IconButton>
+        <IconButton
+          size="small"
           onClick={() => onEdit(room.id)}
           color="primary"
           aria-label="edit"
         >
           <EditIcon />
         </IconButton>
-        <IconButton 
-          size="small" 
+        <IconButton
+          size="small"
           onClick={() => onDelete(room.id)}
           color="error"
           aria-label="delete"

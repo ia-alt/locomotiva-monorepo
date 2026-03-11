@@ -41,6 +41,7 @@ import { ListAvailableSlotsByDayUseCase } from "@booking/application/use-cases/l
 import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-cases/send-booking-reminders-of-tomorrow";
 import { SetDefaultOperatingScheduleUseCase } from "@booking/application/use-cases/set-room-default-operating-hours";
 import { AddOperatingHoursOverrideUseCase } from "@booking/application/use-cases/add-room-operating-hours-override";
+import { GetRoomOperatingScheduleUseCase } from "@booking/application/use-cases/get-room-operating-schedule";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 
@@ -461,6 +462,14 @@ export class DiContainer {
             this.getSpaceOperatingHoursService()
         );
         return addOperatingHoursOverrideUseCase;
+    }
+
+    public getGetRoomOperatingScheduleUseCase(authUser: User): GetRoomOperatingScheduleUseCase {
+        return new GetRoomOperatingScheduleUseCase(
+            this.getAuthUserService(authUser),
+            this.getRoomRepository(),
+            this.getSpaceOperatingHoursRepository()
+        );
     }
     //#endregion
 }
