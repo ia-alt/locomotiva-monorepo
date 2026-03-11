@@ -5,7 +5,10 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w @locomotiva/api\" \"npm run dev -w @locomotiva/admin\" \"npm run dev -w @locomotiva/mobile\""
+    "start:api": "npm start -w @locomotiva/api",
+    "dev:api": "npm run dev -w @locomotiva/api",
+    "dev:mobile": "npm run dev -w @locomotiva/mobile",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:mobile\""
   },
   "dependencies": {
     "react-native-worklets": "^0.7.4",

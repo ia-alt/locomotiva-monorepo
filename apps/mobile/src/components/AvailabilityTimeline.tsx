@@ -135,13 +135,13 @@ export default function AvailabilityTimeline({ roomId, date, onSelectBlock }: Av
                     </View>
                 ) : null}
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={true} contentContainerStyle={styles.scrollContent}>
                     {/* Linhas da grade e horários */}
                     <View style={styles.gridContainer}>
                         {hoursGrid.map((h) => (
                             <View key={h} style={[styles.gridLine, { left: (h - START_HOUR) * HOUR_WIDTH }]}>
                                 <Text style={styles.gridTimeText}>
-                                    {h.toString().padStart(2, '0')}:00
+                                    {h.toString().padStart(2, '0')}H
                                 </Text>
                             </View>
                         ))}
@@ -247,6 +247,8 @@ const styles = StyleSheet.create({
     gridTimeText: {
         fontSize: 12,
         color: '#9CA3AF',
+        overflow: "visible",
+        width: 24,
     },
     blocksContainer: {
         position: 'absolute',
