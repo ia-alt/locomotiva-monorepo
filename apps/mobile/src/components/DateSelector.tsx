@@ -42,7 +42,12 @@ export default function DateSelector({ selectedDate, setSelectedDate }: DateSele
                         formattedDayOfWeek = formattedDayOfWeek.substring(0, 3);
                     }
 
-                    const dayOfMonth = format(date, 'd');
+                    const dayOfMonth = format(date, 'dd');
+                    const monthRaw = format(date, 'MMM', { locale: ptBR }).replace('.', '');
+                    let formattedMonth = monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1);
+                    if (formattedMonth.length > 3) {
+                        formattedMonth = formattedMonth.substring(0, 3);
+                    }
 
                     return (
                         <TouchableOpacity
@@ -62,6 +67,9 @@ export default function DateSelector({ selectedDate, setSelectedDate }: DateSele
                                 </Text>
                                 <Text style={[styles.dayOfMonthText, isSelected && styles.textSelected]}>
                                     {dayOfMonth}
+                                </Text>
+                                <Text style={[styles.monthText, isSelected && styles.textSelected]}>
+                                    {formattedMonth}
                                 </Text>
                             </Surface>
                         </TouchableOpacity>
@@ -105,7 +113,7 @@ const styles = StyleSheet.create({
     },
     dateCard: {
         width: 64,
-        height: 72,
+        height: 84,
         borderRadius: 16,
         backgroundColor: '#FFFFFF',
         alignItems: 'center',
@@ -120,12 +128,18 @@ const styles = StyleSheet.create({
     dayOfWeekText: {
         fontSize: 12,
         color: '#9CA3AF',
-        marginBottom: 4,
+        marginBottom: 2,
     },
     dayOfMonthText: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#111827',
+        marginBottom: 2,
+    },
+    monthText: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#9CA3AF',
     },
     textSelected: {
         color: '#FFFFFF',
