@@ -28,6 +28,7 @@ import { ConsoleSendEmailService } from "@notifications/infra/services/console-s
 import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
+import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
 import { UpdateRoomUseCase } from "@booking/application/use-cases/update-room";
 import { DeleteRoomUseCase } from "@booking/application/use-cases/delete-room";
 import { SetRoomEnabledUseCase } from "@booking/application/use-cases/set-room-enabled";
@@ -351,6 +352,14 @@ export class DiContainer {
             this.getRoomRepository()
         );
         return listRoomsUseCase;
+    }
+
+    public getGetRoomByIdUseCase(authUser: User): GetRoomByIdUseCase {
+        const getRoomByIdUseCase = new GetRoomByIdUseCase(
+            this.getAuthUserService(authUser),
+            this.getRoomRepository()
+        );
+        return getRoomByIdUseCase;
     }
 
     public getUpdateRoomUseCase(authUser: User): UpdateRoomUseCase {

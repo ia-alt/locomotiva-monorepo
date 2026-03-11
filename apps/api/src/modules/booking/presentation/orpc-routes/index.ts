@@ -1,5 +1,6 @@
 import { createRoomRoute } from "./routes/create-room";
 import { listRoomsRoute } from "./routes/list-rooms";
+import { getRoomByIdRoute } from "./routes/get-room-by-id";
 import { updateRoomRoute } from "./routes/update-room";
 import { deleteRoomRoute } from "./routes/delete-room";
 import { setRoomEnabledRoute } from "./routes/set-room-enabled";
@@ -17,6 +18,7 @@ import { addOperatingHoursOverrideRoute } from "./routes/add-operating-hours-ove
 export const bookingRouter = {
     createRoom: createRoomRoute,
     listRooms: listRoomsRoute,
+    getRoomById: getRoomByIdRoute,
     updateRoom: updateRoomRoute,
     deleteRoom: deleteRoomRoute,
     setRoomEnabled: setRoomEnabledRoute,
