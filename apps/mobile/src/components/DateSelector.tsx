@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { addDays, format, isSameDay, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import CalendarModal from './CalendarModal';
 
 interface DateSelectorProps {
     selectedDate: Date;
@@ -10,6 +11,8 @@ interface DateSelectorProps {
 }
 
 export default function DateSelector({ selectedDate, setSelectedDate }: DateSelectorProps) {
+    const [modalVisible, setModalVisible] = useState(false);
+
     // Generate dates starting from tomorrow for next 14 days
     const dates = useMemo(() => {
         const baseDate = startOfDay(addDays(new Date(), 1));
@@ -20,7 +23,7 @@ export default function DateSelector({ selectedDate, setSelectedDate }: DateSele
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>Data</Text>
-                <TouchableOpacity onPress={() => console.log('Abrir Calendário')}>
+                <TouchableOpacity onPress={() => setModalVisible(true)}>
                     <Text style={styles.link}>Ver Calendário</Text>
                 </TouchableOpacity>
             </View>
@@ -65,6 +68,13 @@ export default function DateSelector({ selectedDate, setSelectedDate }: DateSele
                     );
                 })}
             </ScrollView>
+
+            <CalendarModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                initialDate={selectedDate}
+                onConfirm={(date) => setSelectedDate(date)}
+            />
         </View>
     );
 }
