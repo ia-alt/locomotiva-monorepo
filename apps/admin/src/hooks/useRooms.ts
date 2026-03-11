@@ -7,7 +7,7 @@ export const ROOMS_QUERY_KEY = ['rooms'] as const;
 export const useRooms = () => {
   const queryClient = useQueryClient();
 
-  const { data: rooms = [], isLoading, isError, error } = useQuery({
+  const { data: rooms = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ROOMS_QUERY_KEY,
     queryFn: () => orpc.booking.listRooms({}),
   });
@@ -41,6 +41,7 @@ export const useRooms = () => {
     isLoading,
     isError,
     error,
+    refetch,
     findRoom,
     createRoom: createMutation.mutate,
     isCreating: createMutation.isPending,

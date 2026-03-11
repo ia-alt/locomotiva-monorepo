@@ -92,9 +92,10 @@ interface OperatingHoursDialogProps {
   open: boolean;
   onClose: () => void;
   room: Room | null;
+  onSave?: () => void;
 }
 
-export const OperatingHoursDialog: React.FC<OperatingHoursDialogProps> = ({ open, onClose, room }) => {
+export const OperatingHoursDialog: React.FC<OperatingHoursDialogProps> = ({ open, onClose, room, onSave }) => {
   const [schedule, setSchedule] = useState<ScheduleState>(defaultSchedule);
   const [error, setError] = useState<string | null>(null);
 
@@ -137,6 +138,7 @@ export const OperatingHoursDialog: React.FC<OperatingHoursDialogProps> = ({ open
     },
     onSuccess: () => {
       setError(null);
+      onSave?.();
       onClose();
     },
     onError: (err) => {

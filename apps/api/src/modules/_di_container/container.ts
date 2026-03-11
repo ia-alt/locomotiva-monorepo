@@ -42,6 +42,8 @@ import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-
 import { SetDefaultOperatingScheduleUseCase } from "@booking/application/use-cases/set-room-default-operating-hours";
 import { AddOperatingHoursOverrideUseCase } from "@booking/application/use-cases/add-room-operating-hours-override";
 import { GetRoomOperatingScheduleUseCase } from "@booking/application/use-cases/get-room-operating-schedule";
+import { GetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/get-global-blocked-dates";
+import { SetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/set-global-blocked-dates";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 
@@ -349,7 +351,8 @@ export class DiContainer {
     public getListRoomsUseCase(authUser: User): ListRoomsUseCase {
         const listRoomsUseCase = new ListRoomsUseCase(
             this.getAuthUserService(authUser),
-            this.getRoomRepository()
+            this.getRoomRepository(),
+            this.getSpaceOperatingHoursRepository()
         );
         return listRoomsUseCase;
     }
@@ -468,6 +471,22 @@ export class DiContainer {
         return new GetRoomOperatingScheduleUseCase(
             this.getAuthUserService(authUser),
             this.getRoomRepository(),
+            this.getSpaceOperatingHoursRepository()
+        );
+    }
+
+    public getGetGlobalBlockedDatesUseCase(authUser: User): GetGlobalBlockedDatesUseCase {
+        return new GetGlobalBlockedDatesUseCase(
+            this.getAuthUserService(authUser),
+            this.getSpaceOperatingHoursRepository()
+        );
+    }
+
+    public getSetGlobalBlockedDatesUseCase(authUser: User): SetGlobalBlockedDatesUseCase {
+        return new SetGlobalBlockedDatesUseCase(
+            this.getAuthUserService(authUser),
+            this.getRoomRepository(),
+            this.getSpaceOperatingHoursService(),
             this.getSpaceOperatingHoursRepository()
         );
     }
