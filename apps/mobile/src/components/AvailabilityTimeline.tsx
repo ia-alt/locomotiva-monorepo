@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { useORPC } from '../locomotiva-api/context';
 import { useQuery } from '@tanstack/react-query';
@@ -157,31 +157,38 @@ export default function AvailabilityTimeline({ roomId, date, onSelectBlock }: Av
                             const isFree = b.type === 'free';
 
                             return (
-                                <Surface
+                                <TouchableOpacity
                                     key={b.id}
                                     style={[
                                         styles.block,
-                                        { left: leftPos, width: widthPx },
-                                        isFree ? styles.blockFree : styles.blockOccupied
+                                        { left: leftPos, width: widthPx }
                                     ]}
-                                    elevation={isFree ? 2 : 0}
-                                    onTouchEnd={() => {
+                                    activeOpacity={isFree ? 0.7 : 1}
+                                    onPress={() => {
                                         if (isFree && onSelectBlock && b.startOrigin && b.endOrigin) {
                                             onSelectBlock(b.startOrigin, b.endOrigin);
                                         }
                                     }}
                                 >
-                                    <View style={styles.blockInner}>
-                                        <Text style={[styles.blockLabel, isFree ? styles.textFree : styles.textOccupied]}>
-                                            {b.label}
-                                        </Text>
-                                        {isFree && (
-                                            <Text style={styles.textSubtitleFree}>
-                                                Reservar {(b.endMin - b.startMin) / 60}h
+                                    <Surface
+                                        style={[
+                                            { flex: 1, borderRadius: 12, overflow: 'hidden' },
+                                            isFree ? styles.blockFree : styles.blockOccupied
+                                        ]}
+                                        elevation={isFree ? 2 : 0}
+                                    >
+                                        <View style={styles.blockInner}>
+                                            <Text style={[styles.blockLabel, isFree ? styles.textFree : styles.textOccupied]}>
+                                                {b.label}
                                             </Text>
-                                        )}
-                                    </View>
-                                </Surface>
+                                            {isFree && (
+                                                <Text style={styles.textSubtitleFree}>
+                                                    Reservar {(b.endMin - b.startMin) / 60}h
+                                                </Text>
+                                            )}
+                                        </View>
+                                    </Surface>
+                                </TouchableOpacity>
                             );
                         })}
                     </View>

@@ -3,11 +3,14 @@ import { StyleSheet, ScrollView } from 'react-native';
 import RoomSelector from '../../components/RoomSelector';
 import AvailabilityTimeline from '../../components/AvailabilityTimeline';
 import DateSelector from '../../components/DateSelector';
-import { addDays, startOfDay } from 'date-fns';
+import TimeSelector from '../../components/TimeSelector';
+import { addDays, startOfDay, addHours } from 'date-fns';
 
 export default function CriarReservaScreen() {
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState(() => startOfDay(addDays(new Date(), 1)));
+    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [endTime, setEndTime] = useState<Date | null>(null);
 
     return (
         <ScrollView style={styles.container}>
@@ -21,11 +24,23 @@ export default function CriarReservaScreen() {
                 setSelectedDate={setSelectedDate}
             />
 
+            <TimeSelector
+                startTime={startTime}
+                endTime={endTime}
+            />
+
             <AvailabilityTimeline
                 roomId={selectedRoomId}
                 date={selectedDate}
                 onSelectBlock={(from, to) => {
-                    console.log("Selected block from", from, "to", to);
+                    setStartTime(from);
+                    const calculatedEndTime = addHours(from, 4);
+                    // if calculated end time is over block's available `to` limit, cap it
+                    if (calculatedEndTime > to) {
+                        setEndTime(to);
+                    } else {
+                        setEndTime(calculatedEndTime);
+                    }
                 }}
             />
         </ScrollView>
