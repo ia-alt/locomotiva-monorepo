@@ -11,6 +11,8 @@ export default function CriarReservaScreen() {
     const [selectedDate, setSelectedDate] = useState(() => startOfDay(addDays(new Date(), 1)));
     const [startTime, setStartTime] = useState<Date | null>(null);
     const [endTime, setEndTime] = useState<Date | null>(null);
+    const [blockStart, setBlockStart] = useState<Date | null>(null);
+    const [blockEnd, setBlockEnd] = useState<Date | null>(null);
 
     return (
         <ScrollView style={styles.container}>
@@ -28,6 +30,8 @@ export default function CriarReservaScreen() {
                 roomId={selectedRoomId}
                 date={selectedDate}
                 onSelectBlock={(from, to) => {
+                    setBlockStart(from);
+                    setBlockEnd(to);
                     setStartTime(from);
                     const calculatedEndTime = addHours(from, 4);
                     // if calculated end time is over block's available `to` limit, cap it
@@ -42,6 +46,11 @@ export default function CriarReservaScreen() {
             <TimeSelector
                 startTime={startTime}
                 endTime={endTime}
+                baseDate={selectedDate}
+                blockStart={blockStart}
+                blockEnd={blockEnd}
+                onChangeStart={setStartTime}
+                onChangeEnd={setEndTime}
             />
         </ScrollView>
     );
