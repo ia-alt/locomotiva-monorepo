@@ -13,7 +13,9 @@ import {
     addDays,
     isSameMonth,
     isSameDay,
-    isToday
+    isBefore,
+    isToday,
+    startOfDay
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -42,7 +44,7 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
     const weeks = useMemo(() => {
         const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 }); // Sunday as first day
         const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
-        
+
         const days = [];
         let day = start;
         // avoid infinite loops just in case, use strict date comparison
@@ -65,11 +67,11 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
         const title = format(currentMonth, 'MMMM yyyy', { locale: ptBR });
         return (
             <View style={styles.header}>
-                <TouchableOpacity onPress={handlePreviousMonth} style={styles.navButton} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+                <TouchableOpacity onPress={handlePreviousMonth} style={styles.navButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                     <Feather name="chevron-left" size={24} color="#1E88E5" />
                 </TouchableOpacity>
                 <Text style={styles.monthTitle}>{title.charAt(0).toUpperCase() + title.slice(1)}</Text>
-                <TouchableOpacity onPress={handleNextMonth} style={styles.navButton} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+                <TouchableOpacity onPress={handleNextMonth} style={styles.navButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                     <Feather name="chevron-right" size={24} color="#1E88E5" />
                 </TouchableOpacity>
             </View>
@@ -92,11 +94,11 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
             <View style={styles.modalOverlay}>
                 <TouchableOpacity style={styles.touchableOverlay} activeOpacity={1} onPress={onClose} />
                 <View style={styles.modalContent}>
-                    
+
                     <View style={styles.dragHandleContainer}>
                         <View style={styles.dragHandle} />
                     </View>
-                    
+
                     <Text style={styles.modalTitle}>Selecionar Data</Text>
 
                     {renderHeader()}
@@ -110,12 +112,16 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
                                     const isSelected = isSameDay(date, selectedDate);
                                     const isDateToday = isToday(date);
 
+                                    const minValidDate = startOfDay(addDays(new Date(), 1));
+                                    const isDisabled = isBefore(startOfDay(date), minValidDate);
+
                                     return (
                                         <TouchableOpacity
                                             key={dayIdx}
                                             style={styles.dayCellContainer}
                                             onPress={() => setSelectedDate(date)}
                                             activeOpacity={0.7}
+                                            disabled={isDisabled}
                                         >
                                             <View style={[
                                                 styles.dayCell,
@@ -125,6 +131,7 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
                                                 <Text style={[
                                                     styles.dayText,
                                                     !isCurrentMonth && styles.dayTextOutside,
+                                                    isDisabled && styles.dayTextDisabled,
                                                     isSelected && styles.dayTextSelected,
                                                     !isSelected && isDateToday && styles.dayTextToday
                                                 ]}>
@@ -145,7 +152,7 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
                         <TouchableOpacity onPress={onClose} style={styles.cancelButton} activeOpacity={0.7}>
                             <Text style={styles.cancelButtonText}>Cancelar</Text>
                         </TouchableOpacity>
-                        
+
                         <TouchableOpacity onPress={() => {
                             onConfirm(selectedDate);
                             onClose();
@@ -269,6 +276,10 @@ const styles = StyleSheet.create({
     },
     dayTextOutside: {
         color: '#D1D5DB',
+    },
+    dayTextDisabled: {
+        color: '#E5E7EB',
+        textDecorationLine: 'line-through',
     },
     dayTextToday: {
         color: '#1E88E5',

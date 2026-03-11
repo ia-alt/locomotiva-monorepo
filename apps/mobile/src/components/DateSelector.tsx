@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { addDays, format, isSameDay, startOfDay } from 'date-fns';
@@ -12,12 +12,31 @@ interface DateSelectorProps {
 
 export default function DateSelector({ selectedDate, setSelectedDate }: DateSelectorProps) {
     const [modalVisible, setModalVisible] = useState(false);
+    const scrollViewRef = useRef<ScrollView>(null);
 
-    // Generate dates starting from tomorrow for next 14 days
+    // Generate dates: 6 days before to 7 days after, bounded by tomorrow
     const dates = useMemo(() => {
-        const baseDate = startOfDay(addDays(new Date(), 1));
-        return Array.from({ length: 14 }).map((_, i) => addDays(baseDate, i));
-    }, []);
+        const baseDate = startOfDay(selectedDate);
+        const minValidDate = startOfDay(addDays(new Date(), 1));
+        
+        let startWindow = addDays(baseDate, -6);
+        if (startWindow < minValidDate) {
+            startWindow = minValidDate;
+        }
+        
+        return Array.from({ length: 14 }).map((_, i) => addDays(startWindow, i));
+    }, [selectedDate]);
+
+    // Scroll to the selected date whenever it changes
+    useEffect(() => {
+        const index = dates.findIndex(d => isSameDay(d, selectedDate));
+        if (index !== -1 && scrollViewRef.current) {
+            const itemWidth = 76; // 64 (width) + 12 (gap)
+            // Center roughly by subtracting some offset
+            const offset = Math.max(0, index * itemWidth - 100); 
+            scrollViewRef.current.scrollTo({ x: offset, animated: true });
+        }
+    }, [selectedDate, dates]);
 
     return (
         <View style={styles.container}>
@@ -28,6 +47,7 @@ export default function DateSelector({ selectedDate, setSelectedDate }: DateSele
                 </TouchableOpacity>
             </View>
             <ScrollView
+                ref={scrollViewRef}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
