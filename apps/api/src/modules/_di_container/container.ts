@@ -23,6 +23,9 @@ import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
 import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
+import { ListUsersUseCase } from "src/modules/identity/application/use-cases/list-users";
+import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/update-user";
+import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
 import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
 import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase } from "@coworking/application/use-cases";
@@ -488,6 +491,27 @@ export class DiContainer {
             this.getRoomRepository(),
             this.getSpaceOperatingHoursService(),
             this.getSpaceOperatingHoursRepository()
+        );
+    }
+
+    public getListUsersUseCase(authUser: User): ListUsersUseCase {
+        return new ListUsersUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getUpdateUserUseCase(authUser: User): UpdateUserUseCase {
+        return new UpdateUserUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getDeleteUserUseCase(authUser: User): DeleteUserUseCase {
+        return new DeleteUserUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
         );
     }
     //#endregion

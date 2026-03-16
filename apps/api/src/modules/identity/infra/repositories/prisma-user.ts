@@ -2,7 +2,7 @@ import { UserRepository } from "src/modules/identity/domain/repositories";
 import { User } from "src/modules/identity/domain/entities";
 import { Prisma, PrismaClient, User as UserDb } from "@core/infra/database/prisma";
 import { UniqueId } from "@core/base-classes";
-import { EmailAddress, OnlyDate } from "@core/value-objects";
+import { EmailAddress, PaginatedQuery, PaginatedResult } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
 import { BirthDate } from "src/modules/identity/domain/value-objects/birth-date";
 
@@ -62,6 +62,26 @@ export class PrismaUserRepository implements UserRepository {
         const user = await this.prisma.user.findFirst({ where });
         if (!user) return null;
         return this.userDbToEntity(user);
+    }
+
+    async delete(id: UniqueId): Promise<void> {
+        await this.prisma.user.delete({ where: { id: id.value } });
+    }
+
+    async findAll(pagination: PaginatedQuery, search?: string): Promise<PaginatedResult<typeof User.JsonSchema, User>> {
+        const { take, skip } = pagination.asTakeSkip;
+        const where = search
+            ? { OR: [
+                { name: { contains: search, mode: 'insensitive' as const } },
+                { email: { contains: search, mode: 'insensitive' as const } },
+            ]}
+            : undefined;
+        const [usersDb, total] = await Promise.all([
+            this.prisma.user.findMany({ where, orderBy: { name: 'asc' }, take, skip }),
+            this.prisma.user.count({ where }),
+        ]);
+        const items = usersDb.map(u => this.userDbToEntity(u));
+        return PaginatedResult.create({ items, total, paginatedQuery: pagination });
     }
 
     userDbToEntity(user: UserDb): User {

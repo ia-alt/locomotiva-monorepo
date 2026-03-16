@@ -79,3 +79,13 @@ export class InvalidOrExpiredTokenError extends DomainError {
         );
     }
 }
+
+export class UserNotFoundError extends DomainError {
+    constructor() {
+        super(
+            "USER_NOT_FOUND",
+            "Usuário não encontrado.",
+            ErrorType.NOT_FOUND
+        );
+    }
+}
