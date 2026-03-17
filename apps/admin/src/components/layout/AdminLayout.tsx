@@ -21,6 +21,7 @@ import {
   CalendarMonth as CalendarMonthIcon,
   MeetingRoom as MeetingRoomIcon,
   People as PeopleIcon,
+  BarChart as BarChartIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
@@ -35,6 +36,7 @@ const menuItems = [
   { text: 'Reservas', icon: <CalendarMonthIcon />, path: '/reservations' },
   { text: 'Salas', icon: <MeetingRoomIcon />, path: '/rooms' },
   { text: 'Usuários', icon: <PeopleIcon />, path: '/users' },
+  { text: 'Relatório de Frequência', icon: <BarChartIcon />, path: '/frequency-report' },
 ];
 
 const bottomItems = [

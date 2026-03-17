@@ -48,6 +48,9 @@ import { GetRoomOperatingScheduleUseCase } from "@booking/application/use-cases/
 import { GetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/get-global-blocked-dates";
 import { SetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/set-global-blocked-dates";
 import { ListActiveSessionsUseCase } from "@coworking/application/use-cases/list-active-sessions";
+import { GetWeeklyFrequencyUseCase } from "@coworking/application/use-cases/get-weekly-frequency";
+import { GetAccessStatsUseCase } from "@coworking/application/use-cases/get-access-stats";
+import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yearly-report";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 
@@ -521,6 +524,27 @@ export class DiContainer {
             this.getAuthUserService(authUser),
             this.getAccessLogRepository(),
             this.getUserRepository(),
+        );
+    }
+
+    public getWeeklyFrequencyUseCase(authUser: User): GetWeeklyFrequencyUseCase {
+        return new GetWeeklyFrequencyUseCase(
+            this.getAccessLogRepository(),
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getAccessStatsUseCase(authUser: User): GetAccessStatsUseCase {
+        return new GetAccessStatsUseCase(
+            this.getAccessLogRepository(),
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getYearlyReportUseCase(authUser: User): GetYearlyReportUseCase {
+        return new GetYearlyReportUseCase(
+            this.getAccessLogRepository(),
+            this.getAuthUserService(authUser),
         );
     }
     //#endregion
