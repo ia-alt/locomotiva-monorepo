@@ -47,6 +47,7 @@ import { AddOperatingHoursOverrideUseCase } from "@booking/application/use-cases
 import { GetRoomOperatingScheduleUseCase } from "@booking/application/use-cases/get-room-operating-schedule";
 import { GetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/get-global-blocked-dates";
 import { SetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/set-global-blocked-dates";
+import { ListActiveSessionsUseCase } from "@coworking/application/use-cases/list-active-sessions";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 
@@ -511,6 +512,14 @@ export class DiContainer {
     public getDeleteUserUseCase(authUser: User): DeleteUserUseCase {
         return new DeleteUserUseCase(
             this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getListActiveSessionsUseCase(authUser: User): ListActiveSessionsUseCase {
+        return new ListActiveSessionsUseCase(
+            this.getAuthUserService(authUser),
+            this.getAccessLogRepository(),
             this.getUserRepository(),
         );
     }

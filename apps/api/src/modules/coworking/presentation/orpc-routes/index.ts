@@ -8,6 +8,7 @@ import { listAllAccessLogsRoute } from "./routes/list-all-access-logs";
 import { configureCoworkingRoute } from "./routes/configure-coworking";
 import { countActiveAccessLogsRoute } from "./routes/count-active-access-logs";
 import { getMyCheckinStatusRoute } from "./routes/get-my-checkin-status";
+import { listActiveSessionsRoute } from "./routes/list-active-sessions";
 
 export const coworkingRoutes = {
     checkin: performCheckinRoute,
@@ -20,4 +21,5 @@ export const coworkingRoutes = {
     configure: configureCoworkingRoute,
     countActiveAccessLogs: countActiveAccessLogsRoute,
     getMyCheckinStatus: getMyCheckinStatusRoute,
+    listActiveSessions: listActiveSessionsRoute,
 };

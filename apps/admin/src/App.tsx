@@ -3,6 +3,7 @@ import { Login } from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import RoomsPage from './pages/Rooms';
 import UsersPage from './pages/Users';
+import AccessControlPage from './pages/AccessControl';
 import { AdminLayout } from './components/layout/AdminLayout';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/access-control" element={<AccessControlPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
