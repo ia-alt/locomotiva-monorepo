@@ -5,7 +5,7 @@ import { DatePeriod } from "@core/value-objects";
 import { AuthUserService } from "src/modules/identity/domain/services";
 import z from "zod";
 
-class RequestBookingUseCase extends UseCase<RequestBookingUseCase.Input, RequestBookingUseCase.Output> {
+class AdminCreateBookingUseCase extends UseCase<AdminCreateBookingUseCase.Input, AdminCreateBookingUseCase.Output> {
     constructor(
         private readonly authUserService: AuthUserService,
         private readonly bookingService: BookingService,
@@ -13,8 +13,10 @@ class RequestBookingUseCase extends UseCase<RequestBookingUseCase.Input, Request
         super();
     }
 
-    async execute(params: RequestBookingUseCase.Input): Promise<RequestBookingUseCase.Output> {
-        const { id: userId } = this.authUserService.getUser();
+    async execute(params: AdminCreateBookingUseCase.Input): Promise<AdminCreateBookingUseCase.Output> {
+        this.authUserService.checkIsAdmin();
+
+        const userId = UniqueId.fromString(params.userId);
         const roomId = UniqueId.fromString(params.roomId);
         const period = DatePeriod.fromPrimitive(params.period);
 
@@ -28,8 +30,10 @@ class RequestBookingUseCase extends UseCase<RequestBookingUseCase.Input, Request
         return booking.toJSON();
     }
 }
-namespace RequestBookingUseCase {
+
+namespace AdminCreateBookingUseCase {
     export const InputSchema = z.object({
+        userId: z.string(),
         roomId: z.string(),
         period: DatePeriod.ValueSchema,
         description: z.string().optional(),
@@ -41,4 +45,4 @@ namespace RequestBookingUseCase {
     export type Output = z.infer<typeof OutputSchema>;
 }
 
-export { RequestBookingUseCase };
+export { AdminCreateBookingUseCase };

@@ -110,6 +110,7 @@ export const BookingScalarFieldEnum = {
   startTime: 'startTime',
   endTime: 'endTime',
   status: 'status',
+  description: 'description',
   rejectionCancelReason: 'rejectionCancelReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

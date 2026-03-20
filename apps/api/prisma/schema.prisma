@@ -50,6 +50,7 @@ model Booking {
   startTime             DateTime
   endTime               DateTime
   status                String
+  description           String?
   rejectionCancelReason String?
 
   createdAt DateTime @default(now())

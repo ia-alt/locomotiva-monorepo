@@ -11,6 +11,7 @@ export class Booking extends Entity {
         private _period: DatePeriod,
         private status: Booking.Status,
         private rejectionCancelReason?: string,
+        private description?: string,
     ) {
         super(id);
     }
@@ -25,7 +26,9 @@ export class Booking extends Entity {
             input.roomId,
             input.userId,
             input.period,
-            Booking.Status.PENDING
+            Booking.Status.PENDING,
+            undefined,
+            input.description,
         );
     }
 
@@ -69,12 +72,17 @@ export class Booking extends Entity {
         this.rejectionCancelReason = reason;
     }
 
-    reject(reason: string): void {
-        if (this.status !== Booking.Status.PENDING) {
+    reject(reason?: string): void {
+        const rejectableStatuses = [Booking.Status.PENDING, Booking.Status.CONFIRMED];
+        if (!rejectableStatuses.includes(this.status)) {
             throw new BookingNotInPendingStateError();
         }
         this.status = Booking.Status.REJECTED;
         this.rejectionCancelReason = reason;
+    }
+
+    markNoShow(): void {
+        this.status = Booking.Status.NO_SHOW;
     }
 
     toJSON(): Booking.JsonSchema {
@@ -84,6 +92,7 @@ export class Booking extends Entity {
             userId: this.userId.value,
             period: this._period.toJSON(),
             status: this.status,
+            description: this.description,
             rejectionCancelReason: this.rejectionCancelReason,
         };
     }
@@ -119,6 +128,7 @@ export namespace Booking {
         userId: z.string(),
         period: DatePeriod.ValueSchema,
         status: z.enum(Status),
+        description: z.string().optional(),
         rejectionCancelReason: z.string().optional(),
     });
 
@@ -126,6 +136,7 @@ export namespace Booking {
         roomId: UniqueId;
         userId: UniqueId;
         period: DatePeriod;
+        description?: string;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }

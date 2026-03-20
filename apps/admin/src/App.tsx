@@ -5,6 +5,7 @@ import RoomsPage from './pages/Rooms';
 import UsersPage from './pages/Users';
 import AccessControlPage from './pages/AccessControl';
 import FrequencyReport from './pages/FrequencyReport';
+import BookingsPage from './pages/Bookings';
 import { AdminLayout } from './components/layout/AdminLayout';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/access-control" element={<AccessControlPage />} />
           <Route path="/frequency-report" element={<FrequencyReport />} />
+          <Route path="/reservations" element={<BookingsPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

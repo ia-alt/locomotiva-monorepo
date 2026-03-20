@@ -40,6 +40,9 @@ import { CancelBookingUseCase } from "@booking/application/use-cases/cancel-book
 import { AdminCancelBookingUseCase } from "@booking/application/use-cases/admin-cancel-booking";
 import { FindBookingsUseCase } from "@booking/application/use-cases/find-bookings";
 import { FindMyBookingsUseCase } from "@booking/application/use-cases/find-my-bookings";
+import { FindBookingsAdminUseCase } from "@booking/application/use-cases/find-bookings-admin";
+import { AdminCreateBookingUseCase } from "@booking/application/use-cases/admin-create-booking";
+import { MarkBookingNoShowUseCase } from "@booking/application/use-cases/mark-booking-no-show";
 import { ListAvailableSlotsByDayUseCase } from "@booking/application/use-cases/list-available-slots-by-day";
 import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-cases/send-booking-reminders-of-tomorrow";
 import { SetDefaultOperatingScheduleUseCase } from "@booking/application/use-cases/set-room-default-operating-hours";
@@ -51,6 +54,7 @@ import { ListActiveSessionsUseCase } from "@coworking/application/use-cases/list
 import { GetWeeklyFrequencyUseCase } from "@coworking/application/use-cases/get-weekly-frequency";
 import { GetAccessStatsUseCase } from "@coworking/application/use-cases/get-access-stats";
 import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yearly-report";
+import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 
@@ -544,6 +548,34 @@ export class DiContainer {
     public getYearlyReportUseCase(authUser: User): GetYearlyReportUseCase {
         return new GetYearlyReportUseCase(
             this.getAccessLogRepository(),
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getFindBookingsAdminUseCase(authUser: User): FindBookingsAdminUseCase {
+        return new FindBookingsAdminUseCase(
+            this.prisma,
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getMarkBookingNoShowUseCase(authUser: User): MarkBookingNoShowUseCase {
+        return new MarkBookingNoShowUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingRepository(),
+        );
+    }
+
+    public getAdminCreateBookingUseCase(authUser: User): AdminCreateBookingUseCase {
+        return new AdminCreateBookingUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingService(),
+        );
+    }
+
+    public getRecentActivitiesUseCase(authUser: User): GetRecentActivitiesUseCase {
+        return new GetRecentActivitiesUseCase(
+            this.prisma,
             this.getAuthUserService(authUser),
         );
     }

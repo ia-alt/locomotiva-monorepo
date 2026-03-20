@@ -16,6 +16,9 @@ import { addOperatingHoursOverrideRoute } from "./routes/add-operating-hours-ove
 import { getRoomOperatingScheduleRoute } from "./routes/get-room-operating-schedule";
 import { getGlobalBlockedDatesRoute } from "./routes/get-global-blocked-dates";
 import { setGlobalBlockedDatesRoute } from "./routes/set-global-blocked-dates";
+import { findBookingsAdminRoute } from "./routes/find-bookings-admin";
+import { adminCreateBookingRoute } from "./routes/admin-create-booking";
+import { markBookingNoShowRoute } from "./routes/mark-booking-no-show";
 
 export const bookingRouter = {
     createRoom: createRoomRoute,
@@ -38,4 +41,7 @@ export const bookingRouter = {
     getRoomOperatingSchedule: getRoomOperatingScheduleRoute,
     getGlobalBlockedDates: getGlobalBlockedDatesRoute,
     setGlobalBlockedDates: setGlobalBlockedDatesRoute,
+    findBookingsAdmin: findBookingsAdminRoute,
+    adminCreateBooking: adminCreateBookingRoute,
+    markBookingNoShow: markBookingNoShowRoute,
 };

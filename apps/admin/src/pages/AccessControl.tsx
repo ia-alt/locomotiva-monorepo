@@ -135,7 +135,7 @@ const AccessControlPage: React.FC = () => {
             <TableContainer>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: 'grey.50' }}>
+                  <TableRow sx={{ bgcolor: 'action.selected' }}>
                     <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
                       MEMBRO
                     </TableCell>

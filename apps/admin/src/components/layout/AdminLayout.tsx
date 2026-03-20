@@ -13,7 +13,7 @@ import {
   ListItemIcon,
   ListItemText,
   Avatar,
-  CssBaseline,
+  Tooltip,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -25,8 +25,12 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useThemeMode } from '../../contexts/ThemeContext';
 
 const drawerWidth = 280;
 
@@ -47,48 +51,50 @@ const bottomItems = [
 export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
+  const { user } = useCurrentUser();
+  const { mode, toggleTheme } = useThemeMode();
 
   const handleLogout = () => {
-    // Implement logout logic here (clear token, etc.)
     localStorage.removeItem('token');
     navigate('/login');
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      
-      {/* Header (AppBar) */}
+      {/* Header */}
       <AppBar
         position="fixed"
         sx={{
           width: `calc(100% - ${drawerWidth}px)`,
           ml: `${drawerWidth}px`,
-          bgcolor: 'background.default', 
+          bgcolor: 'background.default',
           color: 'text.primary',
           boxShadow: 'none',
-          borderBottom: '1px solid #e0e0e0',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <Toolbar sx={{ justifyContent: 'flex-end' }}>
-          <IconButton color="inherit">
+          <Tooltip title={mode === 'dark' ? 'Modo claro' : 'Modo escuro'}>
+            <IconButton color="inherit" onClick={toggleTheme}>
+              {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
+          <IconButton color="inherit" sx={{ ml: 0.5 }}>
             <NotificationsIcon />
           </IconButton>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
-            <Typography variant="subtitle1" sx={{ mr: 2, fontWeight: 600 }}>
-              Admin Hub
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 2 }}>
+            <Typography variant="subtitle2" fontWeight={600}>
+              {user?.name ?? 'Admin'}
             </Typography>
-            <Avatar alt="User Avatar" src="/static/images/avatar/1.jpg" />
+            <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontSize: '0.9rem' }}>
+              {user?.name?.charAt(0).toUpperCase() ?? 'A'}
+            </Avatar>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar (Drawer) */}
+      {/* Sidebar */}
       <Drawer
         sx={{
           width: drawerWidth,
@@ -96,71 +102,86 @@ export const AdminLayout: React.FC = () => {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            bgcolor: '#ffffff', // White background
-            borderRight: '1px solid #e0e0e0',
+            bgcolor: 'background.paper',
+            borderRight: '1px solid',
+            borderColor: 'divider',
           },
         }}
         variant="permanent"
         anchor="left"
       >
         <Toolbar sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-            <Box 
-              component="img" 
-              src="/locomotiva_logo-.png" 
-              alt="Locomotiva Hub" 
-              sx={{ height: 60, maxWidth: '100%', objectFit: 'contain' }} 
-            />
+          <Box
+            component="img"
+            src="/locomotiva_logo-.png"
+            alt="Locomotiva Hub"
+            sx={{ height: 60, maxWidth: '100%', objectFit: 'contain' }}
+          />
         </Toolbar>
         <Divider />
-        
+
         <List sx={{ flexGrow: 1 }}>
-          {menuItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                selected={location.pathname === item.path}
-                onClick={() => handleNavigation(item.path)}
-                sx={{
-                  '&.Mui-selected': {
-                    bgcolor: 'primary.light',
-                    color: 'primary.contrastText',
-                    '& .MuiListItemIcon-root': {
+          {menuItems.map((item) => {
+            const selected = location.pathname === item.path;
+            return (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  selected={selected}
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    '&.Mui-selected': {
+                      bgcolor: 'primary.main',
                       color: 'primary.contrastText',
+                      '& .MuiListItemIcon-root': { color: 'primary.contrastText' },
+                      '&:hover': { bgcolor: 'primary.dark' },
                     },
-                  },
-                  borderRadius: 2,
-                  mx: 1,
-                  my: 0.5,
-                }}
-              >
-                <ListItemIcon sx={{ color: location.pathname === item.path ? 'inherit' : 'text.secondary' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                    borderRadius: 2,
+                    mx: 1,
+                    my: 0.5,
+                  }}
+                >
+                  <ListItemIcon sx={{ color: selected ? 'inherit' : 'text.secondary' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
 
         <Divider />
-        
+
         <List>
-          {bottomItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                onClick={() => item.action === 'logout' ? handleLogout() : handleNavigation(item.path!)}
-                 sx={{
-                  borderRadius: 2,
-                  mx: 1,
-                  my: 0.5,
-                }}
-              >
-                <ListItemIcon sx={{ color: 'text.secondary' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          {bottomItems.map((item) => {
+            const selected = location.pathname === item.path;
+            return (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  selected={selected}
+                  onClick={() =>
+                    item.action === 'logout' ? handleLogout() : navigate(item.path!)
+                  }
+                  sx={{
+                    '&.Mui-selected': {
+                      bgcolor: 'primary.main',
+                      color: 'primary.contrastText',
+                      '& .MuiListItemIcon-root': { color: 'primary.contrastText' },
+                      '&:hover': { bgcolor: 'primary.dark' },
+                    },
+                    borderRadius: 2,
+                    mx: 1,
+                    my: 0.5,
+                  }}
+                >
+                  <ListItemIcon sx={{ color: selected ? 'inherit' : 'text.secondary' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
       </Drawer>
 
@@ -169,12 +190,11 @@ export const AdminLayout: React.FC = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          bgcolor: '#F8F9FA', // Light gray background
-          p: 3,
+          bgcolor: 'background.default',
           minHeight: '100vh',
         }}
       >
-        <Toolbar /> {/* Spacer for fixed AppBar */}
+        <Toolbar />
         <Outlet />
       </Box>
     </Box>

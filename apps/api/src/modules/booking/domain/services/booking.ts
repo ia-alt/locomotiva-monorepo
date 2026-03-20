@@ -3,7 +3,7 @@ import { DatePeriod, OnlyDate } from "@core/value-objects";
 import { UniqueId } from "@core/base-classes";
 import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
 import { Booking } from "../entities";
-import { RoomUnavailableError } from "../errors";
+import { RoomUnavailableError, BookingInPastError } from "../errors";
 
 class BookingService {
     constructor(
@@ -12,6 +12,10 @@ class BookingService {
     ) { }
 
     async createBookingRequest(params: Booking.CreateParams): Promise<Booking> {
+        if (params.period.value.from <= new Date()) {
+            throw new BookingInPastError();
+        }
+
         const isAvailable = await this.checkAvailability(params.roomId, params.period);
 
         if (!isAvailable) {

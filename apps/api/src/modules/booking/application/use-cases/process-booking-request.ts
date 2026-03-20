@@ -41,7 +41,7 @@ namespace ProcessBookingRequestUseCase {
             }),
             z.object({
                 type: z.literal('reject'),
-                reason: z.string(),
+                reason: z.string().optional(),
             })
         ])
     });
