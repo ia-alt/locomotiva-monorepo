@@ -14,6 +14,8 @@ export class PrismaBookingRepository implements BookingRepository {
             update: {
                 roomId: bookingData.roomId,
                 userId: bookingData.userId,
+                title: bookingData.title,
+                description: bookingData.description,
                 startTime: bookingData.period.from,
                 endTime: bookingData.period.to,
                 status: bookingData.status,
@@ -23,6 +25,8 @@ export class PrismaBookingRepository implements BookingRepository {
                 id: bookingData.id,
                 roomId: bookingData.roomId,
                 userId: bookingData.userId,
+                title: bookingData.title,
+                description: bookingData.description,
                 startTime: bookingData.period.from,
                 endTime: bookingData.period.to,
                 status: bookingData.status,
@@ -103,6 +107,8 @@ export class PrismaBookingRepository implements BookingRepository {
             UniqueId.fromString(booking.id),
             UniqueId.fromString(booking.roomId),
             UniqueId.fromString(booking.userId),
+            booking.title,
+            booking.description,
             new DatePeriod({ from: booking.startTime, to: booking.endTime }),
             Booking.StatusSchema.parse(booking.status),
             booking.rejectionCancelReason ?? undefined

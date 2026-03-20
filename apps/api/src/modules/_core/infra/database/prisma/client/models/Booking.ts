@@ -28,6 +28,8 @@ export type BookingMinAggregateOutputType = {
   id: string | null
   roomId: string | null
   userId: string | null
+  title: string | null
+  description: string | null
   startTime: Date | null
   endTime: Date | null
   status: string | null
@@ -40,6 +42,8 @@ export type BookingMaxAggregateOutputType = {
   id: string | null
   roomId: string | null
   userId: string | null
+  title: string | null
+  description: string | null
   startTime: Date | null
   endTime: Date | null
   status: string | null
@@ -52,6 +56,8 @@ export type BookingCountAggregateOutputType = {
   id: number
   roomId: number
   userId: number
+  title: number
+  description: number
   startTime: number
   endTime: number
   status: number
@@ -66,6 +72,8 @@ export type BookingMinAggregateInputType = {
   id?: true
   roomId?: true
   userId?: true
+  title?: true
+  description?: true
   startTime?: true
   endTime?: true
   status?: true
@@ -78,6 +86,8 @@ export type BookingMaxAggregateInputType = {
   id?: true
   roomId?: true
   userId?: true
+  title?: true
+  description?: true
   startTime?: true
   endTime?: true
   status?: true
@@ -90,6 +100,8 @@ export type BookingCountAggregateInputType = {
   id?: true
   roomId?: true
   userId?: true
+  title?: true
+  description?: true
   startTime?: true
   endTime?: true
   status?: true
@@ -175,6 +187,8 @@ export type BookingGroupByOutputType = {
   id: string
   roomId: string
   userId: string
+  title: string
+  description: string
   startTime: Date
   endTime: Date
   status: string
@@ -208,6 +222,8 @@ export type BookingWhereInput = {
   id?: Prisma.StringFilter<"Booking"> | string
   roomId?: Prisma.StringFilter<"Booking"> | string
   userId?: Prisma.StringFilter<"Booking"> | string
+  title?: Prisma.StringFilter<"Booking"> | string
+  description?: Prisma.StringFilter<"Booking"> | string
   startTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   endTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   status?: Prisma.StringFilter<"Booking"> | string
@@ -220,6 +236,8 @@ export type BookingOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -235,6 +253,8 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.BookingWhereInput | Prisma.BookingWhereInput[]
   roomId?: Prisma.StringFilter<"Booking"> | string
   userId?: Prisma.StringFilter<"Booking"> | string
+  title?: Prisma.StringFilter<"Booking"> | string
+  description?: Prisma.StringFilter<"Booking"> | string
   startTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   endTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   status?: Prisma.StringFilter<"Booking"> | string
@@ -247,6 +267,8 @@ export type BookingOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -265,6 +287,8 @@ export type BookingScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   roomId?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Booking"> | string
+  title?: Prisma.StringWithAggregatesFilter<"Booking"> | string
+  description?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   startTime?: Prisma.DateTimeWithAggregatesFilter<"Booking"> | Date | string
   endTime?: Prisma.DateTimeWithAggregatesFilter<"Booking"> | Date | string
   status?: Prisma.StringWithAggregatesFilter<"Booking"> | string
@@ -277,6 +301,8 @@ export type BookingCreateInput = {
   id: string
   roomId: string
   userId: string
+  title: string
+  description: string
   startTime: Date | string
   endTime: Date | string
   status: string
@@ -289,6 +315,8 @@ export type BookingUncheckedCreateInput = {
   id: string
   roomId: string
   userId: string
+  title: string
+  description: string
   startTime: Date | string
   endTime: Date | string
   status: string
@@ -301,6 +329,8 @@ export type BookingUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -313,6 +343,8 @@ export type BookingUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -325,6 +357,8 @@ export type BookingCreateManyInput = {
   id: string
   roomId: string
   userId: string
+  title: string
+  description: string
   startTime: Date | string
   endTime: Date | string
   status: string
@@ -337,6 +371,8 @@ export type BookingUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -349,6 +385,8 @@ export type BookingUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -361,6 +399,8 @@ export type BookingCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -373,6 +413,8 @@ export type BookingMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -385,6 +427,8 @@ export type BookingMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -403,6 +447,8 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   roomId?: boolean
   userId?: boolean
+  title?: boolean
+  description?: boolean
   startTime?: boolean
   endTime?: boolean
   status?: boolean
@@ -415,6 +461,8 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   roomId?: boolean
   userId?: boolean
+  title?: boolean
+  description?: boolean
   startTime?: boolean
   endTime?: boolean
   status?: boolean
@@ -427,6 +475,8 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   roomId?: boolean
   userId?: boolean
+  title?: boolean
+  description?: boolean
   startTime?: boolean
   endTime?: boolean
   status?: boolean
@@ -439,6 +489,8 @@ export type BookingSelectScalar = {
   id?: boolean
   roomId?: boolean
   userId?: boolean
+  title?: boolean
+  description?: boolean
   startTime?: boolean
   endTime?: boolean
   status?: boolean
@@ -447,7 +499,7 @@ export type BookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "roomId" | "userId" | "startTime" | "endTime" | "status" | "rejectionCancelReason" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "roomId" | "userId" | "title" | "description" | "startTime" | "endTime" | "status" | "rejectionCancelReason" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 
 export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Booking"
@@ -456,6 +508,8 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     roomId: string
     userId: string
+    title: string
+    description: string
     startTime: Date
     endTime: Date
     status: string
@@ -888,6 +942,8 @@ export interface BookingFieldRefs {
   readonly id: Prisma.FieldRef<"Booking", 'String'>
   readonly roomId: Prisma.FieldRef<"Booking", 'String'>
   readonly userId: Prisma.FieldRef<"Booking", 'String'>
+  readonly title: Prisma.FieldRef<"Booking", 'String'>
+  readonly description: Prisma.FieldRef<"Booking", 'String'>
   readonly startTime: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly endTime: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly status: Prisma.FieldRef<"Booking", 'String'>
