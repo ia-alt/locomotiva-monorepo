@@ -107,6 +107,8 @@ export const BookingScalarFieldEnum = {
   id: 'id',
   roomId: 'roomId',
   userId: 'userId',
+  title: 'title',
+  description: 'description',
   startTime: 'startTime',
   endTime: 'endTime',
   status: 'status',

@@ -1,22 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
-import { format } from 'date-fns';
+import { format, subMinutes, addMinutes } from 'date-fns';
+import TimePickerModal from './TimePickerModal';
 
 interface TimeSelectorProps {
+    baseDate: Date;
     startTime: Date | null;
     endTime: Date | null;
-    onPressStart?: () => void;
-    onPressEnd?: () => void;
+    blockStart?: Date | null;
+    blockEnd?: Date | null;
+    onChangeStart: (date: Date) => void;
+    onChangeEnd: (date: Date) => void;
 }
 
-export default function TimeSelector({ startTime, endTime, onPressStart, onPressEnd }: TimeSelectorProps) {
+export default function TimeSelector({ baseDate, startTime, endTime, blockStart, blockEnd, onChangeStart, onChangeEnd }: TimeSelectorProps) {
+    const [activePicker, setActivePicker] = useState<'none' | 'start' | 'end'>('none');
+
+    const hasError = !!(startTime && endTime && endTime <= startTime);
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Horário</Text>
             <View style={styles.row}>
-                <TouchableOpacity style={styles.touchableCard} onPress={onPressStart} activeOpacity={0.7}>
+                <TouchableOpacity style={styles.touchableCard} onPress={() => setActivePicker('start')} activeOpacity={0.7}>
                     <Surface style={[styles.timeCard, startTime ? styles.timeCardActive : {}]} elevation={0}>
                         <Text style={styles.label}>Início</Text>
                         <View style={styles.timeDisplay}>
@@ -32,18 +40,43 @@ export default function TimeSelector({ startTime, endTime, onPressStart, onPress
                     <Feather name="arrow-right" size={20} color="#D1D5DB" />
                 </View>
 
-                <TouchableOpacity style={styles.touchableCard} onPress={onPressEnd} activeOpacity={0.7}>
-                    <Surface style={[styles.timeCard, endTime ? styles.timeCardActive : {}]} elevation={0}>
-                        <Text style={styles.label}>Fim</Text>
+                <TouchableOpacity style={styles.touchableCard} onPress={() => setActivePicker('end')} activeOpacity={0.7}>
+                    <Surface style={[styles.timeCard, endTime ? styles.timeCardActive : {}, hasError ? styles.timeCardError : {}]} elevation={0}>
+                        <Text style={[styles.label, hasError && styles.labelError]}>Fim</Text>
                         <View style={styles.timeDisplay}>
-                            <Feather name="clock" size={16} color={endTime ? "#1E88E5" : "#9CA3AF"} />
-                            <Text style={[styles.timeText, !endTime && styles.placeholder]}>
+                            <Feather name="clock" size={16} color={hasError ? "#EF4444" : (endTime ? "#1E88E5" : "#9CA3AF")} />
+                            <Text style={[styles.timeText, !endTime && styles.placeholder, hasError && styles.textError]}>
                                 {endTime ? format(endTime, 'HH:mm') : '--:--'}
                             </Text>
                         </View>
                     </Surface>
                 </TouchableOpacity>
             </View>
+
+            <TimePickerModal
+                visible={activePicker !== 'none'}
+                onClose={() => setActivePicker('none')}
+                baseDate={baseDate}
+                initialTime={activePicker === 'start' ? startTime : endTime}
+                title={activePicker === 'start' ? 'Horário de Início' : 'Horário de Fim'}
+                minTime={
+                    activePicker === 'start' 
+                        ? (blockStart || undefined) 
+                        : (startTime ? addMinutes(startTime, 30) : undefined)
+                }
+                maxTime={
+                    activePicker === 'start' 
+                        ? (blockEnd ? subMinutes(blockEnd, 30) : undefined)
+                        : (blockEnd || undefined)
+                }
+                onConfirm={(date) => {
+                    if (activePicker === 'start') {
+                        onChangeStart(date);
+                    } else if (activePicker === 'end') {
+                        onChangeEnd(date);
+                    }
+                }}
+            />
         </View>
     );
 }
@@ -78,11 +111,18 @@ const styles = StyleSheet.create({
         borderColor: '#93C5FD',
         backgroundColor: '#EFF6FF',
     },
+    timeCardError: {
+        borderColor: '#FECACA',
+        backgroundColor: '#FEF2F2',
+    },
     label: {
         fontSize: 12,
         color: '#6B7280',
         marginBottom: 4,
         fontWeight: '500',
+    },
+    labelError: {
+        color: '#EF4444',
     },
     timeDisplay: {
         flexDirection: 'row',
@@ -93,6 +133,9 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: '#111827',
+    },
+    textError: {
+        color: '#EF4444',
     },
     placeholder: {
         color: '#9CA3AF',

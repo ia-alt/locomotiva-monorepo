@@ -53,3 +53,6 @@ export class BookingInPastError extends DomainError {
     }
 }
 
+export * from "./invalid-booking-title-error";
+export * from "./invalid-booking-description-error";
+

@@ -17,13 +17,9 @@ class RequestBookingUseCase extends UseCase<RequestBookingUseCase.Input, Request
         const { id: userId } = this.authUserService.getUser();
         const roomId = UniqueId.fromString(params.roomId);
         const period = DatePeriod.fromPrimitive(params.period);
+        const { title, description } = params;
 
-        const booking = await this.bookingService.createBookingRequest({
-            userId,
-            roomId,
-            period,
-            description: params.description,
-        });
+        const booking = await this.bookingService.createBookingRequest({ userId, roomId, title, description, period });
 
         return booking.toJSON();
     }
@@ -31,8 +27,9 @@ class RequestBookingUseCase extends UseCase<RequestBookingUseCase.Input, Request
 namespace RequestBookingUseCase {
     export const InputSchema = z.object({
         roomId: z.string(),
-        period: DatePeriod.ValueSchema,
+        title: z.string(),
         description: z.string().optional(),
+        period: DatePeriod.ValueSchema,
     });
 
     export const OutputSchema = Booking.JsonSchema;

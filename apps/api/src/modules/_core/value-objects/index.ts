@@ -4,3 +4,5 @@ export { OnlyDate } from "./only-date";
 export { OnlyTime } from "./only-time";
 export { DatePeriod } from "./date-period";
 export { OnlyDatePeriod } from "./only-date-period";
+export { BookingTitle } from "./booking-title";
+export { BookingDescription } from "./booking-description";

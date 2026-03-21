@@ -14,8 +14,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "test": "node --import=tsx --test \"tests/**/*.test.ts\"",
-    "test:watch": "node --import=tsx --test --watch \"tests/**/*.test.ts\"",
-    "export:contract": "tsx scripts/export-orpc-contract.ts"
+    "test:watch": "node --import=tsx --test --watch \"tests/**/*.test.ts\""
   },
   "keywords": [],
   "author": "",

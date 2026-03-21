@@ -2,18 +2,22 @@ import { Entity, UniqueId } from "@core/base-classes";
 import { DatePeriod } from "@core/value-objects";
 import z from "zod";
 import { BookingLeadTimeViolationError, ForbiddenBookingAccessException, BookingNotInPendingStateError, BookingCannotBeCancelledError } from "../errors";
+import { BookingTitle, BookingDescription } from "@core/value-objects";
 
 export class Booking extends Entity {
     constructor(
         id: UniqueId,
         public readonly roomId: UniqueId,
         public readonly userId: UniqueId,
+        public readonly title: string,
+        public readonly description: string,
         private _period: DatePeriod,
         private status: Booking.Status,
         private rejectionCancelReason?: string,
-        private description?: string,
     ) {
         super(id);
+        new BookingTitle(title);
+        new BookingDescription(description);
     }
 
     get period(): DatePeriod {
@@ -25,10 +29,10 @@ export class Booking extends Entity {
             UniqueId.create(),
             input.roomId,
             input.userId,
+            input.title,
+            input.description ?? '',
             input.period,
             Booking.Status.PENDING,
-            undefined,
-            input.description,
         );
     }
 
@@ -90,9 +94,10 @@ export class Booking extends Entity {
             id: this.id.value,
             roomId: this.roomId.value,
             userId: this.userId.value,
+            title: this.title,
+            description: this.description,
             period: this._period.toJSON(),
             status: this.status,
-            description: this.description,
             rejectionCancelReason: this.rejectionCancelReason,
         };
     }
@@ -126,17 +131,19 @@ export namespace Booking {
         id: z.string(),
         roomId: z.string(),
         userId: z.string(),
+        title: z.string(),
+        description: z.string(),
         period: DatePeriod.ValueSchema,
         status: z.enum(Status),
-        description: z.string().optional(),
         rejectionCancelReason: z.string().optional(),
     });
 
     export type CreateParams = {
         roomId: UniqueId;
         userId: UniqueId;
-        period: DatePeriod;
+        title: string;
         description?: string;
+        period: DatePeriod;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }

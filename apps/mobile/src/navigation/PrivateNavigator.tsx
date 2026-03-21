@@ -8,10 +8,31 @@ import PerfilScreen from '../screens/private/PerfilScreen';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CriarReservaScreen from '../screens/private/CriarReservaScreen';
+import DetalhesReservaScreen from '../screens/private/DetalhesReservaScreen';
+import ConfirmarReservaScreen from '../screens/private/ConfirmarReservaScreen';
+
+export type PrivateStackParamList = {
+    Drawer: undefined;
+    CriarReserva: undefined;
+    DetalhesReserva: {
+        roomId: string;
+        date: string;
+        startTime: string;
+        endTime: string;
+    };
+    ConfirmarReserva: {
+        roomId: string;
+        date: string;
+        startTime: string;
+        endTime: string;
+        title: string;
+        description: string;
+    };
+};
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<PrivateStackParamList>();
 
 function BottomTabs() {
     return (
@@ -68,6 +89,16 @@ export default function PrivateNavigator() {
                 name="CriarReserva"
                 component={CriarReservaScreen}
                 options={{ title: 'Nova Reserva' }}
+            />
+            <Stack.Screen
+                name="DetalhesReserva"
+                component={DetalhesReservaScreen}
+                options={{ title: 'Detalhes da Reserva' }}
+            />
+            <Stack.Screen
+                name="ConfirmarReserva"
+                component={ConfirmarReservaScreen}
+                options={{ title: 'Confirmar Reserva' }}
             />
         </Stack.Navigator>
     );
