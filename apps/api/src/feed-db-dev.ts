@@ -73,21 +73,11 @@ class FeedDbDev {
     }
 
     async createSystemUser() {
-        const systemUser = await container.getRegisterUserUseCase().execute({
+        const systemUser = await container.getRegisterSystemUserUseCase().execute({
             name: "System",
             email: "system@test.com",
             password: "Abc123456789@",
-            cpf: "34004278023",
             birthDate: "1990-01-01",
-        })
-
-        await prisma.user.update({
-            where: {
-                id: systemUser.id,
-            },
-            data: {
-                userType: User.UserType.SYSTEM,
-            },
         })
 
         this._systemUser = (await this.getUserById(systemUser.id))!;
@@ -212,7 +202,7 @@ class FeedDbDev {
                                         second: 0,
                                     },
                                     end: {
-                                        hour: 18,
+                                        hour: 12,
                                         minute: 0,
                                         second: 0,
                                     },
@@ -247,4 +237,6 @@ class FeedDbDev {
     }
 }
 
-export const feedDbDev = new FeedDbDev();
+
+
+export const feedDbDev = new FeedDbDev().run();

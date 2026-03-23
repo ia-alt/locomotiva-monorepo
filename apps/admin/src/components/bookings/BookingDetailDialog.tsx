@@ -47,7 +47,7 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
     mutationFn: () =>
       orpc.booking.processBookingRequest({
         bookingId: booking!.id,
-        decision: { type: 'reject', reason: reason.trim() || undefined },
+        decision: { type: 'reject', reason: reason.trim() },
       }),
     onSuccess: () => { invalidate(); handleClose(); },
   });
@@ -163,13 +163,15 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
           {/* Ação: Rejeitar / Cancelar — campo de motivo */}
           {mode === 'rejecting' && (
             <TextField
-              label={isPending ? 'Motivo da rejeição (opcional)' : 'Motivo do cancelamento (opcional)'}
+              label={isPending ? 'Motivo da rejeição' : 'Motivo do cancelamento'}
               fullWidth
               multiline
+              required
               rows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               autoFocus
+              helperText="Campo obrigatório"
             />
           )}
 
@@ -230,7 +232,7 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
               variant="contained"
               color="error"
               onClick={() => rejectMutation.mutate()}
-              disabled={anyPending}
+              disabled={anyPending || !reason.trim()}
               startIcon={anyPending ? <CircularProgress size={16} /> : null}
             >
               {anyPending ? 'Salvando...' : isPending ? 'Confirmar Rejeição' : 'Confirmar Cancelamento'}

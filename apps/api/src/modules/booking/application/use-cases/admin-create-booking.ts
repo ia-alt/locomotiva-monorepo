@@ -23,6 +23,7 @@ class AdminCreateBookingUseCase extends UseCase<AdminCreateBookingUseCase.Input,
         const booking = await this.bookingService.createBookingRequest({
             userId,
             roomId,
+            title: params.title,
             period,
             description: params.description,
         });
@@ -35,6 +36,7 @@ namespace AdminCreateBookingUseCase {
     export const InputSchema = z.object({
         userId: z.string(),
         roomId: z.string(),
+        title: z.string(),
         period: DatePeriod.ValueSchema,
         description: z.string().optional(),
     });

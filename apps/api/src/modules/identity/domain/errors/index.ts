@@ -89,3 +89,13 @@ export class UserNotFoundError extends DomainError {
         );
     }
 }
+
+export class SystemHasCpfOrUserNotHaveCpf extends DomainError{
+    constructor(){
+        super(
+            "SYSTEM_HAS_CPF_OR_USER_DONT_HAVE_CPF",
+            "Sistema tem CPF ou Usuário não tem CPF",
+            ErrorType.INTERNAL_SERVER_ERROR
+        )
+    }
+}
