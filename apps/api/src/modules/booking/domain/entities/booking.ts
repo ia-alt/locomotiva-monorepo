@@ -2,17 +2,22 @@ import { Entity, UniqueId } from "@core/base-classes";
 import { DatePeriod } from "@core/value-objects";
 import z from "zod";
 import { BookingLeadTimeViolationError, ForbiddenBookingAccessException, BookingNotInPendingStateError, BookingCannotBeCancelledError } from "../errors";
+import { BookingTitle, BookingDescription } from "@core/value-objects";
 
 export class Booking extends Entity {
     constructor(
         id: UniqueId,
         public readonly roomId: UniqueId,
         public readonly userId: UniqueId,
+        public readonly title: string,
+        public readonly description: string,
         private _period: DatePeriod,
         private status: Booking.Status,
         private rejectionCancelReason?: string,
     ) {
         super(id);
+        new BookingTitle(title);
+        new BookingDescription(description);
     }
 
     get period(): DatePeriod {
@@ -24,8 +29,10 @@ export class Booking extends Entity {
             UniqueId.create(),
             input.roomId,
             input.userId,
+            input.title,
+            input.description ?? '',
             input.period,
-            Booking.Status.PENDING
+            Booking.Status.PENDING,
         );
     }
 
@@ -69,12 +76,17 @@ export class Booking extends Entity {
         this.rejectionCancelReason = reason;
     }
 
-    reject(reason: string): void {
-        if (this.status !== Booking.Status.PENDING) {
+    reject(reason?: string): void {
+        const rejectableStatuses = [Booking.Status.PENDING, Booking.Status.CONFIRMED];
+        if (!rejectableStatuses.includes(this.status)) {
             throw new BookingNotInPendingStateError();
         }
         this.status = Booking.Status.REJECTED;
         this.rejectionCancelReason = reason;
+    }
+
+    markNoShow(): void {
+        this.status = Booking.Status.NO_SHOW;
     }
 
     toJSON(): Booking.JsonSchema {
@@ -82,6 +94,8 @@ export class Booking extends Entity {
             id: this.id.value,
             roomId: this.roomId.value,
             userId: this.userId.value,
+            title: this.title,
+            description: this.description,
             period: this._period.toJSON(),
             status: this.status,
             rejectionCancelReason: this.rejectionCancelReason,
@@ -117,6 +131,8 @@ export namespace Booking {
         id: z.string(),
         roomId: z.string(),
         userId: z.string(),
+        title: z.string(),
+        description: z.string(),
         period: DatePeriod.ValueSchema,
         status: z.enum(Status),
         rejectionCancelReason: z.string().optional(),
@@ -125,6 +141,8 @@ export namespace Booking {
     export type CreateParams = {
         roomId: UniqueId;
         userId: UniqueId;
+        title: string;
+        description?: string;
         period: DatePeriod;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;

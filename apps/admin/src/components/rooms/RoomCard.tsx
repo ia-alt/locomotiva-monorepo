@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, IconButton, Chip } from '@mui/material';
-import { People as PeopleIcon, Edit as EditIcon, Delete as DeleteIcon, AccessTime as AccessTimeIcon } from '@mui/icons-material';
+import { People as PeopleIcon, Edit as EditIcon, Delete as DeleteIcon, AccessTime as AccessTimeIcon, WarningAmber as WarningAmberIcon } from '@mui/icons-material';
 
 // Definindo a interface baseada no retorno do backend (Room.JsonSchema)
 export interface Room {
@@ -8,6 +8,7 @@ export interface Room {
   name: string;
   capacity: number;
   enabled: boolean;
+  hasOperatingSchedule: boolean;
 }
 
 interface RoomCardProps {
@@ -54,10 +55,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onEdit, onDelete, onOp
           </Typography>
         </Box>
 
-        {/* Descrição curta placeholder (não vem do backend ainda)*/}
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Sem descrição disponível.
-        </Typography>
+        {!room.hasOperatingSchedule && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1.5, p: 1, bgcolor: 'warning.50', border: '1px solid', borderColor: 'warning.200', borderRadius: 1 }}>
+            <WarningAmberIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+            <Typography variant="caption" color="warning.dark" sx={{ fontWeight: 500 }}>
+              Horário de funcionamento não estabelecido
+            </Typography>
+          </Box>
+        )}
       </CardContent>
 
       {/* Ações: Horários, Editar e Excluir */}

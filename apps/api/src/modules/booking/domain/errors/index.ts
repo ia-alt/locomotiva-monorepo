@@ -43,3 +43,16 @@ export class BookingCannotBeCancelledError extends DomainError {
     }
 }
 
+export class BookingInPastError extends DomainError {
+    constructor() {
+        super(
+            'BOOKING_IN_PAST',
+            'Não é possível criar uma reserva para um horário que já passou.',
+            ErrorType.BAD_REQUEST
+        );
+    }
+}
+
+export * from "./invalid-booking-title-error";
+export * from "./invalid-booking-description-error";
+

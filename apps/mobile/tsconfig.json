@@ -4,6 +4,6 @@
     "strict": true
   },
   "references": [
-    {"path": "../secti-locomotiva"}
+    {"path": "../api/"}
   ]
 }

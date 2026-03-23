@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, Grid, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, FormControlLabel, Switch } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, Block as BlockIcon } from '@mui/icons-material';
 import { RoomCard, type Room } from '../components/rooms/RoomCard';
 import { EditRoomDialog } from '../components/rooms/EditRoomDialog';
 import { OperatingHoursDialog } from '../components/rooms/OperatingHoursDialog';
+import { GlobalRestrictionsDialog } from '../components/rooms/GlobalRestrictionsDialog';
 import { useRooms } from '../hooks/useRooms';
 
 const RoomsPage: React.FC = () => {
-  const { rooms, isLoading, isError, error, findRoom, createRoom, isCreating, createError, deleteRoom } = useRooms();
+  const { rooms, isLoading, isError, error, refetch, findRoom, createRoom, isCreating, createError, deleteRoom } = useRooms();
 
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -21,6 +22,8 @@ const RoomsPage: React.FC = () => {
   const [createName, setCreateName] = useState('');
   const [createCapacity, setCreateCapacity] = useState<number | string>('');
   const [createEnabled, setCreateEnabled] = useState(true);
+
+  const [isGlobalRestrictionsOpen, setIsGlobalRestrictionsOpen] = useState(false);
 
   const handleEdit = (id: string) => {
     const room = findRoom(id);
@@ -82,14 +85,24 @@ const RoomsPage: React.FC = () => {
             Gerencie os espaços disponíveis no Locomotiva Hub.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setIsCreateOpen(true)}
-          sx={{ bgcolor: 'primary.main' }}
-        >
-          Nova Sala
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<BlockIcon />}
+            onClick={() => setIsGlobalRestrictionsOpen(true)}
+          >
+            Feriados
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setIsCreateOpen(true)}
+            sx={{ bgcolor: 'primary.main' }}
+          >
+            Nova Sala
+          </Button>
+        </Box>
       </Box>
 
       {/* Conteúdo: Loading, Error ou Grid de Salas */}
@@ -209,12 +222,19 @@ const RoomsPage: React.FC = () => {
         room={selectedRoom}
       />
 
+      {/* Dialog de Restrições Globais */}
+      <GlobalRestrictionsDialog
+        open={isGlobalRestrictionsOpen}
+        onClose={() => setIsGlobalRestrictionsOpen(false)}
+      />
+
       {/* Dialog de Horários de Funcionamento */}
       <OperatingHoursDialog
         key={roomForOperatingHours?.id}
         open={isOperatingHoursOpen}
         onClose={() => { setIsOperatingHoursOpen(false); setRoomForOperatingHours(null); }}
         room={roomForOperatingHours}
+        onSave={refetch}
       />
 
       {/* Dialog de Confirmação de Exclusão */}

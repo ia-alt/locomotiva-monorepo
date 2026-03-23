@@ -8,6 +8,8 @@ export interface AccessLogRepository {
     findById(id: UniqueId): Promise<AccessLog | null>;
     findByUserIdAndActive(userId: UniqueId): Promise<AccessLog | null>;
     findAllActive(): Promise<AccessLog[]>;
+    findEntriesSince(since: Date): Promise<AccessLog[]>;
+    findEntriesInRange(from: Date, to: Date): Promise<AccessLog[]>;
     findHistoryByUserId(userId: UniqueId, pagination: PaginatedQuery): Promise<PaginatedResult<typeof AccessLog.JsonSchema, AccessLog>>;
     findAllHistory(pagination: PaginatedQuery): Promise<PaginatedResult<typeof AccessLog.JsonSchema, AccessLog>>;
 }

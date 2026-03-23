@@ -23,11 +23,15 @@ import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
 import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
+import { ListUsersUseCase } from "src/modules/identity/application/use-cases/list-users";
+import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/update-user";
+import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
 import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
 import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
+import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
 import { UpdateRoomUseCase } from "@booking/application/use-cases/update-room";
 import { DeleteRoomUseCase } from "@booking/application/use-cases/delete-room";
 import { SetRoomEnabledUseCase } from "@booking/application/use-cases/set-room-enabled";
@@ -37,11 +41,21 @@ import { CancelBookingUseCase } from "@booking/application/use-cases/cancel-book
 import { AdminCancelBookingUseCase } from "@booking/application/use-cases/admin-cancel-booking";
 import { FindBookingsUseCase } from "@booking/application/use-cases/find-bookings";
 import { FindMyBookingsUseCase } from "@booking/application/use-cases/find-my-bookings";
+import { FindBookingsAdminUseCase } from "@booking/application/use-cases/find-bookings-admin";
+import { AdminCreateBookingUseCase } from "@booking/application/use-cases/admin-create-booking";
+import { MarkBookingNoShowUseCase } from "@booking/application/use-cases/mark-booking-no-show";
 import { ListAvailableSlotsByDayUseCase } from "@booking/application/use-cases/list-available-slots-by-day";
 import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-cases/send-booking-reminders-of-tomorrow";
 import { SetDefaultOperatingScheduleUseCase } from "@booking/application/use-cases/set-room-default-operating-hours";
 import { AddOperatingHoursOverrideUseCase } from "@booking/application/use-cases/add-room-operating-hours-override";
 import { GetRoomOperatingScheduleUseCase } from "@booking/application/use-cases/get-room-operating-schedule";
+import { GetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/get-global-blocked-dates";
+import { SetGlobalBlockedDatesUseCase } from "@booking/application/use-cases/set-global-blocked-dates";
+import { ListActiveSessionsUseCase } from "@coworking/application/use-cases/list-active-sessions";
+import { GetWeeklyFrequencyUseCase } from "@coworking/application/use-cases/get-weekly-frequency";
+import { GetAccessStatsUseCase } from "@coworking/application/use-cases/get-access-stats";
+import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yearly-report";
+import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 
@@ -349,9 +363,18 @@ export class DiContainer {
     public getListRoomsUseCase(authUser: User): ListRoomsUseCase {
         const listRoomsUseCase = new ListRoomsUseCase(
             this.getAuthUserService(authUser),
-            this.getRoomRepository()
+            this.getRoomRepository(),
+            this.getSpaceOperatingHoursRepository()
         );
         return listRoomsUseCase;
+    }
+
+    public getGetRoomByIdUseCase(authUser: User): GetRoomByIdUseCase {
+        const getRoomByIdUseCase = new GetRoomByIdUseCase(
+            this.getAuthUserService(authUser),
+            this.getRoomRepository()
+        );
+        return getRoomByIdUseCase;
     }
 
     public getUpdateRoomUseCase(authUser: User): UpdateRoomUseCase {
@@ -469,6 +492,100 @@ export class DiContainer {
             this.getAuthUserService(authUser),
             this.getRoomRepository(),
             this.getSpaceOperatingHoursRepository()
+        );
+    }
+
+    public getGetGlobalBlockedDatesUseCase(authUser: User): GetGlobalBlockedDatesUseCase {
+        return new GetGlobalBlockedDatesUseCase(
+            this.getAuthUserService(authUser),
+            this.getSpaceOperatingHoursRepository()
+        );
+    }
+
+    public getSetGlobalBlockedDatesUseCase(authUser: User): SetGlobalBlockedDatesUseCase {
+        return new SetGlobalBlockedDatesUseCase(
+            this.getAuthUserService(authUser),
+            this.getRoomRepository(),
+            this.getSpaceOperatingHoursService(),
+            this.getSpaceOperatingHoursRepository()
+        );
+    }
+
+    public getListUsersUseCase(authUser: User): ListUsersUseCase {
+        return new ListUsersUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getUpdateUserUseCase(authUser: User): UpdateUserUseCase {
+        return new UpdateUserUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getDeleteUserUseCase(authUser: User): DeleteUserUseCase {
+        return new DeleteUserUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getListActiveSessionsUseCase(authUser: User): ListActiveSessionsUseCase {
+        return new ListActiveSessionsUseCase(
+            this.getAuthUserService(authUser),
+            this.getAccessLogRepository(),
+            this.getUserRepository(),
+        );
+    }
+
+    public getWeeklyFrequencyUseCase(authUser: User): GetWeeklyFrequencyUseCase {
+        return new GetWeeklyFrequencyUseCase(
+            this.getAccessLogRepository(),
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getAccessStatsUseCase(authUser: User): GetAccessStatsUseCase {
+        return new GetAccessStatsUseCase(
+            this.getAccessLogRepository(),
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getYearlyReportUseCase(authUser: User): GetYearlyReportUseCase {
+        return new GetYearlyReportUseCase(
+            this.getAccessLogRepository(),
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getFindBookingsAdminUseCase(authUser: User): FindBookingsAdminUseCase {
+        return new FindBookingsAdminUseCase(
+            this.prisma,
+            this.getAuthUserService(authUser),
+        );
+    }
+
+    public getMarkBookingNoShowUseCase(authUser: User): MarkBookingNoShowUseCase {
+        return new MarkBookingNoShowUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingRepository(),
+        );
+    }
+
+    public getAdminCreateBookingUseCase(authUser: User): AdminCreateBookingUseCase {
+        return new AdminCreateBookingUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingService(),
+        );
+    }
+
+    public getRecentActivitiesUseCase(authUser: User): GetRecentActivitiesUseCase {
+        return new GetRecentActivitiesUseCase(
+            this.prisma,
+            this.getAuthUserService(authUser),
         );
     }
     //#endregion
