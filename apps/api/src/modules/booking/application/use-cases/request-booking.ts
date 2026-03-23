@@ -28,7 +28,7 @@ namespace RequestBookingUseCase {
     export const InputSchema = z.object({
         roomId: z.string(),
         title: z.string(),
-        description: z.string(),
+        description: z.string().optional(),
         period: DatePeriod.ValueSchema,
     });
 

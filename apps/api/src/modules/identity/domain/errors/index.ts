@@ -79,3 +79,23 @@ export class InvalidOrExpiredTokenError extends DomainError {
         );
     }
 }
+
+export class UserNotFoundError extends DomainError {
+    constructor() {
+        super(
+            "USER_NOT_FOUND",
+            "Usuário não encontrado.",
+            ErrorType.NOT_FOUND
+        );
+    }
+}
+
+export class SystemHasCpfOrUserNotHaveCpf extends DomainError{
+    constructor(){
+        super(
+            "SYSTEM_HAS_CPF_OR_USER_DONT_HAVE_CPF",
+            "Sistema tem CPF ou Usuário não tem CPF",
+            ErrorType.INTERNAL_SERVER_ERROR
+        )
+    }
+}

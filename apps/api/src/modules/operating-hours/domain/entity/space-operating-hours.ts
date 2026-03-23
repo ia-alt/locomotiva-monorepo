@@ -53,6 +53,10 @@ class SpaceOperatingHours extends Entity {
         this.overrides.push(override);
     }
 
+    hasOverrideForDay(date: OnlyDate): boolean {
+        return this.overrides.some(o => o.value.date.equals(date));
+    }
+
     toJSON(): SpaceOperatingHours.Json {
         return {
             spaceId: this.spaceId.toJSON(),

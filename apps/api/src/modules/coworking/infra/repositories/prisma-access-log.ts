@@ -73,6 +73,24 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
         return logs.map((log) => this.accessLogDbToEntity(log));
     }
 
+    async findEntriesSince(since: Date): Promise<AccessLog[]> {
+        const logs = await this.prisma.accessLog.findMany({
+            where: {
+                entryTime: { gte: since },
+            },
+        });
+        return logs.map((log) => this.accessLogDbToEntity(log));
+    }
+
+    async findEntriesInRange(from: Date, to: Date): Promise<AccessLog[]> {
+        const logs = await this.prisma.accessLog.findMany({
+            where: {
+                entryTime: { gte: from, lt: to },
+            },
+        });
+        return logs.map((log) => this.accessLogDbToEntity(log));
+    }
+
     async findHistoryByUserId(userId: UniqueId, pagination: PaginatedQuery): Promise<PaginatedResult<typeof AccessLog.JsonSchema, AccessLog>> {
         const { take, skip } = pagination.asTakeSkip;
         const where: Prisma.AccessLogWhereInput = {

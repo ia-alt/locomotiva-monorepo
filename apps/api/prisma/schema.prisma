@@ -18,7 +18,7 @@ model User {
   id                    String   @id
   name                  String
   email                 String   @unique
-  cpf                   String   @unique
+  cpf                   String?  @unique
   birthDate             DateTime
   passwordHash          String
   lastPasswordResetDate DateTime
@@ -48,7 +48,7 @@ model Booking {
   roomId                String
   userId                String
   title                 String
-  description           String
+  description           String?
   startTime             DateTime
   endTime               DateTime
   status                String

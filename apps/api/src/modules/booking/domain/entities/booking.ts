@@ -30,9 +30,9 @@ export class Booking extends Entity {
             input.roomId,
             input.userId,
             input.title,
-            input.description,
+            input.description ?? '',
             input.period,
-            Booking.Status.PENDING
+            Booking.Status.PENDING,
         );
     }
 
@@ -76,12 +76,17 @@ export class Booking extends Entity {
         this.rejectionCancelReason = reason;
     }
 
-    reject(reason: string): void {
-        if (this.status !== Booking.Status.PENDING) {
+    reject(reason?: string): void {
+        const rejectableStatuses = [Booking.Status.PENDING, Booking.Status.CONFIRMED];
+        if (!rejectableStatuses.includes(this.status)) {
             throw new BookingNotInPendingStateError();
         }
         this.status = Booking.Status.REJECTED;
         this.rejectionCancelReason = reason;
+    }
+
+    markNoShow(): void {
+        this.status = Booking.Status.NO_SHOW;
     }
 
     toJSON(): Booking.JsonSchema {
@@ -137,7 +142,7 @@ export namespace Booking {
         roomId: UniqueId;
         userId: UniqueId;
         title: string;
-        description: string;
+        description?: string;
         period: DatePeriod;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;
