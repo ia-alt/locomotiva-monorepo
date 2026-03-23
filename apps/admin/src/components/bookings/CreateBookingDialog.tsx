@@ -24,6 +24,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
   const { data: usersData } = useQuery({
@@ -55,8 +56,9 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
     mutationFn: (params: {
       userId: string;
       roomId: string;
+      title: string;
       period: { from: string; to: string };
-      description?: string;
+      description: string;
     }) => orpc.booking.adminCreateBooking(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: BOOKINGS_ADMIN_QUERY_KEY });
@@ -68,6 +70,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
     setUserInputValue('');
     setSelectedUser(null);
     setRoomId('');
+    setTitle('');
     setDate('');
     setStartTime('');
     setEndTime('');
@@ -85,8 +88,9 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
     mutation.mutate({
       userId: selectedUser.id,
       roomId,
+      title,
       period: { from, to },
-      description: description.trim() || undefined,
+      description: description.trim(),
     });
   };
 
@@ -126,6 +130,15 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
                   placeholder="Buscar por nome ou e-mail..."
                 />
               )}
+            />
+
+            <TextField
+              label="Título"
+              fullWidth
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Reunião de alinhamento..."
             />
 
             <TextField
@@ -175,14 +188,17 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
             </Box>
 
             <TextField
-              label="Finalidade (opcional)"
+              label="Finalidade"
               fullWidth
               multiline
+              required
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Reunião de projeto, Workshop..."
             />
+
+            
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -192,7 +208,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
           <Button
             type="submit"
             variant="contained"
-            disabled={mutation.isPending || !selectedUser || !roomId || !date || !startTime || !endTime}
+            disabled={mutation.isPending || !selectedUser || !title || !roomId || !date || !startTime || !endTime}
             startIcon={mutation.isPending ? <CircularProgress size={18} /> : null}
           >
             {mutation.isPending ? 'Criando...' : 'Criar Reserva'}
