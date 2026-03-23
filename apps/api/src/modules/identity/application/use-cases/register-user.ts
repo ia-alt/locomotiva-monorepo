@@ -14,7 +14,7 @@ class RegisterUserUseCase implements UseCase<RegisterUserUseCase.Input, Register
 
     async execute(input: RegisterUserUseCase.Input): Promise<RegisterUserUseCase.Output> {
         const email = EmailAddress.fromString(input.email);
-        const cpf = Cpf.fromString(input.cpf);
+        const cpf = Cpf.fromString(input.cpf)!;
         const birthDate = BirthDate.fromJSON(input.birthDate);
         const password = Password.fromString(input.password);
 
