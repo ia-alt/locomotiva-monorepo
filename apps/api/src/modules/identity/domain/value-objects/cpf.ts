@@ -11,7 +11,10 @@ class Cpf extends ValueObject<Cpf.Value> {
         super(value);
     }
 
-    static fromString(raw: string): Cpf {
+    static fromString(raw: string | null): Cpf | null{
+        if ( raw === null){
+            return null
+        }
         const numeric = raw.replace(/\D/g, "");
         return new Cpf(numeric);
     }
