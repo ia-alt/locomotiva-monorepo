@@ -29,6 +29,8 @@ import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/up
 import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
 import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
+import { ResendSendEmailService } from "@notifications/infra/services/resend-send-email";
+import { env } from "src/modules/env";
 import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
@@ -182,7 +184,9 @@ export class DiContainer {
     private _sendEmailService?: SendEmailService;
     public getSendEmailService(): SendEmailService {
         if (!this._sendEmailService) {
-            this._sendEmailService = new ConsoleSendEmailService();
+            this._sendEmailService = env.RESEND_API_KEY
+                ? new ResendSendEmailService(env.RESEND_API_KEY)
+                : new ConsoleSendEmailService();
         }
         return this._sendEmailService;
     }
@@ -420,7 +424,10 @@ export class DiContainer {
     public getProcessBookingRequestUseCase(authUser: User): ProcessBookingRequestUseCase {
         const processBookingRequestUseCase = new ProcessBookingRequestUseCase(
             this.getAuthUserService(authUser),
-            this.getBookingRepository()
+            this.getBookingRepository(),
+            this.getUserRepository(),
+            this.getRoomRepository(),
+            this.getSendEmailService(),
         );
         return processBookingRequestUseCase;
     }
