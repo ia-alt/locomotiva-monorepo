@@ -137,6 +137,8 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
             </Typography>
           } />
 
+          <DetailRow label="Título" value={<Typography variant="body1" fontWeight={500}>{booking.title}</Typography>} />
+
           {booking.description && (
             <DetailRow label="Finalidade" value={<Typography variant="body1">{booking.description}</Typography>} />
           )}

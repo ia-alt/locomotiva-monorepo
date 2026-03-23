@@ -9,6 +9,7 @@ export type BookingAdminItem = {
   room: { id: string; name: string; capacity: number };
   period: { from: string; to: string };
   status: string;
+  title: string;
   description?: string;
   rejectionCancelReason?: string;
   createdAt: string;

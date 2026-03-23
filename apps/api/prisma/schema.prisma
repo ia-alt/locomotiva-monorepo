@@ -48,11 +48,10 @@ model Booking {
   roomId                String
   userId                String
   title                 String
-  description           String
+  description           String?
   startTime             DateTime
   endTime               DateTime
   status                String
-  description           String?
   rejectionCancelReason String?
 
   createdAt DateTime @default(now())

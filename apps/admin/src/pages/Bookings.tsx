@@ -245,7 +245,7 @@ const BookingsPage: React.FC = () => {
                           DATA E HORÁRIO
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
-                          FINALIDADE
+                          TÍTULO
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
                           STATUS
@@ -301,10 +301,9 @@ const BookingsPage: React.FC = () => {
                               <TableCell>
                                 <Typography
                                   variant="body2"
-                                  color={booking.description ? 'text.primary' : 'text.disabled'}
                                   sx={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                                 >
-                                  {booking.description ?? '—'}
+                                  {booking.title}
                                 </Typography>
                               </TableCell>
 
