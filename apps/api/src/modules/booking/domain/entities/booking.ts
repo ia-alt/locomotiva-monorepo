@@ -1,10 +1,14 @@
-import { Entity, UniqueId } from "@core/base-classes";
+import { AggregateRoot, UniqueId } from "@core/base-classes";
 import { DatePeriod } from "@core/value-objects";
+import { BookingCreatedEvent } from "../events/booking-created";
+import { BookingConfirmedEvent } from "../events/booking-confirmed";
+import { BookingRejectedEvent } from "../events/booking-rejected";
+import { BookingCancelledEvent } from "../events/booking-cancelled";
 import z from "zod";
 import { BookingLeadTimeViolationError, ForbiddenBookingAccessException, BookingNotInPendingStateError, BookingCannotBeCancelledError } from "../errors";
 import { BookingTitle, BookingDescription } from "@core/value-objects";
 
-export class Booking extends Entity {
+export class Booking extends AggregateRoot {
     constructor(
         id: UniqueId,
         public readonly roomId: UniqueId,
@@ -25,7 +29,7 @@ export class Booking extends Entity {
     }
 
     static create(input: Booking.CreateParams): Booking {
-        return new Booking(
+        const booking = new Booking(
             UniqueId.create(),
             input.roomId,
             input.userId,
@@ -34,6 +38,8 @@ export class Booking extends Entity {
             input.period,
             Booking.Status.PENDING,
         );
+        booking.addDomainEvent(new BookingCreatedEvent(booking));
+        return booking;
     }
 
     confirm(): void {
@@ -41,6 +47,7 @@ export class Booking extends Entity {
             throw new BookingNotInPendingStateError();
         }
         this.status = Booking.Status.CONFIRMED;
+        this.addDomainEvent(new BookingConfirmedEvent(this));
     }
 
     cancel(executorId: UniqueId, reason: string): void {
@@ -65,6 +72,7 @@ export class Booking extends Entity {
 
         this.status = Booking.Status.CANCELLED;
         this.rejectionCancelReason = reason;
+        this.addDomainEvent(new BookingCancelledEvent(this, reason));
     }
 
     checkOwner(userId: UniqueId): void {
@@ -76,15 +84,17 @@ export class Booking extends Entity {
     adminCancel(reason: string): void {
         this.status = Booking.Status.CANCELLED;
         this.rejectionCancelReason = reason;
+        this.addDomainEvent(new BookingCancelledEvent(this, reason));
     }
 
-    reject(reason?: string): void {
+    reject(reason: string): void {
         const rejectableStatuses = [Booking.Status.PENDING, Booking.Status.CONFIRMED];
         if (!rejectableStatuses.includes(this.status)) {
             throw new BookingNotInPendingStateError();
         }
         this.status = Booking.Status.REJECTED;
         this.rejectionCancelReason = reason;
+        this.addDomainEvent(new BookingRejectedEvent(this, reason));
     }
 
     markNoShow(): void {

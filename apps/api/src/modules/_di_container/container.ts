@@ -14,7 +14,8 @@ import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
 import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
 import { PrismaBookingRepository } from "@booking/infra/repositories/prisma-booking";
 import { PrismaRoomRepository } from "@booking/infra/repositories/prisma-room";
-import { BookingService } from "@booking/domain/services";
+import { BookingService, BookingEmailTemplater } from "@booking/domain/services";
+import { TemplateStringBookingEmailTemplater } from "@booking/infra/services";
 import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
@@ -62,6 +63,8 @@ import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yea
 import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
+import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
+import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -174,6 +177,14 @@ export class DiContainer {
         return this._bookingService;
     }
 
+    private _bookingEmailTemplater?: BookingEmailTemplater;
+    public getBookingEmailTemplater(): BookingEmailTemplater {
+        if (!this._bookingEmailTemplater) {
+            this._bookingEmailTemplater = new TemplateStringBookingEmailTemplater();
+        }
+        return this._bookingEmailTemplater;
+    }
+
     private _bookingReminderEmailTemplater?: BookingReminderEmailTemplater;
     public getBookingReminderEmailTemplater(): BookingReminderEmailTemplater {
         if (!this._bookingReminderEmailTemplater) {
@@ -209,9 +220,7 @@ export class DiContainer {
             this._passwordService = new PasswordService(
                 this.getPasswordHashService(),
                 this.getUserRepository(),
-                this.getPasswordResetTokenService(),
-                this.getPasswordResetEmailTemplater(),
-                this.getSendEmailService()
+                this.getPasswordResetTokenService()
             );
         }
         return this._passwordService;
@@ -426,9 +435,6 @@ export class DiContainer {
         const processBookingRequestUseCase = new ProcessBookingRequestUseCase(
             this.getAuthUserService(authUser),
             this.getBookingRepository(),
-            this.getUserRepository(),
-            this.getRoomRepository(),
-            this.getSendEmailService(),
         );
         return processBookingRequestUseCase;
     }
@@ -615,5 +621,20 @@ export class DiContainer {
 }
 
 const container = new DiContainer();
+
+//#region Domain Events
+new AfterPasswordResetRequested(
+    container.getSendEmailService(),
+    container.getPasswordResetEmailTemplater()
+);
+
+new AfterBookingStatusChanged(
+    container.getSendEmailService(),
+    container.getUserRepository(),
+    container.getRoomRepository(),
+    container.getBookingEmailTemplater()
+);
+//#endregion
+
 
 export default container;

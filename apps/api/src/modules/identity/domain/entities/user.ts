@@ -1,13 +1,13 @@
-import { Entity, UniqueId } from "@core/base-classes";
+import { AggregateRoot, UniqueId } from "@core/base-classes";
+import { UserRegisteredEvent } from "../events/user-registered";
+import { PasswordResetRequestedEvent } from "../events/password-reset-requested";
 import z from "zod";
 import { EmailAddress } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
 import { BirthDate } from "src/modules/identity/domain/value-objects/birth-date";
-import { error } from "node:console";
-import { ErrorType } from "src/modules/_core/error";
 import { SystemHasCpfOrUserNotHaveCpf } from "../errors";
 
-class User extends Entity {
+class User extends AggregateRoot {
 
     constructor(
         id: UniqueId,
@@ -20,7 +20,7 @@ class User extends Entity {
         private _lastPasswordResetDate: Date,
 
     ) {
-        if((_userType === User.UserType.SYSTEM) === (cpf !== null)){
+        if ((_userType === User.UserType.SYSTEM) === (cpf !== null)) {
             throw new SystemHasCpfOrUserNotHaveCpf()
         }
         super(id);
@@ -31,7 +31,7 @@ class User extends Entity {
     }
 
     static create(props: User.CreateParams): User {
-        return new User(
+        const user = new User(
             UniqueId.create(),
             props.name,
             props.email,
@@ -41,10 +41,12 @@ class User extends Entity {
             props.passwordHash,
             new Date(),
         );
+        user.addDomainEvent(new UserRegisteredEvent(user));
+        return user;
     }
 
     static createSystem(props: User.CreateSystemParams): User {
-        return new User(
+        const user = new User(
             UniqueId.create(),
             props.name,
             props.email,
@@ -54,6 +56,8 @@ class User extends Entity {
             props.passwordHash,
             new Date(),
         );
+        user.addDomainEvent(new UserRegisteredEvent(user));
+        return user;
     }
 
     update(data: User.UpdateParams): void {
@@ -75,6 +79,10 @@ class User extends Entity {
     updatePassword(passwordHash: string) {
         this._passwordHash = passwordHash;
         this._lastPasswordResetDate = new Date();
+    }
+
+    requestPasswordReset(resetToken: string) {
+        this.addDomainEvent(new PasswordResetRequestedEvent(this, resetToken));
     }
 
     toJSON(): User.JsonSchema {

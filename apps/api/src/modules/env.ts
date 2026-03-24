@@ -6,8 +6,8 @@ const envSchema = z.object({
     RESET_PASSWORD_JWT_SECRET: z.string(),
     RESET_PASSWORD_URL_BASE: z.string(),
     PORT: z.coerce.number().optional(),
-    EMAIL_USER: z.string().optional(),
-    EMAIL_PASS: z.string().optional(),
+    EMAIL_USER: z.string(),
+    EMAIL_PASS: z.string(),
 })
 
 export const env = envSchema.parse(process.env);
