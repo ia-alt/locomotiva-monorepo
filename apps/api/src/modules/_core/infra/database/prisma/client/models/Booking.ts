@@ -188,7 +188,7 @@ export type BookingGroupByOutputType = {
   roomId: string
   userId: string
   title: string
-  description: string | null
+  description: string
   startTime: Date
   endTime: Date
   status: string
@@ -223,7 +223,7 @@ export type BookingWhereInput = {
   roomId?: Prisma.StringFilter<"Booking"> | string
   userId?: Prisma.StringFilter<"Booking"> | string
   title?: Prisma.StringFilter<"Booking"> | string
-  description?: Prisma.StringNullableFilter<"Booking"> | string | null
+  description?: Prisma.StringFilter<"Booking"> | string
   startTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   endTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   status?: Prisma.StringFilter<"Booking"> | string
@@ -237,7 +237,7 @@ export type BookingOrderByWithRelationInput = {
   roomId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   title?: Prisma.SortOrder
-  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -254,7 +254,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   roomId?: Prisma.StringFilter<"Booking"> | string
   userId?: Prisma.StringFilter<"Booking"> | string
   title?: Prisma.StringFilter<"Booking"> | string
-  description?: Prisma.StringNullableFilter<"Booking"> | string | null
+  description?: Prisma.StringFilter<"Booking"> | string
   startTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   endTime?: Prisma.DateTimeFilter<"Booking"> | Date | string
   status?: Prisma.StringFilter<"Booking"> | string
@@ -268,7 +268,7 @@ export type BookingOrderByWithAggregationInput = {
   roomId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   title?: Prisma.SortOrder
-  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -288,7 +288,7 @@ export type BookingScalarWhereWithAggregatesInput = {
   roomId?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   title?: Prisma.StringWithAggregatesFilter<"Booking"> | string
-  description?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  description?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   startTime?: Prisma.DateTimeWithAggregatesFilter<"Booking"> | Date | string
   endTime?: Prisma.DateTimeWithAggregatesFilter<"Booking"> | Date | string
   status?: Prisma.StringWithAggregatesFilter<"Booking"> | string
@@ -302,7 +302,7 @@ export type BookingCreateInput = {
   roomId: string
   userId: string
   title: string
-  description?: string | null
+  description: string
   startTime: Date | string
   endTime: Date | string
   status: string
@@ -316,7 +316,7 @@ export type BookingUncheckedCreateInput = {
   roomId: string
   userId: string
   title: string
-  description?: string | null
+  description: string
   startTime: Date | string
   endTime: Date | string
   status: string
@@ -330,7 +330,7 @@ export type BookingUpdateInput = {
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -344,7 +344,7 @@ export type BookingUncheckedUpdateInput = {
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -358,7 +358,7 @@ export type BookingCreateManyInput = {
   roomId: string
   userId: string
   title: string
-  description?: string | null
+  description: string
   startTime: Date | string
   endTime: Date | string
   status: string
@@ -372,7 +372,7 @@ export type BookingUpdateManyMutationInput = {
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -386,7 +386,7 @@ export type BookingUncheckedUpdateManyInput = {
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -505,7 +505,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     roomId: string
     userId: string
     title: string
-    description: string | null
+    description: string
     startTime: Date
     endTime: Date
     status: string
