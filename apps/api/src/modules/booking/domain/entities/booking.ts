@@ -24,6 +24,10 @@ export class Booking extends Entity {
         return this._period;
     }
 
+    get currentStatus(): Booking.Status {
+        return this.status;
+    }
+
     static create(input: Booking.CreateParams): Booking {
         return new Booking(
             UniqueId.create(),

@@ -7,7 +7,7 @@ type BookingEmailParams = {
     hourFrom: string;
     hourTo: string;
     title: string;
-    status: 'confirmed' | 'rejected' | 'cancelled';
+    status: 'confirmed' | 'rejected' | 'cancelled' | 'no_show';
     reason?: string;
 };
 
@@ -32,6 +32,13 @@ const STATUS_CONFIG = {
         bg: '#fff3e0',
         message: 'Sua reserva foi <strong>cancelada</strong>.',
         icon: '✕',
+    },
+    no_show: {
+        label: 'Não Comparecida',
+        color: '#78350f',
+        bg: '#fef3c7',
+        message: 'Você <strong>não compareceu</strong> à reserva de sala que solicitou. Esse tipo de ocorrência pode dificultar a aprovação de reservas futuras.',
+        icon: '!',
     },
 };
 
@@ -73,7 +80,7 @@ export function buildBookingEmail(params: BookingEmailParams): string {
             <td style="background:${cfg.bg};padding:16px 32px;text-align:center;border-bottom:1px solid ${cfg.color}33;">
               <span style="display:inline-flex;align-items:center;gap:8px;font-size:15px;color:${cfg.color};font-weight:600;">
                 <span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${cfg.color};color:#fff;font-size:13px;line-height:22px;text-align:center;">${cfg.icon}</span>
-                Reserva ${cfg.label}
+                 Reserva ${cfg.label}
               </span>
             </td>
           </tr>

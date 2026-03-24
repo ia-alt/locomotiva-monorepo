@@ -5,6 +5,7 @@ import z from "zod";
 import { AuthUserService } from "src/modules/identity/domain/services";
 import { UserRepository } from "src/modules/identity/domain/repositories";
 import { SendEmailService } from "@notifications/application/services";
+import { buildBookingEmail } from "@notifications/infra/templates/booking-email";
 import { BookingNotFoundError } from "../errors";
 import { format } from "date-fns";
 
@@ -32,16 +33,21 @@ class ProcessBookingRequestUseCase extends UseCase<ProcessBookingRequestUseCase.
         if (params.decision.type === 'confirm') {
             booking.confirm();
             await this.bookingRepository.save(booking);
-            await this.sendConfirmationEmail(booking).catch((err) => {
+            await this.sendBookingEmail(booking, 'confirmed').catch((err) => {
                 console.error('[ProcessBookingRequest] Falha ao enviar email de confirmação:', err);
             });
         } else {
+            const wasConfirmed = booking.currentStatus === Booking.Status.CONFIRMED;
             booking.reject(params.decision.reason);
             await this.bookingRepository.save(booking);
+            const emailStatus = wasConfirmed ? 'cancelled' : 'rejected';
+            await this.sendBookingEmail(booking, emailStatus, params.decision.reason).catch((err) => {
+                console.error('[ProcessBookingRequest] Falha ao enviar email de rejeição/cancelamento:', err);
+            });
         }
     }
 
-    private async sendConfirmationEmail(booking: Booking): Promise<void> {
+    private async sendBookingEmail(booking: Booking, status: 'confirmed' | 'rejected' | 'cancelled', reason?: string): Promise<void> {
         const [user, room] = await Promise.all([
             this.userRepository.findById(booking.userId),
             this.roomRepository.findById(booking.roomId),
@@ -49,30 +55,22 @@ class ProcessBookingRequestUseCase extends UseCase<ProcessBookingRequestUseCase.
 
         if (!user) return;
 
-        const day = format(booking.period.value.from, 'dd/MM/yyyy');
-        const hourFrom = format(booking.period.value.from, 'HH:mm');
-        const hourTo = format(booking.period.value.to, 'HH:mm');
-        const roomName = room?.name ?? 'sala reservada';
+        const html = buildBookingEmail({
+            userName: user.firstName,
+            roomName: room?.name ?? 'sala reservada',
+            day: format(booking.period.value.from, 'dd/MM/yyyy'),
+            hourFrom: format(booking.period.value.from, 'HH:mm'),
+            hourTo: format(booking.period.value.to, 'HH:mm'),
+            title: booking.title,
+            status,
+            reason,
+        });
 
-        const htl = `
-            <h1>Reserva Confirmada!</h1>
-            <p>Olá ${user.firstName},</p>
-            <p>Sua reserva foi <strong>confirmada</strong>.</p>
-            <ul>
-                <li><strong>Sala:</strong> ${roomName}</li>
-                <li><strong>Data:</strong> ${day}</li>
-                <li><strong>Horário:</strong> ${hourFrom} às ${hourTo}</li>
-                <li><strong>Título:</strong> ${booking.title}</li>
-            </ul>
-            <p>Atenciosamente,</p>
-            <p>Equipe Locomotiva</p>
-        `;
+        const subject = status === 'confirmed'
+            ? 'Reserva Confirmada - Locomotiva Hub'
+            : 'Reserva Recusada - Locomotiva Hub';
 
-        await this.sendEmailService.send(
-            user.email.value,
-            'Reserva Confirmada - Locomotiva Hub',
-            html,
-        );
+        await this.sendEmailService.send(user.email.value, subject, html);
     }
 }
 

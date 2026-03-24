@@ -444,7 +444,10 @@ export class DiContainer {
     public getAdminCancelBookingUseCase(authUser: User): AdminCancelBookingUseCase {
         const adminCancelBookingUseCase = new AdminCancelBookingUseCase(
             this.getAuthUserService(authUser),
-            this.getBookingRepository()
+            this.getBookingRepository(),
+            this.getUserRepository(),
+            this.getRoomRepository(),
+            this.getSendEmailService(),
         );
         return adminCancelBookingUseCase;
     }
@@ -595,6 +598,9 @@ export class DiContainer {
         return new MarkBookingNoShowUseCase(
             this.getAuthUserService(authUser),
             this.getBookingRepository(),
+            this.getUserRepository(),
+            this.getRoomRepository(),
+            this.getSendEmailService(),
         );
     }
 
