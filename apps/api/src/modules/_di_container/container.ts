@@ -29,7 +29,7 @@ import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/up
 import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
 import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
-import { ResendSendEmailService } from "@notifications/infra/services/resend-send-email";
+import { NodemailerSendEmailService } from "@notifications/infra/services/resend-send-email";
 import { env } from "src/modules/env";
 import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
@@ -184,8 +184,8 @@ export class DiContainer {
     private _sendEmailService?: SendEmailService;
     public getSendEmailService(): SendEmailService {
         if (!this._sendEmailService) {
-            this._sendEmailService = env.RESEND_API_KEY
-                ? new ResendSendEmailService(env.RESEND_API_KEY)
+            this._sendEmailService = (env.EMAIL_USER && env.EMAIL_PASS)
+                ? new NodemailerSendEmailService(env.EMAIL_USER, env.EMAIL_PASS)
                 : new ConsoleSendEmailService();
         }
         return this._sendEmailService;
