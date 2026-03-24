@@ -21,8 +21,7 @@ function ReservasList() {
         <BookingCard 
             booking={item} 
             onPressDetails={() => {
-                // Future implementation: Navigate to detail
-                // navigation.navigate('DetalhesReserva', { bookingId: item.id });
+                navigation.navigate('DetalhesMinhaReserva', { booking: item });
             }} 
         />
     );

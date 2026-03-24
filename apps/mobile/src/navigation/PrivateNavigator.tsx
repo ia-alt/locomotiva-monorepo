@@ -11,6 +11,8 @@ import CriarReservaScreen from '../screens/private/CriarReservaScreen';
 import DetalhesReservaScreen from '../screens/private/DetalhesReservaScreen';
 import ConfirmarReservaScreen from '../screens/private/ConfirmarReservaScreen';
 import ReservaSucessoScreen from '../screens/private/ReservaSucessoScreen';
+import DetalhesMinhaReservaScreen from '../screens/private/DetalhesMinhaReservaScreen';
+import { ORPCOutputs } from '../locomotiva-api/types';
 
 export type PrivateStackParamList = {
     Drawer: undefined;
@@ -30,6 +32,9 @@ export type PrivateStackParamList = {
         description: string;
     };
     ReservaSucesso: undefined;
+    DetalhesMinhaReserva: {
+        booking: ORPCOutputs["booking"]["findMyBookings"]["items"][0];
+    };
 };
 
 const Tab = createBottomTabNavigator();
@@ -106,6 +111,11 @@ export default function PrivateNavigator() {
                 name="ReservaSucesso"
                 component={ReservaSucessoScreen}
                 options={{ headerShown: false, gestureEnabled: false }}
+            />
+            <Stack.Screen
+                name="DetalhesMinhaReserva"
+                component={DetalhesMinhaReservaScreen}
+                options={{ title: 'Detalhes da Reserva' }}
             />
         </Stack.Navigator>
     );

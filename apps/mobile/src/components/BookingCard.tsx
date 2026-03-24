@@ -46,43 +46,39 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
 
     return (
         <Surface style={styles.card} elevation={0}>
-            <View style={styles.header}>
-                <Image source={{ uri: roomImageUrl }} style={styles.roomImage} />
+            <TouchableOpacity onPress={onPressDetails} activeOpacity={0.7}>
+                <View style={styles.header}>
+                    <Image source={{ uri: roomImageUrl }} style={styles.roomImage} />
 
-                <View style={styles.roomInfo}>
-                    <Text style={styles.roomName} numberOfLines={1}>
-                        {isLoadingRoom ? 'Carregando...' : booking.title || 'Sala não encontrada'}
-                    </Text>
+                    <View style={styles.roomInfo}>
+                        <Text style={styles.roomName} numberOfLines={1}>
+                            {isLoadingRoom ? 'Carregando...' : booking.title || 'Sala não encontrada'}
+                        </Text>
 
-                    <View style={styles.locationRow}>
-                        <Feather name="map-pin" size={12} color="#6B7280" />
-                        <Text style={styles.locationText} numberOfLines={1}>
-                            {room?.name || (room?.capacity ? `Capacidade: ${room.capacity}` : 'Local indisponível')}
+                        <View style={styles.locationRow}>
+                            <Feather name="map-pin" size={12} color="#6B7280" />
+                            <Text style={styles.locationText} numberOfLines={1}>
+                                {room?.name || (room?.capacity ? `Capacidade: ${room.capacity}` : 'Local indisponível')}
+                            </Text>
+                        </View>
+
+                        <Text style={styles.dateText}>
+                            {dateFormatted} • {timeFormatted}
                         </Text>
                     </View>
 
-                    <Text style={styles.dateText}>
-                        {dateFormatted} • {timeFormatted}
-                    </Text>
+                    <Feather name="chevron-right" size={20} color="#9CA3AF" />
                 </View>
 
-                <Feather name="chevron-right" size={20} color="#9CA3AF" />
-            </View>
+                <View style={styles.divider} />
 
-            <View style={styles.divider} />
-
-            <View style={styles.footer}>
-                <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1 }]}>
-                    {config.dot && <View style={[styles.statusDot, { backgroundColor: config.color }]} />}
-                    <Text style={[styles.statusText, { color: config.color }]}>{config.label}</Text>
+                <View style={styles.footer}>
+                    <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1 }]}>
+                        {config.dot && <View style={[styles.statusDot, { backgroundColor: config.color }]} />}
+                        <Text style={[styles.statusText, { color: config.color }]}>{config.label}</Text>
+                    </View>
                 </View>
-
-                <TouchableOpacity onPress={onPressDetails}>
-                    <Text style={styles.actionText}>
-                        {booking.status === 'attended' ? 'Avaliar' : (booking.status === 'cancelled' ? 'Detalhes' : 'Ver detalhes')}
-                    </Text>
-                </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
         </Surface>
     );
 }
@@ -158,10 +154,5 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 12,
         fontWeight: '600',
-    },
-    actionText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#3B82F6',
     }
 });
