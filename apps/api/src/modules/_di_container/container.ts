@@ -62,6 +62,8 @@ import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yea
 import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
+import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
+import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -209,9 +211,7 @@ export class DiContainer {
             this._passwordService = new PasswordService(
                 this.getPasswordHashService(),
                 this.getUserRepository(),
-                this.getPasswordResetTokenService(),
-                this.getPasswordResetEmailTemplater(),
-                this.getSendEmailService()
+                this.getPasswordResetTokenService()
             );
         }
         return this._passwordService;
@@ -426,9 +426,6 @@ export class DiContainer {
         const processBookingRequestUseCase = new ProcessBookingRequestUseCase(
             this.getAuthUserService(authUser),
             this.getBookingRepository(),
-            this.getUserRepository(),
-            this.getRoomRepository(),
-            this.getSendEmailService(),
         );
         return processBookingRequestUseCase;
     }
@@ -615,5 +612,19 @@ export class DiContainer {
 }
 
 const container = new DiContainer();
+
+//#region Domain Events
+new AfterPasswordResetRequested(
+    container.getSendEmailService(),
+    container.getPasswordResetEmailTemplater()
+);
+
+new AfterBookingStatusChanged(
+    container.getSendEmailService(),
+    container.getUserRepository(),
+    container.getRoomRepository()
+);
+//#endregion
+
 
 export default container;

@@ -5,16 +5,12 @@ import { PasswordHashService } from "./password-hash-service";
 import { UserRepository } from "../repositories";
 import { EmailAddress } from "@core/value-objects";
 import { PasswordResetTokenService } from "./password-reset-token";
-import { PasswordResetEmailTemplater } from "./password-reset-email-templater";
-import { SendEmailService } from "@notifications/application/services";
 
 export class PasswordService {
     constructor(
         private readonly passwordHashService: PasswordHashService,
         private readonly userRepository: UserRepository,
         private readonly passwordResetTokenService: PasswordResetTokenService,
-        private readonly passwordResetEmailTemplater: PasswordResetEmailTemplater,
-        private readonly sendEmailService: SendEmailService,
     ) { }
 
     async changePassword(params: { user: User, currentPassword: string, newPassword: Password }) {
@@ -39,16 +35,8 @@ export class PasswordService {
 
         const token = await this.passwordResetTokenService.generate(user);
 
-        const html = await this.passwordResetEmailTemplater.template({
-            user,
-            token
-        });
-
-        await this.sendEmailService.send(
-            user.email.toString(),
-            "Recuperação de senha",
-            html,
-        );
+        user.requestPasswordReset(token);
+        await this.userRepository.save(user);
     }
 
     async executeResetPassword(params: { token: string, newPassword: Password }) {

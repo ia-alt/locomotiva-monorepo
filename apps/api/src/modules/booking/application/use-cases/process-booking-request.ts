@@ -1,22 +1,14 @@
-import { Booking } from "@booking/domain/entities";
-import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
+import { BookingRepository } from "@booking/domain/repositories";
 import { UniqueId, UseCase } from "@core/base-classes";
 import z from "zod";
 import { AuthUserService } from "src/modules/identity/domain/services";
-import { UserRepository } from "src/modules/identity/domain/repositories";
-import { SendEmailService } from "@notifications/application/services";
 import { BookingNotFoundError } from "../errors";
-import { format } from "date-fns";
-import { buildBookingEmail } from "@notifications/infra/templates/booking-email";
 
 class ProcessBookingRequestUseCase extends UseCase<ProcessBookingRequestUseCase.Input, ProcessBookingRequestUseCase.Output> {
 
     constructor(
         private readonly authUserService: AuthUserService,
         private readonly bookingRepository: BookingRepository,
-        private readonly userRepository: UserRepository,
-        private readonly roomRepository: RoomRepository,
-        private readonly sendEmailService: SendEmailService,
     ) {
         super();
     }
@@ -32,39 +24,10 @@ class ProcessBookingRequestUseCase extends UseCase<ProcessBookingRequestUseCase.
 
         if (params.decision.type === 'confirm') {
             booking.confirm();
-            await this.bookingRepository.save(booking);
-            await this.sendConfirmationEmail(booking).catch((err) => {
-                console.error('[ProcessBookingRequest] Falha ao enviar email de confirmação:', err);
-            });
         } else {
             booking.reject(params.decision.reason);
-            await this.bookingRepository.save(booking);
         }
-    }
-
-    private async sendConfirmationEmail(booking: Booking): Promise<void> {
-        const [user, room] = await Promise.all([
-            this.userRepository.findById(booking.userId),
-            this.roomRepository.findById(booking.roomId),
-        ]);
-
-        if (!user) return;
-
-        const html = buildBookingEmail({
-            userName: user.firstName,
-            roomName: room?.name ?? 'sala reservada',
-            day: format(booking.period.value.from, 'dd/MM/yyyy'),
-            hourFrom: format(booking.period.value.from, 'HH:mm'),
-            hourTo: format(booking.period.value.to, 'HH:mm'),
-            title: booking.title,
-            status: 'confirmed',
-        });
-
-        await this.sendEmailService.send(
-            user.email.value,
-            'Reserva Confirmada - Locomotiva Hub',
-            html,
-        );
+        await this.bookingRepository.save(booking);
     }
 }
 
@@ -77,7 +40,7 @@ namespace ProcessBookingRequestUseCase {
             }),
             z.object({
                 type: z.literal('reject'),
-                reason: z.string().optional(),
+                reason: z.string(),
             })
         ])
     });
