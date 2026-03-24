@@ -31,6 +31,7 @@ const STATUS_BADGE: Record<string, { label: string; dot: string; bg: string; bor
   pending:   { label: 'Aguardando',      dot: '#f59e0b', bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
   confirmed: { label: 'Confirmado',      dot: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0', text: '#166534' },
   rejected:  { label: 'Rejeitado',       dot: '#ef4444', bg: '#fef2f2', border: '#fecaca', text: '#991b1b' },
+  cancelled: { label: 'Cancelado',       dot: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', text: '#5b21b6' },
   no_show:   { label: 'Não compareceu',  dot: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', text: '#4b5563' },
 };
 
@@ -103,7 +104,7 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
     confirmMutation.error || rejectMutation.error || noShowMutation.error;
   const errorMsg = mutationError instanceof Error ? mutationError.message : null;
 
-  const badge = STATUS_BADGE[booking.status] ?? STATUS_BADGE.no_show;
+  const badge = STATUS_BADGE[booking.status] ?? { label: booking.status, dot: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', text: '#4b5563' };
 
   return (
     <Dialog

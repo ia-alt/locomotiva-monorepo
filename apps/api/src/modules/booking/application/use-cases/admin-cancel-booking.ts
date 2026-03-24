@@ -25,9 +25,7 @@ class AdminCancelBookingUseCase extends UseCase<AdminCancelBookingUseCase.Input,
         }
 
         booking.adminCancel(params.reason);
-
         await this.bookingRepository.save(booking);
-        return;
     }
 }
 

@@ -1,3 +1,4 @@
+import { Booking } from "@booking/domain/entities";
 import { BookingRepository } from "@booking/domain/repositories";
 import { UniqueId, UseCase } from "@core/base-classes";
 import { AuthUserService } from "src/modules/identity/domain/services";
@@ -24,6 +25,7 @@ class MarkBookingNoShowUseCase extends UseCase<MarkBookingNoShowUseCase.Input, M
         booking.markNoShow();
         await this.bookingRepository.save(booking);
     }
+
 }
 
 namespace MarkBookingNoShowUseCase {

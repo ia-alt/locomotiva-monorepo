@@ -28,6 +28,10 @@ export class Booking extends AggregateRoot {
         return this._period;
     }
 
+    get currentStatus(): Booking.Status {
+        return this.status;
+    }
+
     static create(input: Booking.CreateParams): Booking {
         const booking = new Booking(
             UniqueId.create(),

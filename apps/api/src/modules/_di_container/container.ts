@@ -450,7 +450,7 @@ export class DiContainer {
     public getAdminCancelBookingUseCase(authUser: User): AdminCancelBookingUseCase {
         const adminCancelBookingUseCase = new AdminCancelBookingUseCase(
             this.getAuthUserService(authUser),
-            this.getBookingRepository()
+            this.getBookingRepository(),
         );
         return adminCancelBookingUseCase;
     }
