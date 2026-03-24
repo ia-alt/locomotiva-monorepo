@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { Text, Surface } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -48,7 +49,11 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
         <Surface style={styles.card} elevation={0}>
             <TouchableOpacity onPress={onPressDetails} activeOpacity={0.7}>
                 <View style={styles.header}>
-                    <Image source={{ uri: roomImageUrl }} style={styles.roomImage} />
+                    <Animated.Image 
+                        source={{ uri: roomImageUrl }} 
+                        style={styles.roomImage} 
+                        sharedTransitionTag={`room-image-${booking.id}`} 
+                    />
 
                     <View style={styles.roomInfo}>
                         <Text style={styles.roomName} numberOfLines={1}>

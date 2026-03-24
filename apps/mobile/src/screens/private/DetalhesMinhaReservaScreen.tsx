@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { Text, Surface } from 'react-native-paper';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
@@ -34,9 +35,17 @@ export default function DetalhesMinhaReservaScreen() {
     const toDate = new Date(booking.period.to);
     
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
+    
+    // Using the same placeholder image logic
+    const roomImageUrl = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
+            <Animated.Image 
+                source={{ uri: roomImageUrl }} 
+                style={styles.headerImage} 
+                sharedTransitionTag={`room-image-${booking.id}`} 
+            />
             <Surface style={styles.card} elevation={0}>
                 <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1, alignSelf: 'flex-start' }]}>
                     {config.dot && <View style={[styles.statusDot, { backgroundColor: config.color }]} />}
@@ -72,12 +81,6 @@ export default function DetalhesMinhaReservaScreen() {
                             <Feather name="map-pin" size={16} color="#6B7280" />
                             <Text style={styles.infoText}>{room?.name || 'Sala não encontrada'}</Text>
                         </View>
-                        {!!room?.location && (
-                            <View style={styles.infoRow}>
-                                <Feather name="navigation" size={16} color="#6B7280" />
-                                <Text style={styles.infoText}>{room.location}</Text>
-                            </View>
-                        )}
                         {!!room?.capacity && (
                             <View style={styles.infoRow}>
                                 <Feather name="users" size={16} color="#6B7280" />
@@ -98,6 +101,12 @@ const styles = StyleSheet.create({
     },
     scroll: {
         padding: 20,
+    },
+    headerImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 16,
+        marginBottom: -30,
     },
     card: {
         backgroundColor: '#FFFFFF',
