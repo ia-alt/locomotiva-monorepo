@@ -7,7 +7,7 @@ import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
 
 type ConfirmarReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'ConfirmarReserva'>;
@@ -28,6 +28,7 @@ export default function ConfirmarReservaScreen() {
     } = route.params;
 
     const { data: room } = useQuery(orpc.booking.getRoomById.queryOptions({ input: { id: roomId } }))
+    const { mutateAsync: requestBooking } = useMutation(orpc.booking.requestBooking.mutationOptions());
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,10 +45,17 @@ export default function ConfirmarReservaScreen() {
                 description
             });
 
-            // Navigate back to the very beginning or to Home/Reservations
-            // navigation.navigate('Reservas' as never);
-            alert("Reserva concluída! (Integração na próxima etapa)");
-            navigation.navigate('Drawer'); // Using 'Drawer' to go back to initial tabs
+            await requestBooking({
+                roomId,
+                period: {
+                    from: startTime,
+                    to: endTime,
+                },
+                title,
+                description
+            });
+
+            navigation.navigate('ReservaSucesso');
 
         } catch (error) {
             console.error(error);

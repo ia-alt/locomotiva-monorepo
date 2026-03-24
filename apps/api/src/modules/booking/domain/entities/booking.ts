@@ -44,12 +44,8 @@ export class Booking extends Entity {
     }
 
     cancel(executorId: UniqueId, reason: string): void {
-        // 1. Validação de Propriedade
-        if (!this.userId.equals(executorId)) {
-            throw new ForbiddenBookingAccessException(this.id);
-        }
+        this.checkOwner(executorId);
 
-        // 2. Validação de Antecedência (Lead Time)
         const LEAD_TIME_HOURS = 48;
         const limitDate = new Date((new Date()).getTime() + LEAD_TIME_HOURS * 60 * 60 * 1000);
 
@@ -69,6 +65,12 @@ export class Booking extends Entity {
 
         this.status = Booking.Status.CANCELLED;
         this.rejectionCancelReason = reason;
+    }
+
+    checkOwner(userId: UniqueId): void {
+        if (!this.userId.equals(userId)) {
+            throw new ForbiddenBookingAccessException(this.id);
+        }
     }
 
     adminCancel(reason: string): void {

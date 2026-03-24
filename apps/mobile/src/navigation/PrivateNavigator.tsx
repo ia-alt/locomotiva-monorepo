@@ -6,10 +6,14 @@ import InicioScreen from '../screens/private/InicioScreen';
 import ReservasScreen from '../screens/private/ReservasScreen';
 import PerfilScreen from '../screens/private/PerfilScreen';
 
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CriarReservaScreen from '../screens/private/CriarReservaScreen';
 import DetalhesReservaScreen from '../screens/private/DetalhesReservaScreen';
 import ConfirmarReservaScreen from '../screens/private/ConfirmarReservaScreen';
+import ReservaSucessoScreen from '../screens/private/ReservaSucessoScreen';
+import DetalhesMinhaReservaScreen from '../screens/private/DetalhesMinhaReservaScreen';
+import { ORPCOutputs } from '../locomotiva-api/types';
+import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
 
 export type PrivateStackParamList = {
     Drawer: undefined;
@@ -28,11 +32,15 @@ export type PrivateStackParamList = {
         title: string;
         description: string;
     };
+    ReservaSucesso: undefined;
+    DetalhesMinhaReserva: {
+        bookingId: string;
+    };
 };
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
-const Stack = createNativeStackNavigator<PrivateStackParamList>();
+const Stack = createStackNavigator<PrivateStackParamList>();
 
 function BottomTabs() {
     return (
@@ -79,7 +87,10 @@ function DrawerRoutes() {
 
 export default function PrivateNavigator() {
     return (
-        <Stack.Navigator initialRouteName="Drawer">
+        <Stack.Navigator initialRouteName="Drawer" screenOptions={{
+            animation: 'slide_from_right',
+            cardStyle: { flex: 1 },
+        }}>
             <Stack.Screen
                 name="Drawer"
                 component={DrawerRoutes}
@@ -100,6 +111,20 @@ export default function PrivateNavigator() {
                 component={ConfirmarReservaScreen}
                 options={{ title: 'Confirmar Reserva' }}
             />
+            <Stack.Screen
+                name="ReservaSucesso"
+                component={ReservaSucessoScreen}
+                options={{ headerShown: false, gestureEnabled: false }}
+            />
+            <Stack.Screen
+                name="DetalhesMinhaReserva"
+                component={DetalhesMinhaReservaScreen}
+                options={{ title: 'Detalhes da Reserva', animation: 'slide_from_right' }}
+            />
         </Stack.Navigator>
     );
+}
+
+export function usePrivateStackNavigation() {
+    return useNavigation<StackNavigationProp<PrivateStackParamList>>();
 }

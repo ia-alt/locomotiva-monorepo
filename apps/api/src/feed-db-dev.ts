@@ -37,8 +37,8 @@ class FeedDbDev {
         await this.cleanDatabase();
 
         await this.getOrCreateAdminUser();
-        await this.createSystemUser();
-        await this.createUser();
+        await this.getOrCreateSystemUser();
+        await this.getOrCreateUser();
 
         await this.createRooms();
     }
@@ -72,27 +72,41 @@ class FeedDbDev {
         this._adminUser = adminUser;
     }
 
-    async createSystemUser() {
-        const systemUser = await container.getRegisterSystemUserUseCase().execute({
-            name: "System",
-            email: "system@test.com",
-            password: "Abc123456789@",
-            birthDate: "1990-01-01",
-        })
+    async getOrCreateSystemUser() {
+        const email = "system@test.com";
 
-        this._systemUser = (await this.getUserById(systemUser.id))!;
+        let systemUser = await this.getUserEmail(email);
+        if (!systemUser) {
+            const { id: userId } = await container.getRegisterSystemUserUseCase().execute({
+                name: "System",
+                email: "system@test.com",
+                password: "Abc123456789@",
+                birthDate: "1990-01-01",
+            })
+
+            systemUser = (await this.getUserById(userId))!;
+        }
+
+        this._systemUser = systemUser;
     }
 
-    async createUser() {
-        const user = await container.getRegisterUserUseCase().execute({
-            name: "User",
-            email: "user@test.com",
-            password: "Abc123456789@",
-            cpf: "75016674035",
-            birthDate: "1990-01-01",
-        })
+    async getOrCreateUser() {
+        const email = "user@test.com";
 
-        this._user = (await this.getUserById(user.id))!;
+        let user = await this.getUserEmail(email);
+        if (!user) {
+            const { id: userId } = await container.getRegisterUserUseCase().execute({
+                name: "User",
+                email: "user@test.com",
+                password: "Abc123456789@",
+                cpf: "75016674035",
+                birthDate: "1990-01-01",
+            })
+
+            user = (await this.getUserById(userId))!;
+        }
+
+        this._user = user;
     }
 
     async createRooms() {
@@ -222,7 +236,7 @@ class FeedDbDev {
         await prisma.accessLog.deleteMany();
         await prisma.booking.deleteMany();
         await prisma.room.deleteMany();
-        await prisma.user.deleteMany();
+        //await prisma.user.deleteMany();
     }
 
     async getUserById(id: string) {
@@ -239,4 +253,4 @@ class FeedDbDev {
 
 
 
-export const feedDbDev = new FeedDbDev().run();
+export const feedDbDev = new FeedDbDev();
