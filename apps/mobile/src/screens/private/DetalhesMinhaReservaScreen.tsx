@@ -57,6 +57,16 @@ export default function DetalhesMinhaReservaScreen() {
                     <Text style={styles.description}>{booking.description}</Text>
                 )}
 
+                {(booking.status === 'cancelled' || booking.status === 'rejected') && !!booking.rejectionCancelReason && (
+                    <View style={styles.reasonBox}>
+                        <Feather name="info" size={16} color="#DC2626" />
+                        <View style={styles.reasonContent}>
+                            <Text style={styles.reasonTitle}>Motivo do cancelamento/rejeição:</Text>
+                            <Text style={styles.reasonText}>{booking.rejectionCancelReason}</Text>
+                        </View>
+                    </View>
+                )}
+
                 <View style={styles.divider} />
 
                 <Text style={styles.sectionTitle}>Data e Horário</Text>
@@ -142,8 +152,31 @@ const styles = StyleSheet.create({
     description: {
         fontSize: 14,
         color: '#4B5563',
-        marginBottom: 16,
+        marginBottom: 8,
         lineHeight: 20,
+    },
+    reasonBox: {
+        flexDirection: 'row',
+        backgroundColor: '#FEF2F2',
+        padding: 12,
+        borderRadius: 8,
+        marginTop: 12,
+        alignItems: 'flex-start',
+    },
+    reasonContent: {
+        marginLeft: 8,
+        flex: 1,
+    },
+    reasonTitle: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#991B1B',
+        marginBottom: 2,
+    },
+    reasonText: {
+        fontSize: 13,
+        color: '#B91C1C',
+        lineHeight: 18,
     },
     divider: {
         height: 1,
