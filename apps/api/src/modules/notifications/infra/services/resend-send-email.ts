@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
+import path from 'node:path';
 import { SendEmailService } from "@notifications/application/services";
+
+const LOGO_PATH = path.join(import.meta.dirname, '../../assets/logo.png');
 
 export class NodemailerSendEmailService implements SendEmailService {
     private readonly transporter: nodemailer.Transporter;
@@ -25,6 +28,13 @@ export class NodemailerSendEmailService implements SendEmailService {
             to,
             subject,
             html,
+            attachments: [
+                {
+                    filename: 'logo.png',
+                    path: LOGO_PATH,
+                    cid: 'logo@locomotiva',
+                },
+            ],
         });
     }
 }

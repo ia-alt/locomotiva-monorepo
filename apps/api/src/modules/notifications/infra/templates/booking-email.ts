@@ -1,10 +1,4 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
-const logoBase64 = fs.readFileSync(
-    path.join(import.meta.dirname, '../../assets/logo.png')
-).toString('base64');
-const logoSrc = `data:image/png;base64,${logoBase64}`;
+const logoSrc = 'cid:logo@locomotiva';
 
 type BookingEmailParams = {
     userName: string;
@@ -69,8 +63,8 @@ export function buildBookingEmail(params: BookingEmailParams): string {
 
           <!-- Header -->
           <tr>
-            <td style="background:#1F4A7A;padding:28px 32px;text-align:center;">
-              <img src="${logoSrc}" alt="Locomotiva Hub" style="height:60px;object-fit:contain;" />
+            <td style="background:#ffffff;padding:28px 32px;text-align:center;border-bottom:4px solid #1F4A7A;">
+              <img src="${logoSrc}" alt="Locomotiva Hub" style="height:70px;object-fit:contain;" />
             </td>
           </tr>
 
