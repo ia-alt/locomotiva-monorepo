@@ -1,23 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { BookingEmailTemplater, BookingEmailParams } from '../../domain/services';
 
 const logoBase64 = fs.readFileSync(
-    path.join(import.meta.dirname, '../../assets/logo.png')
+    path.join(import.meta.dirname, '../../../../notifications/assets/logo.png')
 ).toString('base64');
 const logoSrc = `data:image/png;base64,${logoBase64}`;
 
-type BookingEmailParams = {
-    userName: string;
-    roomName: string;
-    day: string;
-    hourFrom: string;
-    hourTo: string;
-    title: string;
-    status: 'confirmed' | 'rejected' | 'cancelled';
-    reason?: string;
-};
-
 const STATUS_CONFIG = {
+    created: {
+        label: 'Criada',
+        color: '#0277bd',
+        bg: '#e1f5fe',
+        message: 'Sua reserva foi <strong>criada</strong> e está aguardando confirmação.',
+        icon: 'ℹ',
+    },
     confirmed: {
         label: 'Confirmada',
         color: '#2e7d32',
@@ -41,17 +38,18 @@ const STATUS_CONFIG = {
     },
 };
 
-export function buildBookingEmail(params: BookingEmailParams): string {
-    const cfg = STATUS_CONFIG[params.status];
+export class TemplateStringBookingEmailTemplater implements BookingEmailTemplater {
+    private buildHtml(params: BookingEmailParams, status: 'created' | 'confirmed' | 'rejected' | 'cancelled', reason?: string): string {
+        const cfg = STATUS_CONFIG[status];
 
-    const reasonBlock = params.reason
-        ? `<div style="margin-top:16px;padding:12px 16px;background:#f5f5f5;border-left:4px solid ${cfg.color};border-radius:4px;">
-               <p style="margin:0;font-size:13px;color:#555;font-weight:600;">Motivo:</p>
-               <p style="margin:4px 0 0;font-size:14px;color:#333;">${params.reason}</p>
-           </div>`
-        : '';
+        const reasonBlock = reason
+            ? `<div style="margin-top:16px;padding:12px 16px;background:#f5f5f5;border-left:4px solid ${cfg.color};border-radius:4px;">
+                   <p style="margin:0;font-size:13px;color:#555;font-weight:600;">Motivo:</p>
+                   <p style="margin:4px 0 0;font-size:14px;color:#333;">${reason}</p>
+               </div>`
+            : '';
 
-    return `<!DOCTYPE html>
+        return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -141,4 +139,21 @@ export function buildBookingEmail(params: BookingEmailParams): string {
 
 </body>
 </html>`;
+    }
+
+    async templateForCreatedBooking(params: BookingEmailParams): Promise<string> {
+        return this.buildHtml(params, 'created');
+    }
+
+    async templateForConfirmedBooking(params: BookingEmailParams): Promise<string> {
+        return this.buildHtml(params, 'confirmed');
+    }
+
+    async templateForRejectedBooking(params: BookingEmailParams, reason?: string): Promise<string> {
+        return this.buildHtml(params, 'rejected', reason);
+    }
+
+    async templateForCancelledBooking(params: BookingEmailParams): Promise<string> {
+        return this.buildHtml(params, 'cancelled');
+    }
 }

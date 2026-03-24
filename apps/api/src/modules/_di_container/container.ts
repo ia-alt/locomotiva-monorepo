@@ -14,7 +14,8 @@ import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
 import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
 import { PrismaBookingRepository } from "@booking/infra/repositories/prisma-booking";
 import { PrismaRoomRepository } from "@booking/infra/repositories/prisma-room";
-import { BookingService } from "@booking/domain/services";
+import { BookingService, BookingEmailTemplater } from "@booking/domain/services";
+import { TemplateStringBookingEmailTemplater } from "@booking/infra/services";
 import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
@@ -174,6 +175,14 @@ export class DiContainer {
             );
         }
         return this._bookingService;
+    }
+
+    private _bookingEmailTemplater?: BookingEmailTemplater;
+    public getBookingEmailTemplater(): BookingEmailTemplater {
+        if (!this._bookingEmailTemplater) {
+            this._bookingEmailTemplater = new TemplateStringBookingEmailTemplater();
+        }
+        return this._bookingEmailTemplater;
     }
 
     private _bookingReminderEmailTemplater?: BookingReminderEmailTemplater;
@@ -622,7 +631,8 @@ new AfterPasswordResetRequested(
 new AfterBookingStatusChanged(
     container.getSendEmailService(),
     container.getUserRepository(),
-    container.getRoomRepository()
+    container.getRoomRepository(),
+    container.getBookingEmailTemplater()
 );
 //#endregion
 
