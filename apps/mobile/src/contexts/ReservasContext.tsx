@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useORPC } from '../../locomotiva-api/context';
+import { useORPC } from '../locomotiva-api/context';
 
 interface BookingsContextType {
     bookings: any[];

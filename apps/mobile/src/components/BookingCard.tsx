@@ -3,10 +3,10 @@ import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useORPC } from '../../locomotiva-api/context';
+import { useORPC } from '../locomotiva-api/context';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ORPCOutputs } from '../../locomotiva-api/types';
+import { ORPCOutputs } from '../locomotiva-api/types';
 
 type Booking = ORPCOutputs["booking"]["findMyBookings"]["items"][0];
 

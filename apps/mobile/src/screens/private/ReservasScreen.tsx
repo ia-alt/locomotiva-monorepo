@@ -2,8 +2,8 @@ import React from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { Text, FAB } from 'react-native-paper';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { BookingsProvider, useBookings } from './ReservasContext';
-import BookingCard from './BookingCard';
+import { BookingsProvider, useBookings } from '../../contexts/ReservasContext';
+import BookingCard from '../../components/BookingCard';
 
 function ReservasList() {
     const navigation = useNavigation<NavigationProp<any>>();
