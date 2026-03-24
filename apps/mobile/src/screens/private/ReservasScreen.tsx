@@ -1,37 +1,139 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { Text, FAB } from 'react-native-paper';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { BookingsProvider, useBookings } from './ReservasContext';
+import BookingCard from './BookingCard';
 
-export default function ReservasScreen() {
+function ReservasList() {
     const navigation = useNavigation<NavigationProp<any>>();
+    const {
+        bookings,
+        isLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        refetch,
+        isRefetching
+    } = useBookings();
+
+    const renderItem = ({ item }: { item: any }) => (
+        <BookingCard 
+            booking={item} 
+            onPressDetails={() => {
+                // Future implementation: Navigate to detail
+                // navigation.navigate('DetalhesReserva', { bookingId: item.id });
+            }} 
+        />
+    );
+
+    const renderFooter = () => {
+        if (!isFetchingNextPage) return <View style={{ height: 60 }} />;
+        return (
+            <View style={styles.loadingFooter}>
+                <ActivityIndicator size="small" color="#3B82F6" />
+            </View>
+        );
+    };
+
+    if (isLoading && !isRefetching && bookings.length === 0) {
+        return (
+            <View style={styles.centerContainer}>
+                <ActivityIndicator size="large" color="#3B82F6" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
-            <Text variant="headlineMedium">Reservas</Text>
-            <Text variant="bodyMedium">Aqui você gerencia suas reservas.</Text>
+            <View style={styles.header}>
+                <Text variant="headlineMedium" style={styles.title}>Minhas Reservas</Text>
+            </View>
+
+            <FlatList
+                data={bookings}
+                keyExtractor={(item) => item.id}
+                renderItem={renderItem}
+                contentContainerStyle={styles.listContent}
+                onEndReached={() => {
+                    if (hasNextPage && !isFetchingNextPage) {
+                        fetchNextPage();
+                    }
+                }}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={renderFooter}
+                refreshControl={
+                    <RefreshControl refreshing={isRefetching && !isLoading} onRefresh={refetch} />
+                }
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>Você ainda não possui reservas.</Text>
+                    </View>
+                }
+            />
 
             <FAB
                 icon="plus"
+                color="#FFFFFF"
                 style={styles.fab}
                 onPress={() => navigation.navigate('CriarReserva')}
-                label='Solicitar Reserva'
+                label='Nova Reserva'
             />
         </View>
+    );
+}
+
+export default function ReservasScreen() {
+    return (
+        <BookingsProvider>
+            <ReservasList />
+        </BookingsProvider>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#F9FAFB',
+    },
+    header: {
+        paddingHorizontal: 20,
+        paddingTop: 24,
+        paddingBottom: 16,
+        backgroundColor: '#F9FAFB',
+    },
+    title: {
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    centerContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20
+        backgroundColor: '#F9FAFB',
+    },
+    listContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 100, // Make room for FAB
+    },
+    loadingFooter: {
+        paddingVertical: 20,
+        alignItems: 'center',
+        height: 60,
+    },
+    emptyContainer: {
+        paddingVertical: 40,
+        alignItems: 'center',
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#6B7280',
     },
     fab: {
         position: 'absolute',
         margin: 16,
         right: 0,
         bottom: 0,
+        backgroundColor: '#1E88E5',
     },
 });

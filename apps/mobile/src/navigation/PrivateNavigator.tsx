@@ -10,6 +10,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CriarReservaScreen from '../screens/private/CriarReservaScreen';
 import DetalhesReservaScreen from '../screens/private/DetalhesReservaScreen';
 import ConfirmarReservaScreen from '../screens/private/ConfirmarReservaScreen';
+import ReservaSucessoScreen from '../screens/private/ReservaSucessoScreen';
 
 export type PrivateStackParamList = {
     Drawer: undefined;
@@ -28,6 +29,7 @@ export type PrivateStackParamList = {
         title: string;
         description: string;
     };
+    ReservaSucesso: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -99,6 +101,11 @@ export default function PrivateNavigator() {
                 name="ConfirmarReserva"
                 component={ConfirmarReservaScreen}
                 options={{ title: 'Confirmar Reserva' }}
+            />
+            <Stack.Screen
+                name="ReservaSucesso"
+                component={ReservaSucessoScreen}
+                options={{ headerShown: false, gestureEnabled: false }}
             />
         </Stack.Navigator>
     );
