@@ -1,20 +1,27 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { BookingEmailTemplater, BookingEmailParams } from '../../domain/services';
+import { BookingEmailTemplater } from '../../domain/services';
+import { Booking } from '../../domain/entities';
 
-const logoBase64 = fs.readFileSync(
-  path.join(import.meta.dirname, '../../../../modules/notifications/assets/logo.png')
-).toString('base64');
-const logoSrc = `data:image/png;base64,${logoBase64}`;
 
-const STATUS_CONFIG = {
-  created: {
-    label: 'Criada',
-    color: '#0277bd',
-    bg: '#e1f5fe',
-    message: 'Sua reserva foi <strong>criada</strong> e está aguardando confirmação.',
-    icon: 'ℹ',
-  },
+const logoSrc = 'cid:logo@locomotiva';
+
+type BookingEmailParams = {
+  userName: string;
+  roomName: string;
+  day: string;
+  hourFrom: string;
+  hourTo: string;
+  title: string;
+  status: 'confirmed' | 'rejected' | 'cancelled' | 'no_show';
+  reason?: string;
+};
+
+const STATUS_CONFIG: Record<Exclude<Booking.Status, Booking.Status.PENDING | Booking.Status.ATTENDED>, {
+  label: string;
+  color: string;
+  bg: string;
+  message: string;
+  icon: string;
+}> = {
   confirmed: {
     label: 'Confirmada',
     color: '#2e7d32',
@@ -36,10 +43,17 @@ const STATUS_CONFIG = {
     message: 'Sua reserva foi <strong>cancelada</strong>.',
     icon: '✕',
   },
+  no_show: {
+    label: 'Não Comparecida',
+    color: '#78350f',
+    bg: '#fef3c7',
+    message: 'Você <strong>não compareceu</strong> à reserva de sala que solicitou. Esse tipo de ocorrência pode dificultar a aprovação de reservas futuras.',
+    icon: '!',
+  },
 };
 
 export class TemplateStringBookingEmailTemplater implements BookingEmailTemplater {
-  private buildHtml(params: BookingEmailParams, status: 'created' | 'confirmed' | 'rejected' | 'cancelled', reason?: string): string {
+  private buildHtml(params: BookingEmailParams, status: Exclude<Booking.Status, Booking.Status.PENDING | Booking.Status.ATTENDED>, reason?: string): string {
     const cfg = STATUS_CONFIG[status];
 
     const reasonBlock = reason
@@ -67,8 +81,8 @@ export class TemplateStringBookingEmailTemplater implements BookingEmailTemplate
 
           <!-- Header -->
           <tr>
-            <td style="background:#1F4A7A;padding:28px 32px;text-align:center;">
-              <img src="${logoSrc}" alt="Locomotiva Hub" style="height:60px;object-fit:contain;" />
+            <td style="background:#ffffff;padding:28px 32px;text-align:center;border-bottom:4px solid #1F4A7A;">
+              <img src="${logoSrc}" alt="Locomotiva Hub" style="height:70px;object-fit:contain;" />
             </td>
           </tr>
 
@@ -77,7 +91,7 @@ export class TemplateStringBookingEmailTemplater implements BookingEmailTemplate
             <td style="background:${cfg.bg};padding:16px 32px;text-align:center;border-bottom:1px solid ${cfg.color}33;">
               <span style="display:inline-flex;align-items:center;gap:8px;font-size:15px;color:${cfg.color};font-weight:600;">
                 <span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${cfg.color};color:#fff;font-size:13px;line-height:22px;text-align:center;">${cfg.icon}</span>
-                Reserva ${cfg.label}
+                 Reserva ${cfg.label}
               </span>
             </td>
           </tr>
@@ -142,18 +156,19 @@ export class TemplateStringBookingEmailTemplater implements BookingEmailTemplate
   }
 
   async templateForCreatedBooking(params: BookingEmailParams): Promise<string> {
-    return this.buildHtml(params, 'created');
+    //return this.buildHtml(params, Booking.Status.PENDING);
+    return '';
   }
 
   async templateForConfirmedBooking(params: BookingEmailParams): Promise<string> {
-    return this.buildHtml(params, 'confirmed');
+    return this.buildHtml(params, Booking.Status.CONFIRMED);
   }
 
   async templateForRejectedBooking(params: BookingEmailParams, reason?: string): Promise<string> {
-    return this.buildHtml(params, 'rejected', reason);
+    return this.buildHtml(params, Booking.Status.REJECTED, reason);
   }
 
   async templateForCancelledBooking(params: BookingEmailParams): Promise<string> {
-    return this.buildHtml(params, 'cancelled');
+    return this.buildHtml(params, Booking.Status.CANCELLED);
   }
 }

@@ -47,19 +47,19 @@ class FindBookingsAdminUseCase implements UseCase<FindBookingsAdminUseCase.Input
         let total: number;
 
         if (!hasPending) {
-            // No pending in filter → simple chronological order
+            // No pending in filter → sort by booking date
             const where: Prisma.BookingWhereInput = { ...baseWhere, status: { in: userStatusFilter } };
             [total, bookingsDb] = await Promise.all([
                 this.prisma.booking.count({ where }),
                 this.prisma.booking.findMany({
                     where,
-                    orderBy: { createdAt: "desc" },
+                    orderBy: { startTime: "desc" },
                     skip: (pageNumber - 1) * pageSize,
                     take: pageSize,
                 }),
             ]);
         } else {
-            // Pending first, then the rest chronologically
+            // Pending first, then the rest sorted by booking date
             const pendingWhere: Prisma.BookingWhereInput = { ...baseWhere, status: "pending" };
             const otherStatuses = userStatusFilter.filter((s) => s !== "pending");
             const nonPendingWhere: Prisma.BookingWhereInput = {
@@ -79,11 +79,9 @@ class FindBookingsAdminUseCase implements UseCase<FindBookingsAdminUseCase.Input
             total = pendingCount + nonPendingCount;
             const pageStart = (pageNumber - 1) * pageSize;
 
-            // How many pending items go on this page
             const pendingSkip = Math.min(pageStart, pendingCount);
             const pendingTake = Math.max(0, Math.min(pageSize, pendingCount - pageStart));
 
-            // Fill remaining slots with non-pending
             const nonPendingTake = pageSize - pendingTake;
             const nonPendingSkip = Math.max(0, pageStart - pendingCount);
 
@@ -91,7 +89,7 @@ class FindBookingsAdminUseCase implements UseCase<FindBookingsAdminUseCase.Input
                 pendingTake > 0
                     ? this.prisma.booking.findMany({
                           where: pendingWhere,
-                          orderBy: { createdAt: "desc" },
+                          orderBy: { startTime: "desc" },
                           skip: pendingSkip,
                           take: pendingTake,
                       })
@@ -99,7 +97,7 @@ class FindBookingsAdminUseCase implements UseCase<FindBookingsAdminUseCase.Input
                 nonPendingTake > 0 && !(otherStatuses.length === 0 && userStatusFilter.length > 0)
                     ? this.prisma.booking.findMany({
                           where: nonPendingWhere,
-                          orderBy: { createdAt: "desc" },
+                          orderBy: { startTime: "desc" },
                           skip: nonPendingSkip,
                           take: nonPendingTake,
                       })
