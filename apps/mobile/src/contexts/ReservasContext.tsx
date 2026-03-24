@@ -1,9 +1,12 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useORPC } from '../locomotiva-api/context';
+import { ORPCOutputs } from '../locomotiva-api/types';
+
+type Bookings = ORPCOutputs["booking"]["findMyBookings"]["items"];
 
 interface BookingsContextType {
-    bookings: any[];
+    bookings: Bookings;
     fetchNextPage: () => void;
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
@@ -41,7 +44,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
         initialPageParam: 1,
     });
 
-    const bookings = data?.pages.flatMap((page: any) => page.items) ?? [];
+    const bookings = data?.pages.flatMap((page) => page.items) ?? [];
 
     return (
         <BookingsContext.Provider
