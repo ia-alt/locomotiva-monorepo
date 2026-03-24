@@ -8,6 +8,7 @@
     "start:api": "npm start -w @locomotiva/api",
     "dev:api": "npm run dev -w @locomotiva/api",
     "dev:mobile": "npm run dev -w @locomotiva/mobile",
+    "dev:admin": "npm run dev -w @locomotiva/admin",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:mobile\""
   },
   "dependencies": {
