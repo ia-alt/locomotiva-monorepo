@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { Text, FAB } from 'react-native-paper';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { BookingsProvider, useBookings } from '../../contexts/ReservasContext';
 import BookingCard from '../../components/BookingCard';
+import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
 
 function ReservasList() {
-    const navigation = useNavigation<NavigationProp<any>>();
+    const navigation = usePrivateStackNavigation();
     const {
         bookings,
         isLoading,
@@ -17,12 +17,12 @@ function ReservasList() {
         isRefetching
     } = useBookings();
 
-    const renderItem = ({ item }: { item: any }) => (
-        <BookingCard 
-            booking={item} 
+    const renderItem = (item: typeof bookings[0]) => (
+        <BookingCard
+            booking={item}
             onPressDetails={() => {
-                navigation.navigate('DetalhesMinhaReserva', { booking: item });
-            }} 
+                navigation.navigate('DetalhesMinhaReserva', { bookingId: item.id });
+            }}
         />
     );
 
@@ -52,7 +52,7 @@ function ReservasList() {
             <FlatList
                 data={bookings}
                 keyExtractor={(item) => item.id}
-                renderItem={renderItem}
+                renderItem={({ item }) => renderItem(item)}
                 contentContainerStyle={styles.listContent}
                 onEndReached={() => {
                     if (hasNextPage && !isFetchingNextPage) {

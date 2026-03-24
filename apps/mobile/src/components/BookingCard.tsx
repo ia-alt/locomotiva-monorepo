@@ -20,7 +20,7 @@ const statusConfig = {
     pending: { label: 'Aguardando aprovação', color: '#D97706', bg: '#FEF3C7', dot: true },
     confirmed: { label: 'Agendado', color: '#059669', bg: '#D1FAE5', dot: true, dotColor: '#10B981' },
     attended: { label: 'Concluída', color: '#4B5563', bg: '#F3F4F6', dot: false },
-    cancelled: { label: 'Cancelada', color: '#DC2626', bg: '#FEE2E2', dot: true },
+    cancelled: { label: 'Cancelada', color: '#a87373ff', bg: '#FEE2E2', dot: true },
     rejected: { label: 'Rejeitada', color: '#DC2626', bg: '#FEE2E2', dot: true },
     no_show: { label: 'Não compareceu', color: '#4B5563', bg: '#F3F4F6', dot: false }
 };
@@ -49,10 +49,10 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
         <Surface style={styles.card} elevation={0}>
             <TouchableOpacity onPress={onPressDetails} activeOpacity={0.7}>
                 <View style={styles.header}>
-                    <Animated.Image 
-                        source={{ uri: roomImageUrl }} 
-                        style={styles.roomImage} 
-                        sharedTransitionTag={`room-image-${booking.id}`} 
+                    <Animated.Image
+                        source={{ uri: roomImageUrl }}
+                        style={styles.roomImage}
+                        sharedTransitionTag={`room-image-${booking.id}`}
                     />
 
                     <View style={styles.roomInfo}>

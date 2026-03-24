@@ -16,7 +16,7 @@ const statusConfig = {
     pending: { label: 'Aguardando aprovação', color: '#D97706', bg: '#FEF3C7', dot: true },
     confirmed: { label: 'Agendada', color: '#059669', bg: '#D1FAE5', dot: true },
     attended: { label: 'Concluída', color: '#4B5563', bg: '#F3F4F6', dot: false },
-    cancelled: { label: 'Cancelada', color: '#DC2626', bg: '#FEE2E2', dot: true },
+    cancelled: { label: 'Cancelada', color: '#a87373ff', bg: '#FEE2E2', dot: true },
     rejected: { label: 'Rejeitada', color: '#DC2626', bg: '#FEE2E2', dot: true },
     no_show: { label: 'Não compareceu', color: '#4B5563', bg: '#F3F4F6', dot: false }
 };
@@ -25,29 +25,29 @@ export default function DetalhesMinhaReservaScreen() {
     const route = useRoute<Props>();
     const navigation = useNavigation();
     const queryClient = useQueryClient();
-    const { booking } = route.params;
+    const { bookingId } = route.params;
     const orpc = useORPC();
 
     const [isCancelDialogVisible, setIsCancelDialogVisible] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
 
-    const { data: room, isLoading: isLoadingRoom } = useQuery(
-        //@ts-ignore getRoomById queryOptions
-        orpc.booking.getRoomById.queryOptions({ input: { id: booking.roomId } })
+    const { data: booking, isLoading: isLoadingBooking } = useQuery(
+        orpc.booking.getBookingById.queryOptions({ input: { id: bookingId } })
     );
 
-    const fromDate = new Date(booking.period.from);
-    const toDate = new Date(booking.period.to);
+    const { data: room, isLoading: isLoadingRoom } = useQuery({
+        ...orpc.booking.getRoomById.queryOptions({ input: { id: booking?.roomId as string } }),
+        enabled: !!booking?.roomId
+    });
 
-    const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
-
-    // Using the same placeholder image logic
     const roomImageUrl = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
 
-    const { mutateAsync: cancelBooking, isPending: isCanceling } = useMutation(
-        //@ts-ignore cancelBooking mutationOptions
-        orpc.booking.cancelBooking.mutationOptions()
-    );
+    const { mutateAsync: cancelBooking, isPending: isCanceling } = useMutation({
+        mutationFn: orpc.booking.cancelBooking.mutationOptions().mutationFn,
+        onSuccess: () => {
+            queryClient.invalidateQueries(orpc.booking.findMyBookings.key() as any);
+        }
+    });
 
     const handleCancel = useCallback(() => {
         setCancelReason('');
@@ -55,22 +55,25 @@ export default function DetalhesMinhaReservaScreen() {
     }, []);
 
     const confirmCancel = async () => {
+        if (!booking) return;
         setIsCancelDialogVisible(false);
         try {
             await cancelBooking({
                 bookingId: booking.id,
                 reason: cancelReason.trim()
             });
-            await queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
-            Alert.alert('Sucesso', 'Reserva cancelada com sucesso.', [
-                { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
+            await queryClient.invalidateQueries(orpc.booking.findMyBookings.key() as any);
+
         } catch (e: any) {
-            Alert.alert('Erro', e.message || 'Não foi possível cancelar a reserva.');
+            console.error(e);
         }
     };
 
     useLayoutEffect(() => {
+        if (!booking) {
+            navigation.setOptions({ headerRight: undefined });
+            return;
+        }
         if (booking.status === 'pending' || booking.status === 'confirmed') {
             navigation.setOptions({
                 headerRight: () => (
@@ -90,7 +93,19 @@ export default function DetalhesMinhaReservaScreen() {
         } else {
             navigation.setOptions({ headerRight: undefined });
         }
-    }, [navigation, booking.status, isCanceling, handleCancel]);
+    }, [navigation, booking?.status, isCanceling, handleCancel]);
+
+    if (isLoadingBooking || !booking) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#DC2626" />
+            </View>
+        );
+    }
+
+    const fromDate = new Date(booking.period.from);
+    const toDate = new Date(booking.period.to);
+    const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
@@ -174,8 +189,8 @@ export default function DetalhesMinhaReservaScreen() {
                     </Dialog.Content>
                     <Dialog.Actions>
                         <Button onPress={() => setIsCancelDialogVisible(false)}>Voltar</Button>
-                        <Button 
-                            onPress={confirmCancel} 
+                        <Button
+                            onPress={confirmCancel}
                             textColor="#DC2626"
                             disabled={!cancelReason.trim()}
                         >

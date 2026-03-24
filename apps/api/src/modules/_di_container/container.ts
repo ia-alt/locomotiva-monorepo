@@ -46,6 +46,7 @@ import { FindBookingsUseCase } from "@booking/application/use-cases/find-booking
 import { FindMyBookingsUseCase } from "@booking/application/use-cases/find-my-bookings";
 import { FindBookingsAdminUseCase } from "@booking/application/use-cases/find-bookings-admin";
 import { AdminCreateBookingUseCase } from "@booking/application/use-cases/admin-create-booking";
+import { GetBookingByIdUseCase } from "@booking/application/use-cases/get-booking-by-id";
 import { MarkBookingNoShowUseCase } from "@booking/application/use-cases/mark-booking-no-show";
 import { ListAvailableSlotsByDayUseCase } from "@booking/application/use-cases/list-available-slots-by-day";
 import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-cases/send-booking-reminders-of-tomorrow";
@@ -462,6 +463,13 @@ export class DiContainer {
             this.getBookingRepository()
         );
         return findMyBookingsUseCase;
+    }
+
+    public getGetBookingByIdUseCase(authUser: User): GetBookingByIdUseCase {
+        return new GetBookingByIdUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingRepository()
+        );
     }
 
     public getListAvailableSlotsByDayUseCase(authUser: User): ListAvailableSlotsByDayUseCase {

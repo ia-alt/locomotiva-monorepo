@@ -9,6 +9,7 @@
     "dev:api": "npm run dev -w @locomotiva/api",
     "dev:mobile": "npm run dev -w @locomotiva/mobile",
     "dev:admin": "npm run dev -w @locomotiva/admin",
+    "prisma:studio": "npm run prisma:studio -w @locomotiva/api",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:mobile\""
   },
   "dependencies": {

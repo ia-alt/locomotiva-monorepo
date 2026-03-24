@@ -10,6 +10,7 @@ import { cancelBookingRoute } from "./routes/cancel-booking";
 import { adminCancelBookingRoute } from "./routes/admin-cancel-booking";
 import { findBookingsRoute } from "./routes/find-bookings";
 import { findMyBookingsRoute } from "./routes/find-my-bookings";
+import { getBookingByIdRoute } from "./routes/get-booking-by-id";
 import { listAvailableSlotsByDayRoute } from "./routes/list-available-slots-by-day";
 import { sendBookingRemindersOfTomorrowRoute } from "./routes/send-booking-reminders-of-tomorrow";
 import { setDefaultOperatingScheduleRoute } from "./routes/set-default-operating-schedule";
@@ -36,6 +37,7 @@ export const bookingRouter = {
     adminCancelBooking: adminCancelBookingRoute,
     findBookings: findBookingsRoute,
     findMyBookings: findMyBookingsRoute,
+    getBookingById: getBookingByIdRoute,
     listAvailableSlotsByDay: listAvailableSlotsByDayRoute,
     sendBookingRemindersOfTomorrow: sendBookingRemindersOfTomorrowRoute,
     setDefaultOperatingSchedule: setDefaultOperatingScheduleRoute,

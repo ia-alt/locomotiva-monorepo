@@ -4,7 +4,7 @@ import { feedDbDev } from "./feed-db-dev";
 
 async function main() {
 
-    await feedDbDev.run();
+    //await feedDbDev.run();
 
     ORPCServer.listen();
 }
