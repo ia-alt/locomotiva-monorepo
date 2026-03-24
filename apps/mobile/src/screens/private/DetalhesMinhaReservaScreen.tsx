@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import React, { useLayoutEffect, useCallback, useState } from 'react';
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { Text, Surface } from 'react-native-paper';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { Text, Surface, Dialog, Portal, Button, TextInput } from 'react-native-paper';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
 
 type Props = RouteProp<PrivateStackParamList, 'DetalhesMinhaReserva'>;
@@ -23,8 +23,13 @@ const statusConfig = {
 
 export default function DetalhesMinhaReservaScreen() {
     const route = useRoute<Props>();
+    const navigation = useNavigation();
+    const queryClient = useQueryClient();
     const { booking } = route.params;
     const orpc = useORPC();
+
+    const [isCancelDialogVisible, setIsCancelDialogVisible] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
 
     const { data: room, isLoading: isLoadingRoom } = useQuery(
         //@ts-ignore getRoomById queryOptions
@@ -33,18 +38,66 @@ export default function DetalhesMinhaReservaScreen() {
 
     const fromDate = new Date(booking.period.from);
     const toDate = new Date(booking.period.to);
-    
+
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
-    
+
     // Using the same placeholder image logic
     const roomImageUrl = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
 
+    const { mutateAsync: cancelBooking, isPending: isCanceling } = useMutation(
+        //@ts-ignore cancelBooking mutationOptions
+        orpc.booking.cancelBooking.mutationOptions()
+    );
+
+    const handleCancel = useCallback(() => {
+        setCancelReason('');
+        setIsCancelDialogVisible(true);
+    }, []);
+
+    const confirmCancel = async () => {
+        setIsCancelDialogVisible(false);
+        try {
+            await cancelBooking({
+                bookingId: booking.id,
+                reason: cancelReason.trim()
+            });
+            await queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
+            Alert.alert('Sucesso', 'Reserva cancelada com sucesso.', [
+                { text: 'OK', onPress: () => navigation.goBack() }
+            ]);
+        } catch (e: any) {
+            Alert.alert('Erro', e.message || 'Não foi possível cancelar a reserva.');
+        }
+    };
+
+    useLayoutEffect(() => {
+        if (booking.status === 'pending' || booking.status === 'confirmed') {
+            navigation.setOptions({
+                headerRight: () => (
+                    <TouchableOpacity
+                        onPress={handleCancel}
+                        disabled={isCanceling}
+                        style={{ marginRight: 8, padding: 8 }}
+                    >
+                        {isCanceling ? (
+                            <ActivityIndicator size="small" color="#DC2626" />
+                        ) : (
+                            <Text style={{ color: '#DC2626', fontWeight: 'bold' }}>Cancelar Reserva</Text>
+                        )}
+                    </TouchableOpacity>
+                ),
+            });
+        } else {
+            navigation.setOptions({ headerRight: undefined });
+        }
+    }, [navigation, booking.status, isCanceling, handleCancel]);
+
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
-            <Animated.Image 
-                source={{ uri: roomImageUrl }} 
-                style={styles.headerImage} 
-                sharedTransitionTag={`room-image-${booking.id}`} 
+            <Animated.Image
+                source={{ uri: roomImageUrl }}
+                style={styles.headerImage}
+                sharedTransitionTag={`room-image-${booking.id}`}
             />
             <Surface style={styles.card} elevation={0}>
                 <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1, alignSelf: 'flex-start' }]}>
@@ -82,7 +135,7 @@ export default function DetalhesMinhaReservaScreen() {
                 <View style={styles.divider} />
 
                 <Text style={styles.sectionTitle}>Local</Text>
-                
+
                 {isLoadingRoom ? (
                     <Text style={styles.infoText}>Carregando sala...</Text>
                 ) : (
@@ -99,7 +152,38 @@ export default function DetalhesMinhaReservaScreen() {
                         )}
                     </>
                 )}
+
             </Surface>
+
+            <Portal>
+                <Dialog visible={isCancelDialogVisible} onDismiss={() => setIsCancelDialogVisible(false)}>
+                    <Dialog.Title>Cancelar Reserva</Dialog.Title>
+                    <Dialog.Content>
+                        <Text variant="bodyMedium" style={{ marginBottom: 16 }}>
+                            Tem certeza que deseja cancelar esta reserva? Por favor, justifique o motivo.
+                        </Text>
+                        <TextInput
+                            label="Motivo do cancelamento *"
+                            value={cancelReason}
+                            onChangeText={setCancelReason}
+                            mode="outlined"
+                            multiline
+                            numberOfLines={3}
+                            style={{ backgroundColor: '#F9FAFB' }}
+                        />
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setIsCancelDialogVisible(false)}>Voltar</Button>
+                        <Button 
+                            onPress={confirmCancel} 
+                            textColor="#DC2626"
+                            disabled={!cancelReason.trim()}
+                        >
+                            Sim, cancelar
+                        </Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
         </ScrollView>
     );
 }
