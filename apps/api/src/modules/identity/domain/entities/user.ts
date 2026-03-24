@@ -3,6 +3,9 @@ import z from "zod";
 import { EmailAddress } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
 import { BirthDate } from "src/modules/identity/domain/value-objects/birth-date";
+import { error } from "node:console";
+import { ErrorType } from "src/modules/_core/error";
+import { SystemHasCpfOrUserNotHaveCpf } from "../errors";
 
 class User extends Entity {
 
@@ -10,13 +13,16 @@ class User extends Entity {
         id: UniqueId,
         private _name: string,
         public email: EmailAddress,
-        public cpf: Cpf,
+        public cpf: Cpf | null,
         public birthDate: BirthDate,
         private _userType: User.UserType,
         private _passwordHash: string,
         private _lastPasswordResetDate: Date,
 
     ) {
+        if((_userType === User.UserType.SYSTEM) === (cpf !== null)){
+            throw new SystemHasCpfOrUserNotHaveCpf()
+        }
         super(id);
     }
 
@@ -32,6 +38,19 @@ class User extends Entity {
             props.cpf,
             props.birthDate,
             User.UserType.USER,
+            props.passwordHash,
+            new Date(),
+        );
+    }
+
+    static createSystem(props: User.CreateSystemParams): User {
+        return new User(
+            UniqueId.create(),
+            props.name,
+            props.email,
+            null,
+            props.birthDate,
+            User.UserType.SYSTEM,
             props.passwordHash,
             new Date(),
         );
@@ -63,7 +82,7 @@ class User extends Entity {
             id: this.id.value,
             name: this._name,
             email: this.email.toJSON(),
-            cpf: this.cpf.toJSON(),
+            cpf: this.cpf?.toJSON(),
             birthDate: this.birthDate.toJSON(),
             userType: this._userType,
         };
@@ -93,6 +112,12 @@ namespace User {
         birthDate: BirthDate;
         passwordHash: string;
     };
+    export type CreateSystemParams = {
+        name: string;
+        email: EmailAddress;
+        birthDate: BirthDate;
+        passwordHash: string;
+    };
     export const UpdateSchema = z.object({
         name: z.string(),
         email: EmailAddress.JsonSchema,
@@ -105,7 +130,7 @@ namespace User {
         id: z.string(),
         name: z.string(),
         email: EmailAddress.JsonSchema,
-        cpf: Cpf.JsonSchema,
+        cpf: Cpf.JsonSchema.nullable().optional(),
         birthDate: BirthDate.JsonSchema,
         userType: z.enum(UserType),
     });

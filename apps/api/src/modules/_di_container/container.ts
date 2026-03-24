@@ -4,6 +4,7 @@ import { UserRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { prisma } from "@core/infra/database/prisma/prisma-instance";
 import { RegisterUserUseCase } from "src/modules/identity/application/use-cases/register-user";
+import { RegisterSystemUserUseCase } from "src/modules/identity/application/use-cases/register-system-user";
 import { CoworkingSettingsRepository, AccessLogRepository } from "@coworking/domain/repositories";
 import { PrismaCoworkingSettingsRepository } from "@coworking/infra/repositories/prisma-coworking-settings";
 import { PrismaAccessLogRepository } from "@coworking/infra/repositories/prisma-access-log";
@@ -234,6 +235,13 @@ export class DiContainer {
             this.getAuthService(),
         );
         return registerUserUseCase;
+    }
+
+    public getRegisterSystemUserUseCase(): RegisterSystemUserUseCase {
+        return new RegisterSystemUserUseCase(
+            this.getUserRepository(),
+            this.getPasswordHashService(),
+        );
     }
 
     public getGetAuthUserUseCase(authUser: User): GetAuthUserUseCase {
