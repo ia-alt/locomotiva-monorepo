@@ -7,7 +7,6 @@ import { UserRepository } from "src/modules/identity/domain/repositories";
 import { SendEmailService } from "@notifications/application/services";
 import { BookingNotFoundError } from "../errors";
 import { format } from "date-fns";
-import { buildBookingEmail } from "@notifications/infra/templates/booking-email";
 
 class ProcessBookingRequestUseCase extends UseCase<ProcessBookingRequestUseCase.Input, ProcessBookingRequestUseCase.Output> {
 
@@ -50,15 +49,24 @@ class ProcessBookingRequestUseCase extends UseCase<ProcessBookingRequestUseCase.
 
         if (!user) return;
 
-        const html = buildBookingEmail({
-            userName: user.firstName,
-            roomName: room?.name ?? 'sala reservada',
-            day: format(booking.period.value.from, 'dd/MM/yyyy'),
-            hourFrom: format(booking.period.value.from, 'HH:mm'),
-            hourTo: format(booking.period.value.to, 'HH:mm'),
-            title: booking.title,
-            status: 'confirmed',
-        });
+        const day = format(booking.period.value.from, 'dd/MM/yyyy');
+        const hourFrom = format(booking.period.value.from, 'HH:mm');
+        const hourTo = format(booking.period.value.to, 'HH:mm');
+        const roomName = room?.name ?? 'sala reservada';
+
+        const htl = `
+            <h1>Reserva Confirmada!</h1>
+            <p>Olá ${user.firstName},</p>
+            <p>Sua reserva foi <strong>confirmada</strong>.</p>
+            <ul>
+                <li><strong>Sala:</strong> ${roomName}</li>
+                <li><strong>Data:</strong> ${day}</li>
+                <li><strong>Horário:</strong> ${hourFrom} às ${hourTo}</li>
+                <li><strong>Título:</strong> ${booking.title}</li>
+            </ul>
+            <p>Atenciosamente,</p>
+            <p>Equipe Locomotiva</p>
+        `;
 
         await this.sendEmailService.send(
             user.email.value,
