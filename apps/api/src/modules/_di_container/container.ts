@@ -5,6 +5,8 @@ import { PrismaClient } from "@core/infra/database/prisma";
 import { prisma } from "@core/infra/database/prisma/prisma-instance";
 import { RegisterUserUseCase } from "src/modules/identity/application/use-cases/register-user";
 import { CreateApiKeyUseCase } from "src/modules/identity/application/use-cases/create-api-key";
+import { ListApiKeysUseCase } from "src/modules/identity/application/use-cases/list-api-keys";
+import { DeleteApiKeyUseCase } from "src/modules/identity/application/use-cases/delete-api-key";
 import { CoworkingSettingsRepository, AccessLogRepository } from "@coworking/domain/repositories";
 import { PrismaCoworkingSettingsRepository } from "@coworking/infra/repositories/prisma-coworking-settings";
 import { PrismaAccessLogRepository } from "@coworking/infra/repositories/prisma-access-log";
@@ -261,6 +263,20 @@ export class DiContainer {
 
     public getCreateApiKeyUseCase(authUser: User): CreateApiKeyUseCase {
         return new CreateApiKeyUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
+        );
+    }
+
+    public getListApiKeysUseCase(authUser: User): ListApiKeysUseCase {
+        return new ListApiKeysUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
+        );
+    }
+
+    public getDeleteApiKeyUseCase(authUser: User): DeleteApiKeyUseCase {
+        return new DeleteApiKeyUseCase(
             this.getAuthUserService(authUser),
             this.getApiKeyRepository()
         );

@@ -2,6 +2,7 @@ import { ApiKeyRepository } from "../../domain/repositories/api-key-repository";
 import { ApiKey } from "../../domain/entities/api-key";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { UniqueId } from "@core/base-classes";
+import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
 
 export class PrismaApiKeyRepository implements ApiKeyRepository {
     constructor(private readonly prisma: PrismaClient) {}
@@ -56,5 +57,27 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
         await this.prisma.apiKey.delete({
             where: { id },
         });
+    }
+
+    async findAll(pagination: PaginatedQuery, search?: string): Promise<PaginatedResult<typeof ApiKey.JsonSchema, ApiKey>> {
+        const { take, skip } = pagination.asTakeSkip;
+        
+        const where = search
+            ? { name: { contains: search, mode: 'insensitive' as const } }
+            : undefined;
+
+        const [keysDb, total] = await Promise.all([
+            this.prisma.apiKey.findMany({ where, orderBy: { name: 'asc' }, take, skip }),
+            this.prisma.apiKey.count({ where }),
+        ]);
+
+        const items = keysDb.map(data => new ApiKey(
+            UniqueId.fromString(data.id),
+            data.name,
+            data.keyHash,
+            data.createdAt,
+        ));
+
+        return PaginatedResult.create({ items, total, paginatedQuery: pagination });
     }
 }
