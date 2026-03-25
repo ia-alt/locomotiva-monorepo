@@ -5,7 +5,6 @@ import z from "zod";
 import { EmailAddress } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
 import { BirthDate } from "src/modules/identity/domain/value-objects/birth-date";
-import { SystemHasCpfOrUserNotHaveCpf } from "../errors";
 
 class User extends AggregateRoot {
 
@@ -13,16 +12,13 @@ class User extends AggregateRoot {
         id: UniqueId,
         private _name: string,
         public email: EmailAddress,
-        public cpf: Cpf | null,
+        public cpf: Cpf,
         public birthDate: BirthDate,
         private _userType: User.UserType,
         private _passwordHash: string,
         private _lastPasswordResetDate: Date,
 
     ) {
-        if ((_userType === User.UserType.SYSTEM) === (cpf !== null)) {
-            throw new SystemHasCpfOrUserNotHaveCpf()
-        }
         super(id);
     }
 
@@ -45,20 +41,7 @@ class User extends AggregateRoot {
         return user;
     }
 
-    static createSystem(props: User.CreateSystemParams): User {
-        const user = new User(
-            UniqueId.create(),
-            props.name,
-            props.email,
-            null,
-            props.birthDate,
-            User.UserType.SYSTEM,
-            props.passwordHash,
-            new Date(),
-        );
-        user.addDomainEvent(new UserRegisteredEvent(user));
-        return user;
-    }
+
 
     update(data: User.UpdateParams): void {
         this._name = data.name;
@@ -90,7 +73,7 @@ class User extends AggregateRoot {
             id: this.id.value,
             name: this._name,
             email: this.email.toJSON(),
-            cpf: this.cpf?.toJSON(),
+            cpf: this.cpf.toJSON(),
             birthDate: this.birthDate.toJSON(),
             userType: this._userType,
         };
@@ -100,9 +83,7 @@ class User extends AggregateRoot {
         return this._userType === User.UserType.ADMIN;
     }
 
-    isSystem() {
-        return this._userType === User.UserType.SYSTEM;
-    }
+
 
 
 }
@@ -111,7 +92,6 @@ namespace User {
     export enum UserType {
         USER = "user",
         ADMIN = "admin",
-        SYSTEM = "system",
     }
     export type CreateParams = {
         name: string;
@@ -138,7 +118,7 @@ namespace User {
         id: z.string(),
         name: z.string(),
         email: EmailAddress.JsonSchema,
-        cpf: Cpf.JsonSchema.nullable().optional(),
+        cpf: Cpf.JsonSchema,
         birthDate: BirthDate.JsonSchema,
         userType: z.enum(UserType),
     });

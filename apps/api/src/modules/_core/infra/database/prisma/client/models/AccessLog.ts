@@ -930,6 +930,11 @@ export type AccessLogFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Skip the first `n` AccessLogs.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of AccessLogs.
+   */
   distinct?: Prisma.AccessLogScalarFieldEnum | Prisma.AccessLogScalarFieldEnum[]
 }
 

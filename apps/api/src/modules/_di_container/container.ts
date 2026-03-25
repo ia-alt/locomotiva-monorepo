@@ -1,10 +1,10 @@
 import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
-import { PrismaUserRepository } from "src/modules/identity/infra/repositories";
-import { UserRepository } from "src/modules/identity/domain/repositories";
+import { PrismaUserRepository, PrismaApiKeyRepository } from "src/modules/identity/infra/repositories";
+import { UserRepository, ApiKeyRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { prisma } from "@core/infra/database/prisma/prisma-instance";
 import { RegisterUserUseCase } from "src/modules/identity/application/use-cases/register-user";
-import { RegisterSystemUserUseCase } from "src/modules/identity/application/use-cases/register-system-user";
+import { CreateApiKeyUseCase } from "src/modules/identity/application/use-cases/create-api-key";
 import { CoworkingSettingsRepository, AccessLogRepository } from "@coworking/domain/repositories";
 import { PrismaCoworkingSettingsRepository } from "@coworking/infra/repositories/prisma-coworking-settings";
 import { PrismaAccessLogRepository } from "@coworking/infra/repositories/prisma-access-log";
@@ -80,6 +80,14 @@ export class DiContainer {
             this._userRepository = new PrismaUserRepository(this.prisma);
         }
         return this._userRepository;
+    }
+
+    private _apiKeyRepository?: ApiKeyRepository;
+    public getApiKeyRepository(): ApiKeyRepository {
+        if (!this._apiKeyRepository) {
+            this._apiKeyRepository = new PrismaApiKeyRepository(this.prisma);
+        }
+        return this._apiKeyRepository;
     }
 
     private _coworkingSettingsRepository?: CoworkingSettingsRepository;
@@ -251,12 +259,14 @@ export class DiContainer {
         return registerUserUseCase;
     }
 
-    public getRegisterSystemUserUseCase(): RegisterSystemUserUseCase {
-        return new RegisterSystemUserUseCase(
-            this.getUserRepository(),
-            this.getPasswordHashService(),
+    public getCreateApiKeyUseCase(authUser: User): CreateApiKeyUseCase {
+        return new CreateApiKeyUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
         );
     }
+
+
 
     public getGetAuthUserUseCase(authUser: User): GetAuthUserUseCase {
         const getAuthUserUseCase = new GetAuthUserUseCase(
@@ -334,9 +344,8 @@ export class DiContainer {
         return listAllAccessLogsUseCase;
     }
 
-    public getAutoCheckoutAllUseCase(authUser: User): AutoCheckoutAllUseCase {
+    public getAutoCheckoutAllUseCase(): AutoCheckoutAllUseCase {
         const autoCheckoutAllUseCase = new AutoCheckoutAllUseCase(
-            this.getAuthUserService(authUser),
             this.getAccessService()
         );
         return autoCheckoutAllUseCase;
@@ -486,9 +495,8 @@ export class DiContainer {
         return listAvailableSlotsByDayUseCase;
     }
 
-    public getSendBookingRemindersOfTomorrowUseCase(authUser: User): SendBookingRemindersOfTomorrowUseCase {
+    public getSendBookingRemindersOfTomorrowUseCase(): SendBookingRemindersOfTomorrowUseCase {
         const sendBookingRemindersOfTomorrowUseCase = new SendBookingRemindersOfTomorrowUseCase(
-            this.getAuthUserService(authUser),
             this.getBookingRepository(),
             this.getUserRepository(),
             this.getBookingReminderEmailTemplater(),

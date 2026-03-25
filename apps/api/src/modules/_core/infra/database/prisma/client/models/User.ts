@@ -181,7 +181,7 @@ export type UserGroupByOutputType = {
   id: string
   name: string
   email: string
-  cpf: string | null
+  cpf: string
   birthDate: Date
   passwordHash: string
   lastPasswordResetDate: Date
@@ -215,7 +215,7 @@ export type UserWhereInput = {
   id?: Prisma.StringFilter<"User"> | string
   name?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
-  cpf?: Prisma.StringNullableFilter<"User"> | string | null
+  cpf?: Prisma.StringFilter<"User"> | string
   birthDate?: Prisma.DateTimeFilter<"User"> | Date | string
   passwordHash?: Prisma.StringFilter<"User"> | string
   lastPasswordResetDate?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -228,7 +228,7 @@ export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  cpf?: Prisma.SortOrderInput | Prisma.SortOrder
+  cpf?: Prisma.SortOrder
   birthDate?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   lastPasswordResetDate?: Prisma.SortOrder
@@ -257,7 +257,7 @@ export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  cpf?: Prisma.SortOrderInput | Prisma.SortOrder
+  cpf?: Prisma.SortOrder
   birthDate?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   lastPasswordResetDate?: Prisma.SortOrder
@@ -276,7 +276,7 @@ export type UserScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"User"> | string
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
-  cpf?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  cpf?: Prisma.StringWithAggregatesFilter<"User"> | string
   birthDate?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string
   lastPasswordResetDate?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -289,7 +289,7 @@ export type UserCreateInput = {
   id: string
   name: string
   email: string
-  cpf?: string | null
+  cpf: string
   birthDate: Date | string
   passwordHash: string
   lastPasswordResetDate: Date | string
@@ -302,7 +302,7 @@ export type UserUncheckedCreateInput = {
   id: string
   name: string
   email: string
-  cpf?: string | null
+  cpf: string
   birthDate: Date | string
   passwordHash: string
   lastPasswordResetDate: Date | string
@@ -315,7 +315,7 @@ export type UserUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  cpf?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -328,7 +328,7 @@ export type UserUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  cpf?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -341,7 +341,7 @@ export type UserCreateManyInput = {
   id: string
   name: string
   email: string
-  cpf?: string | null
+  cpf: string
   birthDate: Date | string
   passwordHash: string
   lastPasswordResetDate: Date | string
@@ -354,7 +354,7 @@ export type UserUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  cpf?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -367,7 +367,7 @@ export type UserUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  cpf?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -417,10 +417,6 @@ export type UserMinOrderByAggregateInput = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
-}
-
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -490,7 +486,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     id: string
     name: string
     email: string
-    cpf: string | null
+    cpf: string
     birthDate: Date
     passwordHash: string
     lastPasswordResetDate: Date
@@ -1106,6 +1102,11 @@ export type UserFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Skip the first `n` Users.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Users.
+   */
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 

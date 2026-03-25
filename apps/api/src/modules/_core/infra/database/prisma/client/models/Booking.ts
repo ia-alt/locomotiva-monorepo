@@ -437,6 +437,10 @@ export type BookingMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 
 
 export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1122,6 +1126,11 @@ export type BookingFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Skip the first `n` Bookings.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Bookings.
+   */
   distinct?: Prisma.BookingScalarFieldEnum | Prisma.BookingScalarFieldEnum[]
 }
 

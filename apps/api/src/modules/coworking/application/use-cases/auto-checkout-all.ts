@@ -1,16 +1,13 @@
 import { UseCase } from "@core/base-classes";
-import { AuthUserService } from "src/modules/identity/domain/services";
 import z from "zod";
 import { AccessService } from "@coworking/domain/services";
 
 class AutoCheckoutAllUseCase implements UseCase<AutoCheckoutAllUseCase.Input, AutoCheckoutAllUseCase.Output> {
     constructor(
-        private readonly authUserService: AuthUserService,
         private readonly accessService: AccessService,
     ) { }
 
     async execute(): Promise<AutoCheckoutAllUseCase.Output> {
-        this.authUserService.checkIsSystem();
 
         const result = await this.accessService.checkOutAll();
 
