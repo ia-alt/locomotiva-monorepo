@@ -22,6 +22,16 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
         });
     }
 
+    async findAll(): Promise<ApiKey[]> {
+        const data = await this.prisma.apiKey.findMany({
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return data.map(
+            (row) => new ApiKey(UniqueId.fromString(row.id), row.name, row.keyHash, row.createdAt)
+        );
+    }
+
     async findById(id: string): Promise<ApiKey | null> {
         const data = await this.prisma.apiKey.findUnique({
             where: { id },
