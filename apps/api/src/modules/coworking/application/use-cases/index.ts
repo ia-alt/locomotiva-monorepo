@@ -8,3 +8,5 @@ export * from "./list-all-access-logs";
 export * from "./count-active-access-logs";
 export * from "./configure-coworking";
 export * from "./get-my-checkin-status";
+export * from "./checkin-by-cpf";
+export * from "./checkout-by-cpf";

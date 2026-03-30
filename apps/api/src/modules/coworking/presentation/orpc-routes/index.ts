@@ -13,6 +13,8 @@ import { getWeeklyFrequencyRoute } from "./routes/get-weekly-frequency";
 import { getAccessStatsRoute } from "./routes/get-access-stats";
 import { getYearlyReportRoute } from "./routes/get-yearly-report";
 import { getRecentActivitiesRoute } from "./routes/get-recent-activities";
+import { checkinByCpfRoute } from "./routes/checkin-by-cpf";
+import { checkoutByCpfRoute } from "./routes/checkout-by-cpf";
 
 export const coworkingRoutes = {
     checkin: performCheckinRoute,
@@ -30,4 +32,6 @@ export const coworkingRoutes = {
     getAccessStats: getAccessStatsRoute,
     getYearlyReport: getYearlyReportRoute,
     getRecentActivities: getRecentActivitiesRoute,
+    checkinByCpf: checkinByCpfRoute,
+    checkoutByCpf: checkoutByCpfRoute,
 };
