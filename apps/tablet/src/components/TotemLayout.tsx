@@ -26,7 +26,9 @@ export type TotemLayoutProps = UseTotemFlowParams & {
 
 export function TotemLayout({
     color,
+    mode,
     mutationFn,
+    lookupFn,
     idleIcon,
     idleTitle,
     idleSub,
@@ -41,7 +43,7 @@ export function TotemLayout({
 }: TotemLayoutProps) {
     const { width, height } = useWindowDimensions()
 
-    const flow = useTotemFlow({ mutationFn })
+    const flow = useTotemFlow({ mode, mutationFn, lookupFn })
 
     // ── Valores dinâmicos baseados na tela ──────────────────────────────────────
     const logoH = Math.min(180, height * 0.21)
@@ -102,6 +104,29 @@ export function TotemLayout({
                         <Image source={LOGO_GOVERNO} style={{ width: govW, height: govH }} resizeMode="contain" />
                     </View>
                 </View>
+
+                {/* Modal: CPF não encontrado */}
+                {flow.notFoundMessage && (
+                    <View style={[StyleSheet.absoluteFill, s.notFoundOverlay, { backdropFilter: 'blur(6px)' } as any]}>
+                        <View style={s.notFoundCard}>
+                            <MaterialCommunityIcons name="account-alert" size={52} color="#EF4444" />
+                            {!!flow.notFoundMessage?.title && (
+                                <Text style={s.notFoundTitle}>{flow.notFoundMessage.title}</Text>
+                            )}
+                            <Text style={s.notFoundMsg}>{flow.notFoundMessage?.body}</Text>
+                            <Button
+                                mode="contained"
+                                buttonColor="#EF4444"
+                                onPress={flow.dismissNotFoundModal}
+                                style={{ borderRadius: 10, marginTop: 16 }}
+                                contentStyle={{ paddingVertical: 6, paddingHorizontal: 16 }}
+                                labelStyle={{ fontWeight: 'bold' }}
+                            >
+                                Fechar
+                            </Button>
+                        </View>
+                    </View>
+                )}
             </View>
         )
     }
@@ -146,6 +171,8 @@ export function TotemLayout({
                                 mode="contained"
                                 buttonColor={color}
                                 onPress={flow.handleCpfNext}
+                                loading={flow.isLookupPending}
+                                disabled={flow.isLookupPending}
                                 icon="arrow-right"
                                 contentStyle={{ paddingVertical: 8, flexDirection: 'row-reverse' }}
                                 labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
@@ -187,6 +214,28 @@ export function TotemLayout({
                                 style={s.submitBtn}
                             >
                                 {submitButtonLabel}
+                            </Button>
+                        </View>
+                    )}
+
+                    {flow.step === 'confirm' && (
+                        <View style={s.confirmInner}>
+                            <MaterialCommunityIcons name={submitButtonIcon} size={56} color={color} />
+                            <Text style={s.cardTitle}>Confirmar Saída</Text>
+                            <Text style={s.successName}>{flow.pendingUserName}</Text>
+                            <Text style={[s.cardSubtitle, { marginTop: 4 }]}>Quer registrar sua saída agora?</Text>
+                            <Button
+                                mode="contained"
+                                buttonColor={color}
+                                onPress={flow.handleConfirmSubmit}
+                                loading={flow.isPending}
+                                disabled={flow.isPending}
+                                icon={submitButtonIcon}
+                                contentStyle={{ paddingVertical: 10 }}
+                                labelStyle={{ fontSize: 18, fontWeight: 'bold' }}
+                                style={[s.submitBtn, { marginTop: 20 }]}
+                            >
+                                Sim
                             </Button>
                         </View>
                     )}
@@ -238,6 +287,12 @@ const s = StyleSheet.create({
     idleBtn: { borderRadius: 16, elevation: 4 },
     partners: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingBottom: 16 },
 
+    // ── Modal: CPF não encontrado ──
+    notFoundOverlay: { backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', zIndex: 10 },
+    notFoundCard: { backgroundColor: 'white', borderRadius: 20, padding: 32, maxWidth: 420, width: '70%', alignItems: 'center', elevation: 10 },
+    notFoundTitle: { fontSize: 20, fontWeight: 'bold', color: '#1E293B', marginTop: 14, marginBottom: 10, textAlign: 'center' },
+    notFoundMsg: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22 },
+
     // ── Painel expandido (tela cheia) ──
     logoTopFull: { position: 'absolute', top: '6%', left: 0, right: 0, alignSelf: 'center', zIndex: 1 },
     backBtn: { position: 'absolute', top: 24, left: 24, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 2 },
@@ -248,6 +303,9 @@ const s = StyleSheet.create({
     cardSubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginBottom: 20, lineHeight: 20 },
     input: { marginBottom: 4 },
     submitBtn: { borderRadius: 10, marginTop: 12 },
+
+    // ── Confirmar (checkout) ──
+    confirmInner: { alignItems: 'center', paddingVertical: 8 },
 
     // ── Sucesso ──
     successInner: { alignItems: 'center', paddingVertical: 8 },

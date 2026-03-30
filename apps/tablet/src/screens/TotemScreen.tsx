@@ -9,7 +9,9 @@ export default function TotemScreen() {
 
     return (
         <TotemLayout
+            mode="checkin"
             color={BLUE}
+            lookupFn={(input) => (orpc.coworking.findMemberByCpf as any).call(input)}
             mutationFn={(input) => (orpc.coworking.checkinByCpf as any).call(input)}
             idleIcon="account-key"
             idleTitle={'Bem-vindo ao\nLocomotiva Hub'}

@@ -15,6 +15,9 @@ import { getYearlyReportRoute } from "./routes/get-yearly-report";
 import { getRecentActivitiesRoute } from "./routes/get-recent-activities";
 import { checkinByCpfRoute } from "./routes/checkin-by-cpf";
 import { checkoutByCpfRoute } from "./routes/checkout-by-cpf";
+import { findMemberByCpfRoute } from "./routes/find-member-by-cpf";
+import { findActiveMemberByCpfRoute } from "./routes/find-active-member-by-cpf";
+import { quickCheckoutByCpfRoute } from "./routes/quick-checkout-by-cpf";
 
 export const coworkingRoutes = {
     checkin: performCheckinRoute,
@@ -34,4 +37,7 @@ export const coworkingRoutes = {
     getRecentActivities: getRecentActivitiesRoute,
     checkinByCpf: checkinByCpfRoute,
     checkoutByCpf: checkoutByCpfRoute,
+    findMemberByCpf: findMemberByCpfRoute,
+    findActiveMemberByCpf: findActiveMemberByCpfRoute,
+    quickCheckoutByCpf: quickCheckoutByCpfRoute,
 };

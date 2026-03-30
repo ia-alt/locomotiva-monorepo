@@ -9,8 +9,10 @@ export default function CheckoutScreen() {
 
     return (
         <TotemLayout
+            mode="checkout"
             color={GREEN}
-            mutationFn={(input) => (orpc.coworking.checkoutByCpf as any).call(input)}
+            lookupFn={(input) => (orpc.coworking.findActiveMemberByCpf as any).call(input)}
+            mutationFn={(input) => (orpc.coworking.quickCheckoutByCpf as any).call(input)}
             idleIcon="account-arrow-right"
             idleTitle={'Até logo!\nRegistre sua saída'}
             idleSub="Toque no botão abaixo para registrar sua saída"

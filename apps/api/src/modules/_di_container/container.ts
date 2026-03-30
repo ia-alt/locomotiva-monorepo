@@ -34,7 +34,7 @@ import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
 import { NodemailerSendEmailService } from "@notifications/infra/services/resend-send-email";
 import { env } from "src/modules/env";
-import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase } from "@coworking/application/use-cases";
+import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
 import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
@@ -348,6 +348,18 @@ export class DiContainer {
             this.getUserRepository(),
             this.getAccessService()
         );
+    }
+
+    public getFindMemberByCpfUseCase(): FindMemberByCpfUseCase {
+        return new FindMemberByCpfUseCase(this.getUserRepository());
+    }
+
+    public getFindActiveMemberByCpfUseCase(): FindActiveMemberByCpfUseCase {
+        return new FindActiveMemberByCpfUseCase(this.getUserRepository(), this.getAccessLogRepository());
+    }
+
+    public getQuickCheckoutByCpfUseCase(): QuickCheckoutByCpfUseCase {
+        return new QuickCheckoutByCpfUseCase(this.getUserRepository(), this.getAccessService());
     }
 
     public getListUserAccessLogsUseCase(authUser: User): ListUserAccessLogsUseCase {

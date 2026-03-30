@@ -21,7 +21,7 @@ class CheckinByCpfUseCase implements UseCase<CheckinByCpfUseCase.Input, CheckinB
 
         // Compara data de nascimento no formato YYYY-MM-DD
         if (user.birthDate.toString() !== input.birthDate) {
-            throw new Error("CPF ou data de nascimento incorretos");
+            throw new Error("Data de nascimento incorreta");
         }
 
         const accessLog = await this.accessService.checkInUser(user.id);

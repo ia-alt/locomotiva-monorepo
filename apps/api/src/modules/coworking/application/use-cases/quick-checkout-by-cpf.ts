@@ -5,23 +5,18 @@ import { UserRepository } from "src/modules/identity/domain/repositories";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
 import z from "zod";
 
-class CheckoutByCpfUseCase implements UseCase<CheckoutByCpfUseCase.Input, CheckoutByCpfUseCase.Output> {
+class QuickCheckoutByCpfUseCase implements UseCase<QuickCheckoutByCpfUseCase.Input, QuickCheckoutByCpfUseCase.Output> {
     constructor(
         private readonly userRepository: UserRepository,
         private readonly accessService: AccessService,
     ) { }
 
-    async execute(input: CheckoutByCpfUseCase.Input): Promise<CheckoutByCpfUseCase.Output> {
+    async execute(input: QuickCheckoutByCpfUseCase.Input): Promise<QuickCheckoutByCpfUseCase.Output> {
         const cpf = Cpf.fromString(input.cpf);
         const user = await this.userRepository.findByEmailOrCpf(cpf);
 
         if (!user) {
             throw new Error("Usuário não encontrado");
-        }
-
-        // Compara data de nascimento no formato YYYY-MM-DD
-        if (user.birthDate.toString() !== input.birthDate) {
-            throw new Error("Data de nascimento incorreta");
         }
 
         const accessLog = await this.accessService.checkOutUser(user.id);
@@ -30,10 +25,9 @@ class CheckoutByCpfUseCase implements UseCase<CheckoutByCpfUseCase.Input, Checko
     }
 }
 
-namespace CheckoutByCpfUseCase {
+namespace QuickCheckoutByCpfUseCase {
     export const InputSchema = z.object({
         cpf: z.string().min(11, "CPF inválido"),
-        birthDate: z.string(), // YYYY-MM-DD
     });
 
     export const OutputSchema = AccessLog.JsonSchema.extend({
@@ -44,4 +38,4 @@ namespace CheckoutByCpfUseCase {
     export type Output = z.infer<typeof OutputSchema>;
 }
 
-export { CheckoutByCpfUseCase };
+export { QuickCheckoutByCpfUseCase };

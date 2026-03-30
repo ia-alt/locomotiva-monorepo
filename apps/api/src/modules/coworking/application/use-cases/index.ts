@@ -10,3 +10,6 @@ export * from "./configure-coworking";
 export * from "./get-my-checkin-status";
 export * from "./checkin-by-cpf";
 export * from "./checkout-by-cpf";
+export * from "./find-member-by-cpf";
+export * from "./find-active-member-by-cpf";
+export * from "./quick-checkout-by-cpf";
