@@ -2,9 +2,10 @@ import { ApiKeyRepository } from "../../domain/repositories/api-key-repository";
 import { ApiKey } from "../../domain/entities/api-key";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { UniqueId } from "@core/base-classes";
+import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
 
 export class PrismaApiKeyRepository implements ApiKeyRepository {
-    constructor(private readonly prisma: PrismaClient) {}
+    constructor(private readonly prisma: PrismaClient) { }
 
     async save(apiKey: ApiKey): Promise<void> {
         await this.prisma.apiKey.upsert({

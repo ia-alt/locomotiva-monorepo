@@ -29,6 +29,7 @@ export type AccessLogMinAggregateOutputType = {
   userId: string | null
   entryTime: Date | null
   exitTime: Date | null
+  checkinTotemName: string | null
 }
 
 export type AccessLogMaxAggregateOutputType = {
@@ -36,6 +37,7 @@ export type AccessLogMaxAggregateOutputType = {
   userId: string | null
   entryTime: Date | null
   exitTime: Date | null
+  checkinTotemName: string | null
 }
 
 export type AccessLogCountAggregateOutputType = {
@@ -43,6 +45,7 @@ export type AccessLogCountAggregateOutputType = {
   userId: number
   entryTime: number
   exitTime: number
+  checkinTotemName: number
   _all: number
 }
 
@@ -52,6 +55,7 @@ export type AccessLogMinAggregateInputType = {
   userId?: true
   entryTime?: true
   exitTime?: true
+  checkinTotemName?: true
 }
 
 export type AccessLogMaxAggregateInputType = {
@@ -59,6 +63,7 @@ export type AccessLogMaxAggregateInputType = {
   userId?: true
   entryTime?: true
   exitTime?: true
+  checkinTotemName?: true
 }
 
 export type AccessLogCountAggregateInputType = {
@@ -66,6 +71,7 @@ export type AccessLogCountAggregateInputType = {
   userId?: true
   entryTime?: true
   exitTime?: true
+  checkinTotemName?: true
   _all?: true
 }
 
@@ -146,6 +152,7 @@ export type AccessLogGroupByOutputType = {
   userId: string
   entryTime: Date
   exitTime: Date | null
+  checkinTotemName: string | null
   _count: AccessLogCountAggregateOutputType | null
   _min: AccessLogMinAggregateOutputType | null
   _max: AccessLogMaxAggregateOutputType | null
@@ -174,6 +181,7 @@ export type AccessLogWhereInput = {
   userId?: Prisma.StringFilter<"AccessLog"> | string
   entryTime?: Prisma.DateTimeFilter<"AccessLog"> | Date | string
   exitTime?: Prisma.DateTimeNullableFilter<"AccessLog"> | Date | string | null
+  checkinTotemName?: Prisma.StringNullableFilter<"AccessLog"> | string | null
 }
 
 export type AccessLogOrderByWithRelationInput = {
@@ -181,6 +189,7 @@ export type AccessLogOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   entryTime?: Prisma.SortOrder
   exitTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkinTotemName?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type AccessLogWhereUniqueInput = Prisma.AtLeast<{
@@ -191,6 +200,7 @@ export type AccessLogWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.StringFilter<"AccessLog"> | string
   entryTime?: Prisma.DateTimeFilter<"AccessLog"> | Date | string
   exitTime?: Prisma.DateTimeNullableFilter<"AccessLog"> | Date | string | null
+  checkinTotemName?: Prisma.StringNullableFilter<"AccessLog"> | string | null
 }, "id">
 
 export type AccessLogOrderByWithAggregationInput = {
@@ -198,6 +208,7 @@ export type AccessLogOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   entryTime?: Prisma.SortOrder
   exitTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkinTotemName?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AccessLogCountOrderByAggregateInput
   _max?: Prisma.AccessLogMaxOrderByAggregateInput
   _min?: Prisma.AccessLogMinOrderByAggregateInput
@@ -211,6 +222,7 @@ export type AccessLogScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringWithAggregatesFilter<"AccessLog"> | string
   entryTime?: Prisma.DateTimeWithAggregatesFilter<"AccessLog"> | Date | string
   exitTime?: Prisma.DateTimeNullableWithAggregatesFilter<"AccessLog"> | Date | string | null
+  checkinTotemName?: Prisma.StringNullableWithAggregatesFilter<"AccessLog"> | string | null
 }
 
 export type AccessLogCreateInput = {
@@ -218,6 +230,7 @@ export type AccessLogCreateInput = {
   userId: string
   entryTime: Date | string
   exitTime?: Date | string | null
+  checkinTotemName?: string | null
 }
 
 export type AccessLogUncheckedCreateInput = {
@@ -225,6 +238,7 @@ export type AccessLogUncheckedCreateInput = {
   userId: string
   entryTime: Date | string
   exitTime?: Date | string | null
+  checkinTotemName?: string | null
 }
 
 export type AccessLogUpdateInput = {
@@ -232,6 +246,7 @@ export type AccessLogUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   entryTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exitTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkinTotemName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AccessLogUncheckedUpdateInput = {
@@ -239,6 +254,7 @@ export type AccessLogUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   entryTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exitTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkinTotemName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AccessLogCreateManyInput = {
@@ -246,6 +262,7 @@ export type AccessLogCreateManyInput = {
   userId: string
   entryTime: Date | string
   exitTime?: Date | string | null
+  checkinTotemName?: string | null
 }
 
 export type AccessLogUpdateManyMutationInput = {
@@ -253,6 +270,7 @@ export type AccessLogUpdateManyMutationInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   entryTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exitTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkinTotemName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AccessLogUncheckedUpdateManyInput = {
@@ -260,6 +278,7 @@ export type AccessLogUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   entryTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exitTime?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkinTotemName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AccessLogCountOrderByAggregateInput = {
@@ -267,6 +286,7 @@ export type AccessLogCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   entryTime?: Prisma.SortOrder
   exitTime?: Prisma.SortOrder
+  checkinTotemName?: Prisma.SortOrder
 }
 
 export type AccessLogMaxOrderByAggregateInput = {
@@ -274,6 +294,7 @@ export type AccessLogMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   entryTime?: Prisma.SortOrder
   exitTime?: Prisma.SortOrder
+  checkinTotemName?: Prisma.SortOrder
 }
 
 export type AccessLogMinOrderByAggregateInput = {
@@ -281,6 +302,7 @@ export type AccessLogMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   entryTime?: Prisma.SortOrder
   exitTime?: Prisma.SortOrder
+  checkinTotemName?: Prisma.SortOrder
 }
 
 
@@ -290,6 +312,7 @@ export type AccessLogSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   userId?: boolean
   entryTime?: boolean
   exitTime?: boolean
+  checkinTotemName?: boolean
 }, ExtArgs["result"]["accessLog"]>
 
 export type AccessLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -297,6 +320,7 @@ export type AccessLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   userId?: boolean
   entryTime?: boolean
   exitTime?: boolean
+  checkinTotemName?: boolean
 }, ExtArgs["result"]["accessLog"]>
 
 export type AccessLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -304,6 +328,7 @@ export type AccessLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   userId?: boolean
   entryTime?: boolean
   exitTime?: boolean
+  checkinTotemName?: boolean
 }, ExtArgs["result"]["accessLog"]>
 
 export type AccessLogSelectScalar = {
@@ -311,9 +336,10 @@ export type AccessLogSelectScalar = {
   userId?: boolean
   entryTime?: boolean
   exitTime?: boolean
+  checkinTotemName?: boolean
 }
 
-export type AccessLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "entryTime" | "exitTime", ExtArgs["result"]["accessLog"]>
+export type AccessLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "entryTime" | "exitTime" | "checkinTotemName", ExtArgs["result"]["accessLog"]>
 
 export type $AccessLogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AccessLog"
@@ -323,6 +349,7 @@ export type $AccessLogPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     userId: string
     entryTime: Date
     exitTime: Date | null
+    checkinTotemName: string | null
   }, ExtArgs["result"]["accessLog"]>
   composites: {}
 }
@@ -750,6 +777,7 @@ export interface AccessLogFieldRefs {
   readonly userId: Prisma.FieldRef<"AccessLog", 'String'>
   readonly entryTime: Prisma.FieldRef<"AccessLog", 'DateTime'>
   readonly exitTime: Prisma.FieldRef<"AccessLog", 'DateTime'>
+  readonly checkinTotemName: Prisma.FieldRef<"AccessLog", 'String'>
 }
     
 

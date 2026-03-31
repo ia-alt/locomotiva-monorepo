@@ -10,7 +10,7 @@ export class AccessService {
         private readonly coworkingSettingsRepository: CoworkingSettingsRepository,
     ) { }
 
-    async checkInUser(userId: UniqueId): Promise<AccessLog> {
+    async checkInUser(userId: UniqueId, totemName?: string | null): Promise<AccessLog> {
         const activeLog = await this.accessLogRepository.findByUserIdAndActive(userId);
         if (activeLog) {
             throw new UserAlreadyHasActiveCheckinError();
@@ -23,7 +23,7 @@ export class AccessService {
             throw new CoworkingFullCapacityError();
         }
 
-        const accessLog = AccessLog.create({ userId });
+        const accessLog = AccessLog.create({ userId, checkinTotemName: totemName });
         await this.accessLogRepository.save(accessLog);
 
         return accessLog;
