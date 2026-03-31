@@ -11,6 +11,7 @@ const QR_CODE = { uri: '/Qr_teste.png' }
 
 export type TotemLayoutProps = UseTotemFlowParams & {
     color: string
+    apiKeyName?: string
     idleIcon: React.ComponentProps<typeof MaterialCommunityIcons>['name']
     idleTitle: string
     idleSub: string
@@ -29,6 +30,7 @@ export function TotemLayout({
     mode,
     mutationFn,
     lookupFn,
+    apiKeyName,
     idleIcon,
     idleTitle,
     idleSub,
@@ -79,6 +81,12 @@ export function TotemLayout({
 
                 {/* RIGHT – Painel colorido */}
                 <View style={[s.actionPanel, { backgroundColor: color, paddingHorizontal: panelPaddingH }]}>
+                    {!!apiKeyName && (
+                        <View style={s.apiKeyBadge}>
+                            <MaterialCommunityIcons name="key-outline" size={11} color="rgba(255,255,255,0.7)" />
+                            <Text style={s.apiKeyBadgeText}>{apiKeyName}</Text>
+                        </View>
+                    )}
                     <Image source={LOGO_LOCOMOTIVA} style={[s.logoTop, { height: logoH }]} resizeMode="contain" tintColor="white" />
 
                     <View style={[s.centerContent, { paddingTop: centerPaddingTop }]}>
@@ -280,6 +288,8 @@ const s = StyleSheet.create({
 
     // ── Painel de ação (direita – idle) ──
     actionPanel: { flex: 1, position: 'relative' },
+    apiKeyBadge: { position: 'absolute', top: 10, right: 12, flexDirection: 'row', alignItems: 'center', gap: 4, zIndex: 2 },
+    apiKeyBadgeText: { fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
     logoTop: { position: 'absolute', top: '6%', left: 0, right: 0, width: undefined, alignSelf: 'center' },
     centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     idleTitle: { color: 'white', fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },
