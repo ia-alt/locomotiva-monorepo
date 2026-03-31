@@ -1,4 +1,7 @@
 import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
+import { TemplateStringPasswordResetCodeEmailTemplater } from "src/modules/identity/infra/services/template-string-password-reset-code-email-templater";
+import { AfterPasswordResetCodeRequested } from "src/modules/identity/application/subscribers/after-password-reset-code-requested";
+import { PasswordResetCodeEmailTemplater } from "src/modules/identity/domain/services/password-reset-code-email-templater";
 import { PrismaUserRepository, PrismaApiKeyRepository } from "src/modules/identity/infra/repositories";
 import { UserRepository, ApiKeyRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
@@ -27,6 +30,9 @@ import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
 import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
+import { RequestPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/request-password-reset-code";
+import { VerifyPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/verify-password-reset-code";
+import { ExecutePasswordResetWithCodeUseCase } from "src/modules/identity/application/use-cases/execute-password-reset-with-code";
 import { ListUsersUseCase } from "src/modules/identity/application/use-cases/list-users";
 import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/update-user";
 import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
@@ -165,6 +171,14 @@ export class DiContainer {
             this._passwordResetEmailTemplater = new TemplateStringPasswordResetEmailTemplater();
         }
         return this._passwordResetEmailTemplater;
+    }
+
+    private _passwordResetCodeEmailTemplater?: PasswordResetCodeEmailTemplater;
+    public getPasswordResetCodeEmailTemplater(): PasswordResetCodeEmailTemplater {
+        if (!this._passwordResetCodeEmailTemplater) {
+            this._passwordResetCodeEmailTemplater = new TemplateStringPasswordResetCodeEmailTemplater();
+        }
+        return this._passwordResetCodeEmailTemplater;
     }
 
     private _spaceOperatingHoursService?: SpaceOperatingHoursService;
@@ -310,6 +324,18 @@ export class DiContainer {
             this.getPasswordService(),
         );
         return executePasswordResetUseCase;
+    }
+
+    public getRequestPasswordResetCodeUseCase(): RequestPasswordResetCodeUseCase {
+        return new RequestPasswordResetCodeUseCase(this.getPasswordService());
+    }
+
+    public getVerifyPasswordResetCodeUseCase(): VerifyPasswordResetCodeUseCase {
+        return new VerifyPasswordResetCodeUseCase(this.getPasswordService());
+    }
+
+    public getExecutePasswordResetWithCodeUseCase(): ExecutePasswordResetWithCodeUseCase {
+        return new ExecutePasswordResetWithCodeUseCase(this.getPasswordService());
     }
 
     public getChangePasswordUseCase(authUser: User): ChangePasswordUseCase {
@@ -676,6 +702,11 @@ const container = new DiContainer();
 new AfterPasswordResetRequested(
     container.getSendEmailService(),
     container.getPasswordResetEmailTemplater()
+);
+
+new AfterPasswordResetCodeRequested(
+    container.getSendEmailService(),
+    container.getPasswordResetCodeEmailTemplater()
 );
 
 new AfterBookingStatusChanged(

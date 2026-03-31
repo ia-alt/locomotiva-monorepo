@@ -27,6 +27,8 @@ export class PrismaUserRepository implements UserRepository {
                 userType: json.userType,
                 passwordHash: user.getPasswordHash(),
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
+                passwordResetCode: user.getPasswordResetCode(),
+                passwordResetCodeExpiry: user.getPasswordResetCodeExpiry(),
             },
             create: {
                 id: json.id,
@@ -37,6 +39,8 @@ export class PrismaUserRepository implements UserRepository {
                 userType: json.userType,
                 passwordHash: user.getPasswordHash(),
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
+                passwordResetCode: user.getPasswordResetCode(),
+                passwordResetCodeExpiry: user.getPasswordResetCodeExpiry(),
             },
         });
         DomainEvents.dispatchEventsForAggregate(user.id);
@@ -95,7 +99,9 @@ export class PrismaUserRepository implements UserRepository {
             BirthDate.fromDate(user.birthDate),
             user.userType as User.UserType,
             user.passwordHash,
-            user.lastPasswordResetDate
+            user.lastPasswordResetDate,
+            user.passwordResetCode,
+            user.passwordResetCodeExpiry
         );
     }
 }

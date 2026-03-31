@@ -15,14 +15,16 @@ datasource db {
 
 // identity context
 model User {
-  id                    String   @id
-  name                  String
-  email                 String   @unique
-  cpf                   String  @unique
-  birthDate             DateTime
-  passwordHash          String
-  lastPasswordResetDate DateTime
-  userType              String
+  id                      String   @id
+  name                    String
+  email                   String   @unique
+  cpf                     String   @unique
+  birthDate               DateTime
+  passwordHash            String
+  lastPasswordResetDate   DateTime
+  passwordResetCode       String?
+  passwordResetCodeExpiry DateTime?
+  userType                String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

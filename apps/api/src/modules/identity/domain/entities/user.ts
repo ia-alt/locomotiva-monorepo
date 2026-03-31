@@ -1,6 +1,7 @@
 import { AggregateRoot, UniqueId } from "@core/base-classes";
 import { UserRegisteredEvent } from "../events/user-registered";
 import { PasswordResetRequestedEvent } from "../events/password-reset-requested";
+import { PasswordResetCodeRequestedEvent } from "../events/password-reset-code-requested";
 import z from "zod";
 import { EmailAddress } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
@@ -17,6 +18,8 @@ class User extends AggregateRoot {
         private _userType: User.UserType,
         private _passwordHash: string,
         private _lastPasswordResetDate: Date,
+        private _passwordResetCode: string | null = null,
+        private _passwordResetCodeExpiry: Date | null = null,
 
     ) {
         super(id);
@@ -36,6 +39,8 @@ class User extends AggregateRoot {
             User.UserType.USER,
             props.passwordHash,
             new Date(),
+            null,
+            null
         );
         user.addDomainEvent(new UserRegisteredEvent(user));
         return user;
@@ -62,10 +67,35 @@ class User extends AggregateRoot {
     updatePassword(passwordHash: string) {
         this._passwordHash = passwordHash;
         this._lastPasswordResetDate = new Date();
+        this._passwordResetCode = null;
+        this._passwordResetCodeExpiry = null;
     }
 
     requestPasswordReset(resetToken: string) {
         this.addDomainEvent(new PasswordResetRequestedEvent(this, resetToken));
+    }
+
+    getPasswordResetCode(): string | null {
+        return this._passwordResetCode;
+    }
+
+    getPasswordResetCodeExpiry(): Date | null {
+        return this._passwordResetCodeExpiry;
+    }
+
+    generatePasswordResetCode(validForMinutes: number = 15): string {
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        this._passwordResetCode = code;
+        this._passwordResetCodeExpiry = new Date(Date.now() + validForMinutes * 60 * 1000);
+        this.addDomainEvent(new PasswordResetCodeRequestedEvent(this, code));
+        return code;
+    }
+
+    verifyPasswordResetCode(code: string): boolean {
+        if (!this._passwordResetCode || !this._passwordResetCodeExpiry) return false;
+        if (this._passwordResetCode !== code) return false;
+        if (this._passwordResetCodeExpiry < new Date()) return false;
+        return true;
     }
 
     toJSON(): User.JsonSchema {
@@ -76,6 +106,8 @@ class User extends AggregateRoot {
             cpf: this.cpf.toJSON(),
             birthDate: this.birthDate.toJSON(),
             userType: this._userType,
+            passwordResetCode: this._passwordResetCode,
+            passwordResetCodeExpiry: this._passwordResetCodeExpiry,
         };
     }
 
@@ -121,6 +153,8 @@ namespace User {
         cpf: Cpf.JsonSchema,
         birthDate: BirthDate.JsonSchema,
         userType: z.enum(UserType),
+        passwordResetCode: z.string().nullable().optional(),
+        passwordResetCodeExpiry: z.date().nullable().optional(),
     });
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }
