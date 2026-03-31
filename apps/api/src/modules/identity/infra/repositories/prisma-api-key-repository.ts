@@ -5,7 +5,7 @@ import { UniqueId } from "@core/base-classes";
 import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
 
 export class PrismaApiKeyRepository implements ApiKeyRepository {
-    constructor(private readonly prisma: PrismaClient) {}
+    constructor(private readonly prisma: PrismaClient) { }
 
     async save(apiKey: ApiKey): Promise<void> {
         await this.prisma.apiKey.upsert({
@@ -21,6 +21,16 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
                 keyHash: apiKey.getKeyHash(),
             },
         });
+    }
+
+    async findAll(): Promise<ApiKey[]> {
+        const data = await this.prisma.apiKey.findMany({
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return data.map(
+            (row) => new ApiKey(UniqueId.fromString(row.id), row.name, row.keyHash, row.createdAt)
+        );
     }
 
     async findById(id: string): Promise<ApiKey | null> {
@@ -57,27 +67,5 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
         await this.prisma.apiKey.delete({
             where: { id },
         });
-    }
-
-    async findAll(pagination: PaginatedQuery, search?: string): Promise<PaginatedResult<typeof ApiKey.JsonSchema, ApiKey>> {
-        const { take, skip } = pagination.asTakeSkip;
-        
-        const where = search
-            ? { name: { contains: search, mode: 'insensitive' as const } }
-            : undefined;
-
-        const [keysDb, total] = await Promise.all([
-            this.prisma.apiKey.findMany({ where, orderBy: { name: 'asc' }, take, skip }),
-            this.prisma.apiKey.count({ where }),
-        ]);
-
-        const items = keysDb.map(data => new ApiKey(
-            UniqueId.fromString(data.id),
-            data.name,
-            data.keyHash,
-            data.createdAt,
-        ));
-
-        return PaginatedResult.create({ items, total, paginatedQuery: pagination });
     }
 }

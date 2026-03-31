@@ -7,9 +7,12 @@ import { executePasswordResetRoute } from "./routes/execute-password-reset";
 import { listUsersRoute } from "./routes/list-users";
 import { updateUserRoute } from "./routes/update-user";
 import { deleteUserRoute } from "./routes/delete-user";
-import { listApiKeysRoute } from "./routes/list-api-keys";
-import { deleteApiKeyRoute } from "./routes/delete-api-key";
 import { createApiKeyRoute } from "./routes/create-api-key";
+import { listApiKeysRoute } from "./routes/list-api-keys";
+import { revokeApiKeyRoute } from "./routes/revoke-api-key";
+import { requestPasswordResetCodeRoute } from "./routes/request-password-reset-code";
+import { verifyPasswordResetCodeRoute } from "./routes/verify-password-reset-code";
+import { executePasswordResetWithCodeRoute } from "./routes/execute-password-reset-with-code";
 
 export const identyRoutes = {
     registerUser: registerUserRoute,
@@ -21,7 +24,10 @@ export const identyRoutes = {
     listUsers: listUsersRoute,
     updateUser: updateUserRoute,
     deleteUser: deleteUserRoute,
-    listApiKeys: listApiKeysRoute,
-    deleteApiKey: deleteApiKeyRoute,
     createApiKey: createApiKeyRoute,
+    listApiKeys: listApiKeysRoute,
+    revokeApiKey: revokeApiKeyRoute,
+    requestPasswordResetCode: requestPasswordResetCodeRoute,
+    verifyPasswordResetCode: verifyPasswordResetCodeRoute,
+    executePasswordResetWithCode: executePasswordResetWithCodeRoute,
 };

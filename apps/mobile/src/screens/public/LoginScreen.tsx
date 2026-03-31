@@ -107,7 +107,7 @@ export default function LoginScreen() {
                         <Text
                             variant="labelMedium"
                             style={styles.forgotPasswordText}
-                            onPress={() => { }}
+                            onPress={() => navigation.navigate('EsqueciSenha', {})}
                         >
                             Esqueci minha senha
                         </Text>

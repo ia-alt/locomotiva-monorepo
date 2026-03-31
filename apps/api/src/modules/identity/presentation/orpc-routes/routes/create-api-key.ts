@@ -1,15 +1,15 @@
 import { protectedRoute } from "@core/presentation/orpc-server/route-types";
+import { CreateApiKeyUseCase } from "src/modules/identity/application/use-cases/create-api-key";
 import container from "@di/container";
 import { orpcSafe } from "@core/presentation/orpc-server/orpc-safe";
-import { CreateApiKeyUseCase } from "src/modules/identity/application/use-cases/create-api-key";
 
 export const createApiKeyRoute = protectedRoute
-    .route({ method: "POST", path: "/admin/api-keys/create" })
+    .route({ method: "POST", path: "/api-keys" })
     .input(CreateApiKeyUseCase.InputSchema)
     .output(CreateApiKeyUseCase.OutputSchema)
-    .handler(async ({ context, input }) => {
+    .handler(async ({ input, context }) => {
         return orpcSafe(async () => {
-            const createApiKeyUseCase = container.getCreateApiKeyUseCase(context.user);
-            return createApiKeyUseCase.execute(input);
-        })
+            const useCase = container.getCreateApiKeyUseCase(context.user);
+            return useCase.execute(input);
+        });
     });
