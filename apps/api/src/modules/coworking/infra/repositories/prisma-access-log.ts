@@ -1,7 +1,7 @@
 import { AccessLogRepository } from "@coworking/domain/repositories";
 import { AccessLog } from "@coworking/domain/entities";
 import { Prisma, PrismaClient, AccessLog as AccessLogDb } from "@core/infra/database/prisma";
-import { UniqueId } from "@core/base-classes";
+import { DomainEvents, UniqueId } from "@core/base-classes";
 import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
 
 export class PrismaAccessLogRepository implements AccessLogRepository {
@@ -23,6 +23,7 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
                 exitTime: data.exitTime,
             },
         });
+        DomainEvents.dispatchEventsForAggregate(log.id);
     }
 
     async saveMany(logs: AccessLog[]): Promise<void> {
@@ -35,16 +36,19 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
                         userId: data.userId,
                         entryTime: data.entryTime,
                         exitTime: data.exitTime,
+                        checkinTotemName: data.checkinTotemName,
                     },
                     create: {
                         id: data.id,
                         userId: data.userId,
                         entryTime: data.entryTime,
                         exitTime: data.exitTime,
+                        checkinTotemName: data.checkinTotemName,
                     },
                 });
             })
         );
+        logs.forEach((log) => DomainEvents.dispatchEventsForAggregate(log.id));
     }
 
     async findById(id: UniqueId): Promise<AccessLog | null> {
@@ -143,6 +147,7 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
             UniqueId.fromString(dbLog.userId),
             dbLog.entryTime,
             dbLog.exitTime,
+            dbLog.checkinTotemName,
         );
     }
 }

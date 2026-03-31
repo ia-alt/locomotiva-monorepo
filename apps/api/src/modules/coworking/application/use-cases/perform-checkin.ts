@@ -10,17 +10,19 @@ class PerformCheckinUseCase implements UseCase<PerformCheckinUseCase.Input, Perf
         private readonly accessService: AccessService,
     ) { }
 
-    async execute(_input: PerformCheckinUseCase.Input): Promise<PerformCheckinUseCase.Output> {
+    async execute(input: PerformCheckinUseCase.Input): Promise<PerformCheckinUseCase.Output> {
         const { id: userId } = this.authUserService.getUser();
-
-        const checkin = await this.accessService.checkInUser(userId);
+        const totemName = input.totemName;
+        const checkin = await this.accessService.checkInUser(userId, totemName);
 
         return checkin.toJSON();
     }
 }
 
 namespace PerformCheckinUseCase {
-    export const InputSchema = z.object({});
+    export const InputSchema = z.object({
+        totemName: z.string().nullable(),
+    });
     export const OutputSchema = AccessLog.JsonSchema;
 
     export type Input = z.infer<typeof InputSchema>;

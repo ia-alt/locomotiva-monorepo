@@ -13,6 +13,7 @@ import { getWeeklyFrequencyRoute } from "./routes/get-weekly-frequency";
 import { getAccessStatsRoute } from "./routes/get-access-stats";
 import { getYearlyReportRoute } from "./routes/get-yearly-report";
 import { getRecentActivitiesRoute } from "./routes/get-recent-activities";
+import { totemCheckinRoute } from "./routes/totem-checkin";
 
 export const coworkingRoutes = {
     checkin: performCheckinRoute,
@@ -30,4 +31,7 @@ export const coworkingRoutes = {
     getAccessStats: getAccessStatsRoute,
     getYearlyReport: getYearlyReportRoute,
     getRecentActivities: getRecentActivitiesRoute,
+    totem: {
+        checkin: totemCheckinRoute,
+    }
 };

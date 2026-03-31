@@ -144,7 +144,8 @@ export const AccessLogScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   entryTime: 'entryTime',
-  exitTime: 'exitTime'
+  exitTime: 'exitTime',
+  checkinTotemName: 'checkinTotemName'
 } as const
 
 export type AccessLogScalarFieldEnum = (typeof AccessLogScalarFieldEnum)[keyof typeof AccessLogScalarFieldEnum]
