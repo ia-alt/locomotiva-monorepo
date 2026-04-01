@@ -1,10 +1,15 @@
 import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
-import { PrismaUserRepository } from "src/modules/identity/infra/repositories";
-import { UserRepository } from "src/modules/identity/domain/repositories";
+import { TemplateStringPasswordResetCodeEmailTemplater } from "src/modules/identity/infra/services/template-string-password-reset-code-email-templater";
+import { AfterPasswordResetCodeRequested } from "src/modules/identity/application/subscribers/after-password-reset-code-requested";
+import { PasswordResetCodeEmailTemplater } from "src/modules/identity/domain/services/password-reset-code-email-templater";
+import { PrismaUserRepository, PrismaApiKeyRepository } from "src/modules/identity/infra/repositories";
+import { UserRepository, ApiKeyRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { prisma } from "@core/infra/database/prisma/prisma-instance";
 import { RegisterUserUseCase } from "src/modules/identity/application/use-cases/register-user";
-import { RegisterSystemUserUseCase } from "src/modules/identity/application/use-cases/register-system-user";
+import { CreateApiKeyUseCase } from "src/modules/identity/application/use-cases/create-api-key";
+import { ListApiKeysUseCase } from "src/modules/identity/application/use-cases/list-api-keys";
+import { RevokeApiKeyUseCase } from "src/modules/identity/application/use-cases/revoke-api-key";
 import { CoworkingSettingsRepository, AccessLogRepository } from "@coworking/domain/repositories";
 import { PrismaCoworkingSettingsRepository } from "@coworking/infra/repositories/prisma-coworking-settings";
 import { PrismaAccessLogRepository } from "@coworking/infra/repositories/prisma-access-log";
@@ -25,6 +30,9 @@ import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
 import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
+import { RequestPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/request-password-reset-code";
+import { VerifyPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/verify-password-reset-code";
+import { ExecutePasswordResetWithCodeUseCase } from "src/modules/identity/application/use-cases/execute-password-reset-with-code";
 import { ListUsersUseCase } from "src/modules/identity/application/use-cases/list-users";
 import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/update-user";
 import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
@@ -32,7 +40,7 @@ import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
 import { NodemailerSendEmailService } from "@notifications/infra/services/resend-send-email";
 import { env } from "src/modules/env";
-import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase } from "@coworking/application/use-cases";
+import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
 import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
@@ -65,6 +73,9 @@ import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
 import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
+import { AfterUserCheckin } from "../coworking/application/subscribers/after-user-checkin";
+import { TotemCheckinNotifier } from "../coworking/application/services/totem-checkin-notifier";
+import { MemoryPublisherTotemCheckinNotifier } from "../coworking/infra/services/memory-publisher-totem-checkin-notifier";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -80,6 +91,14 @@ export class DiContainer {
             this._userRepository = new PrismaUserRepository(this.prisma);
         }
         return this._userRepository;
+    }
+
+    private _apiKeyRepository?: ApiKeyRepository;
+    public getApiKeyRepository(): ApiKeyRepository {
+        if (!this._apiKeyRepository) {
+            this._apiKeyRepository = new PrismaApiKeyRepository(this.prisma);
+        }
+        return this._apiKeyRepository;
     }
 
     private _coworkingSettingsRepository?: CoworkingSettingsRepository;
@@ -157,6 +176,14 @@ export class DiContainer {
         return this._passwordResetEmailTemplater;
     }
 
+    private _passwordResetCodeEmailTemplater?: PasswordResetCodeEmailTemplater;
+    public getPasswordResetCodeEmailTemplater(): PasswordResetCodeEmailTemplater {
+        if (!this._passwordResetCodeEmailTemplater) {
+            this._passwordResetCodeEmailTemplater = new TemplateStringPasswordResetCodeEmailTemplater();
+        }
+        return this._passwordResetCodeEmailTemplater;
+    }
+
     private _spaceOperatingHoursService?: SpaceOperatingHoursService;
     public getSpaceOperatingHoursService(): SpaceOperatingHoursService {
         if (!this._spaceOperatingHoursService) {
@@ -165,6 +192,13 @@ export class DiContainer {
         return this._spaceOperatingHoursService;
     }
 
+    private _totemCheckinNotifier?: TotemCheckinNotifier;
+    public getTotemCheckinNotifier(): TotemCheckinNotifier {
+        if (!this._totemCheckinNotifier) {
+            this._totemCheckinNotifier = new MemoryPublisherTotemCheckinNotifier();
+        }
+        return this._totemCheckinNotifier;
+    }
 
     private _bookingService?: BookingService;
     public getBookingService(): BookingService {
@@ -251,12 +285,28 @@ export class DiContainer {
         return registerUserUseCase;
     }
 
-    public getRegisterSystemUserUseCase(): RegisterSystemUserUseCase {
-        return new RegisterSystemUserUseCase(
-            this.getUserRepository(),
-            this.getPasswordHashService(),
+    public getCreateApiKeyUseCase(authUser: User): CreateApiKeyUseCase {
+        return new CreateApiKeyUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
         );
     }
+
+    public getListApiKeysUseCase(authUser: User): ListApiKeysUseCase {
+        return new ListApiKeysUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
+        );
+    }
+
+    public getRevokeApiKeyUseCase(authUser: User): RevokeApiKeyUseCase {
+        return new RevokeApiKeyUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
+        );
+    }
+
+
 
     public getGetAuthUserUseCase(authUser: User): GetAuthUserUseCase {
         const getAuthUserUseCase = new GetAuthUserUseCase(
@@ -286,6 +336,18 @@ export class DiContainer {
         return executePasswordResetUseCase;
     }
 
+    public getRequestPasswordResetCodeUseCase(): RequestPasswordResetCodeUseCase {
+        return new RequestPasswordResetCodeUseCase(this.getPasswordService());
+    }
+
+    public getVerifyPasswordResetCodeUseCase(): VerifyPasswordResetCodeUseCase {
+        return new VerifyPasswordResetCodeUseCase(this.getPasswordService());
+    }
+
+    public getExecutePasswordResetWithCodeUseCase(): ExecutePasswordResetWithCodeUseCase {
+        return new ExecutePasswordResetWithCodeUseCase(this.getPasswordService());
+    }
+
     public getChangePasswordUseCase(authUser: User): ChangePasswordUseCase {
         const changePasswordUseCase = new ChangePasswordUseCase(
             this.getAuthUserService(authUser),
@@ -308,6 +370,32 @@ export class DiContainer {
             this.getAccessService()
         );
         return performCheckoutUseCase;
+    }
+
+    public getCheckinByCpfUseCase(): CheckinByCpfUseCase {
+        return new CheckinByCpfUseCase(
+            this.getUserRepository(),
+            this.getAccessService()
+        );
+    }
+
+    public getCheckoutByCpfUseCase(): CheckoutByCpfUseCase {
+        return new CheckoutByCpfUseCase(
+            this.getUserRepository(),
+            this.getAccessService()
+        );
+    }
+
+    public getFindMemberByCpfUseCase(): FindMemberByCpfUseCase {
+        return new FindMemberByCpfUseCase(this.getUserRepository());
+    }
+
+    public getFindActiveMemberByCpfUseCase(): FindActiveMemberByCpfUseCase {
+        return new FindActiveMemberByCpfUseCase(this.getUserRepository(), this.getAccessLogRepository());
+    }
+
+    public getQuickCheckoutByCpfUseCase(): QuickCheckoutByCpfUseCase {
+        return new QuickCheckoutByCpfUseCase(this.getUserRepository(), this.getAccessService());
     }
 
     public getListUserAccessLogsUseCase(authUser: User): ListUserAccessLogsUseCase {
@@ -334,9 +422,8 @@ export class DiContainer {
         return listAllAccessLogsUseCase;
     }
 
-    public getAutoCheckoutAllUseCase(authUser: User): AutoCheckoutAllUseCase {
+    public getAutoCheckoutAllUseCase(): AutoCheckoutAllUseCase {
         const autoCheckoutAllUseCase = new AutoCheckoutAllUseCase(
-            this.getAuthUserService(authUser),
             this.getAccessService()
         );
         return autoCheckoutAllUseCase;
@@ -486,9 +573,8 @@ export class DiContainer {
         return listAvailableSlotsByDayUseCase;
     }
 
-    public getSendBookingRemindersOfTomorrowUseCase(authUser: User): SendBookingRemindersOfTomorrowUseCase {
+    public getSendBookingRemindersOfTomorrowUseCase(): SendBookingRemindersOfTomorrowUseCase {
         const sendBookingRemindersOfTomorrowUseCase = new SendBookingRemindersOfTomorrowUseCase(
-            this.getAuthUserService(authUser),
             this.getBookingRepository(),
             this.getUserRepository(),
             this.getBookingReminderEmailTemplater(),
@@ -628,11 +714,21 @@ new AfterPasswordResetRequested(
     container.getPasswordResetEmailTemplater()
 );
 
+new AfterPasswordResetCodeRequested(
+    container.getSendEmailService(),
+    container.getPasswordResetCodeEmailTemplater()
+);
+
 new AfterBookingStatusChanged(
     container.getSendEmailService(),
     container.getUserRepository(),
     container.getRoomRepository(),
     container.getBookingEmailTemplater()
+);
+
+new AfterUserCheckin(
+    container.getTotemCheckinNotifier(),
+    container.getUserRepository(),
 );
 //#endregion
 

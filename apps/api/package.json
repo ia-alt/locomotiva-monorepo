@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@orpc/client": "^1.13.6",
+    "@orpc/experimental-publisher": "^1.13.13",
     "@orpc/json-schema": "^1.13.5",
     "@orpc/openapi": "^1.13.5",
     "@orpc/server": "^1.13.5",

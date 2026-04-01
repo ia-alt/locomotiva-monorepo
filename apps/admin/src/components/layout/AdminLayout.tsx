@@ -51,7 +51,7 @@ const bottomItems = [
 export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useCurrentUser();
+  const { user, isLoading } = useCurrentUser();
   const { mode, toggleTheme } = useThemeMode();
 
   const handleLogout = () => {
@@ -80,15 +80,12 @@ export const AdminLayout: React.FC = () => {
               {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
           </Tooltip>
-          <IconButton color="inherit" sx={{ ml: 0.5 }}>
-            <NotificationsIcon />
-          </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 2 }}>
             <Typography variant="subtitle2" fontWeight={600}>
-              {user?.name ?? 'Admin'}
+              {isLoading ? '...' : (user?.name ?? 'Admin')}
             </Typography>
             <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontSize: '0.9rem' }}>
-              {user?.name?.charAt(0).toUpperCase() ?? 'A'}
+              {isLoading ? '?' : (user?.name?.charAt(0).toUpperCase() ?? 'A')}
             </Avatar>
           </Box>
         </Toolbar>

@@ -1,11 +1,11 @@
 import { AggregateRoot, UniqueId } from "@core/base-classes";
 import { UserRegisteredEvent } from "../events/user-registered";
 import { PasswordResetRequestedEvent } from "../events/password-reset-requested";
+import { PasswordResetCodeRequestedEvent } from "../events/password-reset-code-requested";
 import z from "zod";
 import { EmailAddress } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
 import { BirthDate } from "src/modules/identity/domain/value-objects/birth-date";
-import { SystemHasCpfOrUserNotHaveCpf } from "../errors";
 
 class User extends AggregateRoot {
 
@@ -13,16 +13,15 @@ class User extends AggregateRoot {
         id: UniqueId,
         private _name: string,
         public email: EmailAddress,
-        public cpf: Cpf | null,
+        public cpf: Cpf,
         public birthDate: BirthDate,
         private _userType: User.UserType,
         private _passwordHash: string,
         private _lastPasswordResetDate: Date,
+        private _passwordResetCode: string | null = null,
+        private _passwordResetCodeExpiry: Date | null = null,
 
     ) {
-        if ((_userType === User.UserType.SYSTEM) === (cpf !== null)) {
-            throw new SystemHasCpfOrUserNotHaveCpf()
-        }
         super(id);
     }
 
@@ -40,25 +39,14 @@ class User extends AggregateRoot {
             User.UserType.USER,
             props.passwordHash,
             new Date(),
+            null,
+            null
         );
         user.addDomainEvent(new UserRegisteredEvent(user));
         return user;
     }
 
-    static createSystem(props: User.CreateSystemParams): User {
-        const user = new User(
-            UniqueId.create(),
-            props.name,
-            props.email,
-            null,
-            props.birthDate,
-            User.UserType.SYSTEM,
-            props.passwordHash,
-            new Date(),
-        );
-        user.addDomainEvent(new UserRegisteredEvent(user));
-        return user;
-    }
+
 
     update(data: User.UpdateParams): void {
         this._name = data.name;
@@ -79,10 +67,35 @@ class User extends AggregateRoot {
     updatePassword(passwordHash: string) {
         this._passwordHash = passwordHash;
         this._lastPasswordResetDate = new Date();
+        this._passwordResetCode = null;
+        this._passwordResetCodeExpiry = null;
     }
 
     requestPasswordReset(resetToken: string) {
         this.addDomainEvent(new PasswordResetRequestedEvent(this, resetToken));
+    }
+
+    getPasswordResetCode(): string | null {
+        return this._passwordResetCode;
+    }
+
+    getPasswordResetCodeExpiry(): Date | null {
+        return this._passwordResetCodeExpiry;
+    }
+
+    generatePasswordResetCode(validForMinutes: number = 15): string {
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        this._passwordResetCode = code;
+        this._passwordResetCodeExpiry = new Date(Date.now() + validForMinutes * 60 * 1000);
+        this.addDomainEvent(new PasswordResetCodeRequestedEvent(this, code));
+        return code;
+    }
+
+    verifyPasswordResetCode(code: string): boolean {
+        if (!this._passwordResetCode || !this._passwordResetCodeExpiry) return false;
+        if (this._passwordResetCode !== code) return false;
+        if (this._passwordResetCodeExpiry < new Date()) return false;
+        return true;
     }
 
     toJSON(): User.JsonSchema {
@@ -90,9 +103,11 @@ class User extends AggregateRoot {
             id: this.id.value,
             name: this._name,
             email: this.email.toJSON(),
-            cpf: this.cpf?.toJSON(),
+            cpf: this.cpf.toJSON(),
             birthDate: this.birthDate.toJSON(),
             userType: this._userType,
+            passwordResetCode: this._passwordResetCode,
+            passwordResetCodeExpiry: this._passwordResetCodeExpiry,
         };
     }
 
@@ -100,9 +115,7 @@ class User extends AggregateRoot {
         return this._userType === User.UserType.ADMIN;
     }
 
-    isSystem() {
-        return this._userType === User.UserType.SYSTEM;
-    }
+
 
 
 }
@@ -111,7 +124,6 @@ namespace User {
     export enum UserType {
         USER = "user",
         ADMIN = "admin",
-        SYSTEM = "system",
     }
     export type CreateParams = {
         name: string;
@@ -138,9 +150,11 @@ namespace User {
         id: z.string(),
         name: z.string(),
         email: EmailAddress.JsonSchema,
-        cpf: Cpf.JsonSchema.nullable().optional(),
+        cpf: Cpf.JsonSchema,
         birthDate: BirthDate.JsonSchema,
         userType: z.enum(UserType),
+        passwordResetCode: z.string().nullable().optional(),
+        passwordResetCodeExpiry: z.date().nullable().optional(),
     });
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }

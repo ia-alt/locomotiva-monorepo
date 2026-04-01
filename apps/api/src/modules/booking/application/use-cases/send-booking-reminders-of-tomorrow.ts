@@ -1,6 +1,5 @@
 import { UseCase } from "@core/base-classes";
 import z from "zod";
-import { AuthUserService } from "src/modules/identity/domain/services";
 import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
 import { OnlyDate } from "@core/value-objects";
 import { Booking, Room } from "@booking/domain/entities";
@@ -11,7 +10,6 @@ import { SendEmailService } from "@notifications/application/services";
 
 class SendBookingRemindersOfTomorrowUseCase extends UseCase<SendBookingRemindersOfTomorrowUseCase.Input, SendBookingRemindersOfTomorrowUseCase.Output> {
     constructor(
-        private readonly authUserService: AuthUserService,
         private readonly bookingRepository: BookingRepository,
         private readonly userRepository: UserRepository,
         private readonly bookingReminderEmailTemplater: BookingReminderEmailTemplater,
@@ -22,7 +20,6 @@ class SendBookingRemindersOfTomorrowUseCase extends UseCase<SendBookingReminders
     }
 
     async execute(): Promise<SendBookingRemindersOfTomorrowUseCase.Output> {
-        await this.authUserService.checkIsSystem();
         const bookingsWithUsers = await this.getBookingsOfTomorrowWithUsersAndRoom();
         const emailsToSend = await Promise.all(bookingsWithUsers.map(async x => {
             const html = await this.bookingReminderEmailTemplater.template({

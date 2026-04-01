@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  ApiKey: 'ApiKey',
   Room: 'Room',
   Booking: 'Booking',
   CoworkingSettings: 'CoworkingSettings',
@@ -83,12 +84,25 @@ export const UserScalarFieldEnum = {
   birthDate: 'birthDate',
   passwordHash: 'passwordHash',
   lastPasswordResetDate: 'lastPasswordResetDate',
+  passwordResetCode: 'passwordResetCode',
+  passwordResetCodeExpiry: 'passwordResetCodeExpiry',
   userType: 'userType',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const ApiKeyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  keyHash: 'keyHash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
 export const RoomScalarFieldEnum = {
@@ -132,7 +146,8 @@ export const AccessLogScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   entryTime: 'entryTime',
-  exitTime: 'exitTime'
+  exitTime: 'exitTime',
+  checkinTotemName: 'checkinTotemName'
 } as const
 
 export type AccessLogScalarFieldEnum = (typeof AccessLogScalarFieldEnum)[keyof typeof AccessLogScalarFieldEnum]

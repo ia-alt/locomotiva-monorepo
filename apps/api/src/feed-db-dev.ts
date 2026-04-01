@@ -8,7 +8,6 @@ import { EmailAddress } from "./modules/_core/value-objects";
 class FeedDbDev {
 
     private _adminUser?: User;
-    private _systemUser?: User;
     private _user?: User;
 
     private get adminUser() {
@@ -18,12 +17,7 @@ class FeedDbDev {
         return this._adminUser;
     }
 
-    private get systemUser() {
-        if (!this._systemUser) {
-            throw new Error("System user not found");
-        }
-        return this._systemUser;
-    }
+
 
     private get user() {
         if (!this._user) {
@@ -37,7 +31,7 @@ class FeedDbDev {
         await this.cleanDatabase();
 
         await this.getOrCreateAdminUser();
-        await this.getOrCreateSystemUser();
+        await this.getOrCreateSystemApiKey();
         await this.getOrCreateUser();
 
         await this.createRooms();
@@ -72,22 +66,17 @@ class FeedDbDev {
         this._adminUser = adminUser;
     }
 
-    async getOrCreateSystemUser() {
-        const email = "system@test.com";
-
-        let systemUser = await this.getUserEmail(email);
-        if (!systemUser) {
-            const { id: userId } = await container.getRegisterSystemUserUseCase().execute({
-                name: "System",
-                email: "system@test.com",
-                password: "Abc123456789@",
-                birthDate: "1990-01-01",
-            })
-
-            systemUser = (await this.getUserById(userId))!;
+    async getOrCreateSystemApiKey() {
+        const existing = await prisma.apiKey.findFirst({ where: { name: "System API Key" } });
+        if (!existing) {
+            const result = await container.getCreateApiKeyUseCase(this.adminUser).execute({
+                name: "System API Key"
+            });
+            console.log("=========================================");
+            console.log("SYSTEM API KEY GENERATED: ", result.plainKey);
+            console.log("Please save this key, it won't be shown again.");
+            console.log("=========================================");
         }
-
-        this._systemUser = systemUser;
     }
 
     async getOrCreateUser() {
