@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar'
 import { ORPCProvider } from './locomotiva-api/provider'
 import TotemScreen from './screens/TotemScreen'
 import CheckoutScreen from './screens/CheckoutScreen'
+import { NotificationProvider } from './providers/notification'
 
 const theme = {
     ...MD3LightTheme,
@@ -41,10 +42,12 @@ export default function App() {
             <PaperProvider theme={theme}>
                 <QueryClientProvider client={queryClient}>
                     <ORPCProvider>
-                        <StatusBar style="light" hidden />
-                        <View style={{ flex: 1 }}>
-                            {screen === 'checkout' ? <CheckoutScreen /> : <TotemScreen />}
-                        </View>
+                        <NotificationProvider>
+                            <StatusBar style="light" hidden />
+                            <View style={{ flex: 1 }}>
+                                {screen === 'checkout' ? <CheckoutScreen /> : <TotemScreen />}
+                            </View>
+                        </NotificationProvider>
                     </ORPCProvider>
                 </QueryClientProvider>
             </PaperProvider>
