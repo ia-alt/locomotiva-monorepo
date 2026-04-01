@@ -10,6 +10,7 @@ import { LS_API_KEY } from './locomotiva-api/link'
 import TotemScreen from './screens/TotemScreen'
 import CheckoutScreen from './screens/CheckoutScreen'
 import SetupScreen, { LS_TABLET_MODE } from './screens/SetupScreen'
+import { NotificationProvider } from './providers/notification'
 
 const theme = {
     ...MD3LightTheme,
@@ -69,10 +70,12 @@ export default function App() {
             <PaperProvider theme={theme}>
                 <QueryClientProvider client={queryClient}>
                     <ORPCProvider>
-                        <StatusBar style="light" hidden />
-                        <View style={{ flex: 1 }}>
-                            <AppContent />
-                        </View>
+                        <NotificationProvider>
+                            <StatusBar style="light" hidden />
+                            <View style={{ flex: 1 }}>
+                                <AppContent />
+                            </View>
+                        </NotificationProvider>
                     </ORPCProvider>
                 </QueryClientProvider>
             </PaperProvider>

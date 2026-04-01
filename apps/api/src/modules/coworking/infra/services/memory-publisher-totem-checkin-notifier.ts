@@ -2,14 +2,14 @@ import { MemoryPublisher } from "@orpc/experimental-publisher/memory";
 import { TotemCheckinNotifier } from "../../application/services/totem-checkin-notifier";
 
 export class MemoryPublisherTotemCheckinNotifier implements TotemCheckinNotifier {
-    public readonly totemCheckinNotifierPublisher: MemoryPublisher<Record<string, { name: string }>>
+    public readonly totemCheckinNotifierPublisher: MemoryPublisher<Record<string, {}>>
 
     constructor() {
-        this.totemCheckinNotifierPublisher = new MemoryPublisher<Record<string, { name: string }>>()
+        this.totemCheckinNotifierPublisher = new MemoryPublisher<Record<string, {}>>()
     }
 
-    notify(totemName: string, userName: string): Promise<void> {
-        this.totemCheckinNotifierPublisher.publish(totemName, { name: userName });
+    notify(totemName: string): Promise<void> {
+        this.totemCheckinNotifierPublisher.publish(totemName, {});
         return Promise.resolve();
     }
 }

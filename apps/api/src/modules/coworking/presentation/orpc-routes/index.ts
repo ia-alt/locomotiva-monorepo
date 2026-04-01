@@ -13,7 +13,7 @@ import { getWeeklyFrequencyRoute } from "./routes/get-weekly-frequency";
 import { getAccessStatsRoute } from "./routes/get-access-stats";
 import { getYearlyReportRoute } from "./routes/get-yearly-report";
 import { getRecentActivitiesRoute } from "./routes/get-recent-activities";
-import { totemCheckinRoute } from "./routes/totem-checkin";
+import { onTotemCheckinRoute } from "./routes/on-totem-checkin";
 import { checkinByCpfRoute } from "./routes/checkin-by-cpf";
 import { checkoutByCpfRoute } from "./routes/checkout-by-cpf";
 import { findMemberByCpfRoute } from "./routes/find-member-by-cpf";
@@ -37,7 +37,7 @@ export const coworkingRoutes = {
     getYearlyReport: getYearlyReportRoute,
     getRecentActivities: getRecentActivitiesRoute,
     totem: {
-        checkin: totemCheckinRoute,
+        onCheckin: onTotemCheckinRoute,
     },
     checkinByCpf: checkinByCpfRoute,
     checkoutByCpf: checkoutByCpfRoute,
