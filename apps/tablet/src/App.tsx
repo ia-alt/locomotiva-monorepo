@@ -61,7 +61,12 @@ function AppContent() {
         return <SetupScreen onConfigured={(mode) => setState(mode)} />
     }
 
-    return state === 'checkout' ? <CheckoutScreen /> : <TotemScreen />
+    return (
+        <NotificationProvider>
+            {state === 'checkout' ? <CheckoutScreen /> : <TotemScreen />}
+        </NotificationProvider>
+    )
+
 }
 
 export default function App() {
@@ -70,15 +75,13 @@ export default function App() {
             <PaperProvider theme={theme}>
                 <QueryClientProvider client={queryClient}>
                     <ORPCProvider>
-                        <NotificationProvider>
-                            <StatusBar style="light" hidden />
-                            <View style={{ flex: 1 }}>
-                                <AppContent />
-                            </View>
-                        </NotificationProvider>
+                        <StatusBar style="light" hidden />
+                        <View style={{ flex: 1 }}>
+                            <AppContent />
+                        </View>
                     </ORPCProvider>
                 </QueryClientProvider>
             </PaperProvider>
-        </SafeAreaProvider>
+        </SafeAreaProvider >
     )
 }
