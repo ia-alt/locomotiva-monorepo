@@ -2,7 +2,6 @@ import { ApiKeyRepository } from "../../domain/repositories/api-key-repository";
 import { ApiKey } from "../../domain/entities/api-key";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { UniqueId } from "@core/base-classes";
-import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
 
 export class PrismaApiKeyRepository implements ApiKeyRepository {
     constructor(private readonly prisma: PrismaClient) { }
@@ -33,9 +32,9 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
         );
     }
 
-    async findById(id: string): Promise<ApiKey | null> {
+    async findById(id: UniqueId): Promise<ApiKey | null> {
         const data = await this.prisma.apiKey.findUnique({
-            where: { id },
+            where: { id: id.value },
         });
 
         if (!data) return null;
@@ -63,9 +62,9 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
         );
     }
 
-    async delete(id: string): Promise<void> {
+    async delete(id: UniqueId): Promise<void> {
         await this.prisma.apiKey.delete({
-            where: { id },
+            where: { id: id.value },
         });
     }
 }

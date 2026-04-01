@@ -1,4 +1,4 @@
-import { UseCase } from "@core/base-classes";
+import { UniqueId, UseCase } from "@core/base-classes";
 import z from "zod";
 import { ORPCError } from "@orpc/server";
 import { AuthUserService } from "../../domain/services";
@@ -12,14 +12,14 @@ export class RevokeApiKeyUseCase implements UseCase<RevokeApiKeyUseCase.Input, v
 
     async execute(input: RevokeApiKeyUseCase.Input): Promise<void> {
         this.authUserService.checkIsAdmin();
-
-        const apiKey = await this.apiKeyRepository.findById(input.id);
+        const apiKeyId = UniqueId.fromString(input.id);
+        const apiKey = await this.apiKeyRepository.findById(apiKeyId);
 
         if (!apiKey) {
             throw new ORPCError('NOT_FOUND', { message: "API Key não encontrada." });
         }
 
-        await this.apiKeyRepository.delete(input.id);
+        await this.apiKeyRepository.delete(apiKeyId);
     }
 }
 
