@@ -1,12 +1,15 @@
-import React from 'react'
-import { View, Platform } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { View, ActivityIndicator } from 'react-native'
 import { MD3LightTheme, PaperProvider } from 'react-native-paper'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ORPCProvider } from './locomotiva-api/provider'
+import { LS_API_KEY } from './locomotiva-api/link'
 import TotemScreen from './screens/TotemScreen'
 import CheckoutScreen from './screens/CheckoutScreen'
+import SetupScreen, { LS_TABLET_MODE } from './screens/SetupScreen'
 import { NotificationProvider } from './providers/notification'
 
 const theme = {
@@ -24,17 +27,42 @@ const theme = {
 
 const queryClient = new QueryClient()
 
-// Decide qual totem mostrar com base na URL (web) ou padrão (nativo)
-// Acesso: /         → check-in
-// Acesso: /checkout → check-out
-function resolveScreen(): 'checkin' | 'checkout' {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        if (window.location.pathname.includes('checkout')) return 'checkout'
-    }
-    return 'checkin'
-}
+type AppState = 'loading' | 'setup' | 'checkin' | 'checkout'
 
-const screen = resolveScreen()
+function AppContent() {
+    const [state, setState] = useState<AppState>('loading')
+
+    useEffect(() => {
+        async function loadConfig() {
+            const [apiKey, mode] = await Promise.all([
+                AsyncStorage.getItem(LS_API_KEY),
+                AsyncStorage.getItem(LS_TABLET_MODE),
+            ])
+
+            if (apiKey && (mode === 'checkin' || mode === 'checkout')) {
+                setState(mode)
+            } else {
+                setState('setup')
+            }
+        }
+
+        loadConfig()
+    }, [])
+
+    if (state === 'loading') {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F6FA' }}>
+                <ActivityIndicator size="large" color="#1A7BFF" />
+            </View>
+        )
+    }
+
+    if (state === 'setup') {
+        return <SetupScreen onConfigured={(mode) => setState(mode)} />
+    }
+
+    return state === 'checkout' ? <CheckoutScreen /> : <TotemScreen />
+}
 
 export default function App() {
     return (
@@ -45,7 +73,7 @@ export default function App() {
                         <NotificationProvider>
                             <StatusBar style="light" hidden />
                             <View style={{ flex: 1 }}>
-                                {screen === 'checkout' ? <CheckoutScreen /> : <TotemScreen />}
+                                <AppContent />
                             </View>
                         </NotificationProvider>
                     </ORPCProvider>

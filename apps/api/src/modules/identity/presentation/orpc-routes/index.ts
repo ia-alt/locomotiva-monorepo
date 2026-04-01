@@ -13,6 +13,7 @@ import { revokeApiKeyRoute } from "./routes/revoke-api-key";
 import { requestPasswordResetCodeRoute } from "./routes/request-password-reset-code";
 import { verifyPasswordResetCodeRoute } from "./routes/verify-password-reset-code";
 import { executePasswordResetWithCodeRoute } from "./routes/execute-password-reset-with-code";
+import { getApiKeyInfoRoute } from "./routes/get-api-key-info";
 
 export const identyRoutes = {
     registerUser: registerUserRoute,
@@ -30,4 +31,5 @@ export const identyRoutes = {
     requestPasswordResetCode: requestPasswordResetCodeRoute,
     verifyPasswordResetCode: verifyPasswordResetCodeRoute,
     executePasswordResetWithCode: executePasswordResetWithCodeRoute,
+    getApiKeyInfo: getApiKeyInfoRoute,
 };

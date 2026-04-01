@@ -9,6 +9,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.locomotiva.totem",
       "adaptiveIcon": {
         "backgroundColor": "#1A7BFF"
       }
