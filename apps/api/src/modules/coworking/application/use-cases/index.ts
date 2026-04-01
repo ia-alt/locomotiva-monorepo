@@ -13,3 +13,4 @@ export * from "./checkout-by-cpf";
 export * from "./find-member-by-cpf";
 export * from "./find-active-member-by-cpf";
 export * from "./quick-checkout-by-cpf";
+export * from "./generate-totem-access-code";
