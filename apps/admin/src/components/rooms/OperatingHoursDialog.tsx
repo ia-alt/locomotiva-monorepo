@@ -133,7 +133,7 @@ export const OperatingHoursDialog: React.FC<OperatingHoursDialogProps> = ({ open
 
       await orpc.booking.setDefaultOperatingSchedule({
         roomId: room.id,
-        policy: { weeklySchedule, effectiveFrom: today },
+        policy: { weeklySchedule: weeklySchedule as Parameters<typeof orpc.booking.setDefaultOperatingSchedule>[0]['policy']['weeklySchedule'], effectiveFrom: today },
       });
     },
     onSuccess: () => {

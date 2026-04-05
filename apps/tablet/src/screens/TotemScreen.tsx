@@ -13,7 +13,7 @@ export default function TotemScreen() {
         <TotemLayout
             mode="checkin"
             color={BLUE}
-            apiKeyName={data?.name}
+            apiKeyName={(data as any)?.name}
             lookupFn={(input) => (orpc.coworking.findMemberByCpf as any).call(input)}
             mutationFn={(input) => (orpc.coworking.checkinByCpf as any).call(input)}
             idleIcon="account-key"

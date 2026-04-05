@@ -13,7 +13,7 @@ export default function CheckoutScreen() {
         <TotemLayout
             mode="checkout"
             color={GREEN}
-            apiKeyName={data?.name}
+            apiKeyName={(data as any)?.name}
             lookupFn={(input) => (orpc.coworking.findActiveMemberByCpf as any).call(input)}
             mutationFn={(input) => (orpc.coworking.quickCheckoutByCpf as any).call(input)}
             idleIcon="account-arrow-right"

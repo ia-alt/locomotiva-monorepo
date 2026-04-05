@@ -11,16 +11,16 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@backend": path.resolve(__dirname, "../secti-locomotiva/src/modules"),
-      "@core": path.resolve(__dirname, "../secti-locomotiva/src/modules/_core"),
-      "@di": path.resolve(__dirname, "../secti-locomotiva/src/modules/_di_container"),
-      "@booking": path.resolve(__dirname, "../secti-locomotiva/src/modules/booking"),
-      "@coworking": path.resolve(__dirname, "../secti-locomotiva/src/modules/coworking"),
-      "@identy": path.resolve(__dirname, "../secti-locomotiva/src/modules/identity"),
-      "@notifications": path.resolve(__dirname, "../secti-locomotiva/src/modules/notifications"),
-      "@operating-hours": path.resolve(__dirname, "../secti-locomotiva/src/modules/operating-hours"),
-      "@env": path.resolve(__dirname, "../secti-locomotiva/src/modules/env.ts"),
-      "src/modules": path.resolve(__dirname, "../secti-locomotiva/src/modules"),
+      "@backend": path.resolve(__dirname, "../api/src/modules"),
+      "@core": path.resolve(__dirname, "../api/src/modules/_core"),
+      "@di": path.resolve(__dirname, "../api/src/modules/_di_container"),
+      "@booking": path.resolve(__dirname, "../api/src/modules/booking"),
+      "@coworking": path.resolve(__dirname, "../api/src/modules/coworking"),
+      "@identy": path.resolve(__dirname, "../api/src/modules/identity"),
+      "@notifications": path.resolve(__dirname, "../api/src/modules/notifications"),
+      "@operating-hours": path.resolve(__dirname, "../api/src/modules/operating-hours"),
+      "@env": path.resolve(__dirname, "../api/src/modules/env.ts"),
+      "src/modules": path.resolve(__dirname, "../api/src/modules"),
     }
   }
 })

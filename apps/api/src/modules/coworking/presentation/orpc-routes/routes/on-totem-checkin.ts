@@ -10,10 +10,12 @@ export const onTotemCheckinRoute = systemRoute
 
         const iterator = totemCheckinNotifier.totemCheckinNotifierPublisher.subscribe(totemName, { signal })
 
+
         // for test
         setInterval(() => {
             totemCheckinNotifier.notify(totemName);
-        }, 10000);
+        }, 40000);
+
 
         for await (const payload of iterator) {
             yield payload;

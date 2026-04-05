@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { maskCpf, maskBirthDate, toIsoDate } from '../utils/masks'
+import { playCheckinSound } from '../providers/notification'
 
 const AUTO_RESET_SECONDS = 20
 const INACTIVITY_SECONDS = 10
@@ -109,6 +110,7 @@ export function useTotemFlow({ mode, mutationFn, lookupFn }: UseTotemFlowParams)
         },
         onSuccess: (result) => {
             clearInactivity()
+            if (mode === 'checkin') playCheckinSound().catch(() => {})
             const now = new Date()
             const hh = now.getHours().toString().padStart(2, '0')
             const mm = now.getMinutes().toString().padStart(2, '0')

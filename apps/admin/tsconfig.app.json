@@ -27,16 +27,16 @@
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "@backend/*": ["../secti-locomotiva/src/modules/*"], 
-      "@core/*": ["../secti-locomotiva/src/modules/_core/*"],
-      "@di/*": ["../secti-locomotiva/src/modules/_di_container/*"],
-      "@booking/*": ["../secti-locomotiva/src/modules/booking/*"],
-      "@coworking/*": ["../secti-locomotiva/src/modules/coworking/*"],
-      "@identy/*": ["../secti-locomotiva/src/modules/identity/*"],
-      "@notifications/*": ["../secti-locomotiva/src/modules/notifications/*"],
-      "@operating-hours/*": ["../secti-locomotiva/src/modules/operating-hours/*"],
-      "@env": ["../secti-locomotiva/src/modules/env.ts"],
-      "src/modules/*": ["../secti-locomotiva/src/modules/*"]
+      "@backend/*": ["../api/dist/modules/*"],
+      "@core/*": ["../api/dist/modules/_core/*"],
+      "@di/*": ["../api/dist/modules/_di_container/*"],
+      "@booking/*": ["../api/dist/modules/booking/*"],
+      "@coworking/*": ["../api/dist/modules/coworking/*"],
+      "@identy/*": ["../api/dist/modules/identity/*"],
+      "@notifications/*": ["../api/dist/modules/notifications/*"],
+      "@operating-hours/*": ["../api/dist/modules/operating-hours/*"],
+      "@env": ["../api/dist/modules/env.js"],
+      "src/modules/*": ["../api/dist/modules/*"]
     }
   },
   "include": ["src"]
