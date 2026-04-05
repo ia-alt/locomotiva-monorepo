@@ -110,7 +110,7 @@ export function useTotemFlow({ mode, mutationFn, lookupFn }: UseTotemFlowParams)
         },
         onSuccess: (result) => {
             clearInactivity()
-            if (mode === 'checkin') playCheckinSound().catch(() => {})
+            playCheckinSound().catch(() => {})
             const now = new Date()
             const hh = now.getHours().toString().padStart(2, '0')
             const mm = now.getMinutes().toString().padStart(2, '0')

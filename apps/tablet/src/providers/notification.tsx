@@ -12,8 +12,8 @@ export async function playCheckinSound() {
     try {
         await Audio.setAudioModeAsync({ playsInSilentModeIOS: true })
         const { sound } = await Audio.Sound.createAsync(CHECKIN_SOUND)
+        await sound.setVolumeAsync(0.6)
         await sound.playAsync()
-        // Libera memória após terminar
         sound.setOnPlaybackStatusUpdate((status) => {
             if ('didJustFinish' in status && status.didJustFinish) {
                 sound.unloadAsync()
@@ -56,16 +56,37 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
     }, [slideAnim])
 
     useEffect(() => {
-        orpc.coworking.totem.onCheckin.call({ totemName: "tomate" })
-            .then(async (events) => {
-                console.log("Notification connected")
-                for await (const event of events) {
-                    showCheckinNotification()
+        let cancelled = false
+        let abortController: AbortController | null = null
+
+        async function connect() {
+            while (!cancelled) {
+                try {
+                    abortController = new AbortController()
+                    console.log("Notification connecting...")
+                    const events = await (orpc.coworking.totem.onCheckin as any).call(
+                        { totemName: "tomate" },
+                        { signal: abortController.signal }
+                    )
+                    console.log("Notification connected")
+                    for await (const _ of events) {
+                        showCheckinNotification()
+                    }
+                } catch (error: any) {
+                    if (!cancelled) console.error("Notification error:", error)
                 }
-            })
-            .catch((error) => {
-                console.error("Notification error:", error)
-            })
+                if (!cancelled) {
+                    await new Promise(resolve => setTimeout(resolve, 3000))
+                    console.log("Notification reconnecting...")
+                }
+            }
+        }
+
+        connect()
+        return () => {
+            cancelled = true
+            abortController?.abort()
+        }
     }, [])
 
     return (
