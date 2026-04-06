@@ -134,8 +134,8 @@ export class ORPCServer {
 
         server.listen(
             env.PORT,
-            'localhost',
-            () => console.log(`Listening on http://localhost:${env.PORT}/docs`)
+            '0.0.0.0',
+            () => console.log(`Listening on http://0.0.0.0:${env.PORT}/docs`)
         )
     }
 }

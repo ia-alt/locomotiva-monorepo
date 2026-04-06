@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import { NotificationContext } from "../contexts/notification";
 import { useORPC } from "../locomotiva-api/context";
+import { useAccessCode } from "../hooks/use-access-code";
 
 const CHECKIN_SOUND = require('../../assets/checkin-sound.wav')
 
@@ -27,9 +28,10 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
     const [visible, setVisible] = useState(false)
     const slideAnim = useRef(new Animated.Value(-120)).current
     const animRef = useRef<Animated.CompositeAnimation | null>(null)
+    const { refreshAccessCode } = useAccessCode();
 
     const showCheckinNotification = useCallback(() => {
-        playCheckinSound().catch(() => {})
+        playCheckinSound().catch(() => { })
 
         // Se já estiver mostrando, reinicia a animação
         if (animRef.current) animRef.current.stop()
@@ -70,7 +72,8 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                     )
                     console.log("Notification connected")
                     for await (const _ of events) {
-                        showCheckinNotification()
+                        showCheckinNotification();
+                        refreshAccessCode();
                     }
                 } catch (error: any) {
                     if (!cancelled) console.error("Notification error:", error)
@@ -87,7 +90,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
             cancelled = true
             abortController?.abort()
         }
-    }, [])
+    }, [refreshAccessCode])
 
     return (
         <NotificationContext.Provider value={{ showCheckinNotification }}>

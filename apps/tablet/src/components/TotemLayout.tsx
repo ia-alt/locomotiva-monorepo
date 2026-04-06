@@ -290,7 +290,7 @@ const s = StyleSheet.create({
 
     // ── Painel QR (esquerda) ──
     qrPanel: { flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
-    qrTitle: { fontWeight: 'bold', color: '#1E293B', marginBottom: 10, textAlign: 'center' },
+    qrTitle: { fontWeight: 'bold', color: '#1E293B', marginBottom: 10, marginTop: 16, textAlign: 'center' },
     qrSub: { color: '#64748B', textAlign: 'center' },
 
     // ── Painel de ação (direita – idle) ──

@@ -5,7 +5,7 @@ export type NotificationContextType = {
 }
 
 export const NotificationContext = createContext<NotificationContextType>({
-
+    showCheckinNotification: () => { }
 });
 
 export function useNotification() {

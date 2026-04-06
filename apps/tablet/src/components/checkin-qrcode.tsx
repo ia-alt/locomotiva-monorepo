@@ -2,13 +2,14 @@ import { FC } from "react";
 import { StyleSheet } from "react-native";
 import { ActivityIndicator, Surface, Text, useTheme } from "react-native-paper";
 import { useAccessCode } from "../hooks/use-access-code";
+import QRCode from 'react-native-qrcode-svg';
 
 export const CheckinQrcode: FC = () => {
     const { accessCode, error, loading } = useAccessCode();
     const theme = useTheme();
 
-    return (
-        <Surface style={styles.container} mode="flat" elevation={2}>
+    if (loading || error) {
+        return (<Surface style={styles.container} mode="flat" elevation={2}>
             {loading ? (
                 <ActivityIndicator animating={true} size="large" />
             ) : error ? (
@@ -20,8 +21,13 @@ export const CheckinQrcode: FC = () => {
                     {accessCode}
                 </Text>
             )}
-        </Surface>
-    )
+        </Surface>)
+    }
+
+    const value = process.env.EXPO_PUBLIC_MOBILE_APP_URL + "/checkin?code=" + accessCode;
+
+    return <QRCode value={value} size={200} />
+
 }
 
 const styles = StyleSheet.create({
