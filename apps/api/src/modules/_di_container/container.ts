@@ -373,11 +373,11 @@ export class DiContainer {
     }
 
     public getPerformCheckinUseCase(authUser: User): PerformCheckinUseCase {
-        const performCheckinUseCase = new PerformCheckinUseCase(
+        return new PerformCheckinUseCase(
             this.getAuthUserService(authUser),
-            this.getAccessService()
+            this.getAccessService(),
+            this.getTotemCheckinAccessCodeManager()
         );
-        return performCheckinUseCase;
     }
 
     public getPerformCheckoutUseCase(authUser: User): PerformCheckoutUseCase {
@@ -751,7 +751,6 @@ new AfterBookingStatusChanged(
 
 new AfterUserCheckin(
     container.getTotemCheckinNotifier(),
-    container.getUserRepository(),
 );
 //#endregion
 

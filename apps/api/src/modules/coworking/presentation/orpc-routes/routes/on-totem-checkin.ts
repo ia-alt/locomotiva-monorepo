@@ -4,16 +4,16 @@ import { MemoryPublisherTotemCheckinNotifier } from "src/modules/coworking/infra
 
 export const onTotemCheckinRoute = systemRoute
     .handler(async function* ({ context, signal }) {
-        const totemName = context.apiKey.name
+        const totemId = context.apiKey.id
 
         const totemCheckinNotifier = container.getTotemCheckinNotifier() as MemoryPublisherTotemCheckinNotifier;
 
-        const iterator = totemCheckinNotifier.totemCheckinNotifierPublisher.subscribe(totemName, { signal })
+        const iterator = totemCheckinNotifier.totemCheckinNotifierPublisher.subscribe(totemId.value, { signal })
 
         // for test
         setInterval(() => {
-            totemCheckinNotifier.notify(totemName);
-        }, 10000);
+            totemCheckinNotifier.notify(totemId);
+        }, 5000);
 
         for await (const payload of iterator) {
             yield payload;

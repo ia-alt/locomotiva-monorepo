@@ -86,7 +86,7 @@ model AccessLog {
   userId    String
   entryTime DateTime
   exitTime  DateTime?
-  checkinTotemName String?
+  checkinTotemId String?
 
   @@map("access_logs")
 }

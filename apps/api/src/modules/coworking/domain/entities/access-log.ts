@@ -9,7 +9,7 @@ class AccessLog extends AggregateRoot {
         public readonly userId: UniqueId,
         public readonly entryTime: Date,
         private exitTime: Date | null,
-        public readonly checkinTotemName: string | null
+        public readonly checkinTotemId: UniqueId | null
     ) {
         super(id);
     }
@@ -20,7 +20,7 @@ class AccessLog extends AggregateRoot {
             input.userId,
             new Date(),
             null,
-            input.checkinTotemName ?? null
+            input.checkinTotemId ?? null
         );
         accessLog.addDomainEvent(new CheckinDoneEvent(accessLog));
         return accessLog;
@@ -39,7 +39,7 @@ class AccessLog extends AggregateRoot {
             userId: this.userId.value,
             entryTime: this.entryTime.toISOString(),
             exitTime: this.exitTime?.toISOString() ?? null,
-            checkinTotemName: this.checkinTotemName,
+            checkinTotemId: this.checkinTotemId?.value ?? null,
         };
     }
 }
@@ -54,12 +54,12 @@ namespace AccessLog {
         userId: z.string(),
         entryTime: z.string(),
         exitTime: z.string().nullable(),
-        checkinTotemName: z.string().nullable(),
+        checkinTotemId: z.string().nullable(),
     });
 
     export type CreateParams = {
         userId: UniqueId;
-        checkinTotemName?: string | null;
+        checkinTotemId?: UniqueId | null;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }

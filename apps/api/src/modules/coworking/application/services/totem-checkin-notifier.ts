@@ -1,3 +1,5 @@
+import { UniqueId } from "@core/base-classes";
+
 export interface TotemCheckinNotifier {
-    notify(totemName: string, userName: string): Promise<void>;
+    notify(totemId: UniqueId): Promise<void>;
 }
