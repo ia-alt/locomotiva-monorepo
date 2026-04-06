@@ -74,7 +74,7 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
 
     async delete(id: string): Promise<void> {
         await this.prisma.apiKey.delete({
-            where: { id: id.value },
+            where: { id },
         });
     }
 }
