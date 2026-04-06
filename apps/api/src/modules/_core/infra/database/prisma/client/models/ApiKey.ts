@@ -28,6 +28,7 @@ export type ApiKeyMinAggregateOutputType = {
   id: string | null
   name: string | null
   keyHash: string | null
+  active: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -36,6 +37,7 @@ export type ApiKeyMaxAggregateOutputType = {
   id: string | null
   name: string | null
   keyHash: string | null
+  active: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,7 @@ export type ApiKeyCountAggregateOutputType = {
   id: number
   name: number
   keyHash: number
+  active: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -54,6 +57,7 @@ export type ApiKeyMinAggregateInputType = {
   id?: true
   name?: true
   keyHash?: true
+  active?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -62,6 +66,7 @@ export type ApiKeyMaxAggregateInputType = {
   id?: true
   name?: true
   keyHash?: true
+  active?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -70,6 +75,7 @@ export type ApiKeyCountAggregateInputType = {
   id?: true
   name?: true
   keyHash?: true
+  active?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -151,6 +157,7 @@ export type ApiKeyGroupByOutputType = {
   id: string
   name: string
   keyHash: string
+  active: boolean
   createdAt: Date
   updatedAt: Date
   _count: ApiKeyCountAggregateOutputType | null
@@ -180,6 +187,7 @@ export type ApiKeyWhereInput = {
   id?: Prisma.StringFilter<"ApiKey"> | string
   name?: Prisma.StringFilter<"ApiKey"> | string
   keyHash?: Prisma.StringFilter<"ApiKey"> | string
+  active?: Prisma.BoolFilter<"ApiKey"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ApiKey"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ApiKey"> | Date | string
 }
@@ -188,6 +196,7 @@ export type ApiKeyOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   keyHash?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -199,6 +208,7 @@ export type ApiKeyWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ApiKeyWhereInput | Prisma.ApiKeyWhereInput[]
   name?: Prisma.StringFilter<"ApiKey"> | string
   keyHash?: Prisma.StringFilter<"ApiKey"> | string
+  active?: Prisma.BoolFilter<"ApiKey"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ApiKey"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ApiKey"> | Date | string
 }, "id">
@@ -207,6 +217,7 @@ export type ApiKeyOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   keyHash?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ApiKeyCountOrderByAggregateInput
@@ -221,6 +232,7 @@ export type ApiKeyScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"ApiKey"> | string
   name?: Prisma.StringWithAggregatesFilter<"ApiKey"> | string
   keyHash?: Prisma.StringWithAggregatesFilter<"ApiKey"> | string
+  active?: Prisma.BoolWithAggregatesFilter<"ApiKey"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ApiKey"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ApiKey"> | Date | string
 }
@@ -229,6 +241,7 @@ export type ApiKeyCreateInput = {
   id: string
   name: string
   keyHash: string
+  active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -237,6 +250,7 @@ export type ApiKeyUncheckedCreateInput = {
   id: string
   name: string
   keyHash: string
+  active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -245,6 +259,7 @@ export type ApiKeyUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   keyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -253,6 +268,7 @@ export type ApiKeyUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   keyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -261,6 +277,7 @@ export type ApiKeyCreateManyInput = {
   id: string
   name: string
   keyHash: string
+  active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -269,6 +286,7 @@ export type ApiKeyUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   keyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -277,6 +295,7 @@ export type ApiKeyUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   keyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -285,6 +304,7 @@ export type ApiKeyCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   keyHash?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -293,6 +313,7 @@ export type ApiKeyMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   keyHash?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -301,8 +322,13 @@ export type ApiKeyMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   keyHash?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 
@@ -311,6 +337,7 @@ export type ApiKeySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   name?: boolean
   keyHash?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["apiKey"]>
@@ -319,6 +346,7 @@ export type ApiKeySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   keyHash?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["apiKey"]>
@@ -327,6 +355,7 @@ export type ApiKeySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   keyHash?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["apiKey"]>
@@ -335,11 +364,12 @@ export type ApiKeySelectScalar = {
   id?: boolean
   name?: boolean
   keyHash?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ApiKeyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "keyHash" | "createdAt" | "updatedAt", ExtArgs["result"]["apiKey"]>
+export type ApiKeyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "keyHash" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["apiKey"]>
 
 export type $ApiKeyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ApiKey"
@@ -348,6 +378,7 @@ export type $ApiKeyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     name: string
     keyHash: string
+    active: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["apiKey"]>
@@ -776,6 +807,7 @@ export interface ApiKeyFieldRefs {
   readonly id: Prisma.FieldRef<"ApiKey", 'String'>
   readonly name: Prisma.FieldRef<"ApiKey", 'String'>
   readonly keyHash: Prisma.FieldRef<"ApiKey", 'String'>
+  readonly active: Prisma.FieldRef<"ApiKey", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ApiKey", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ApiKey", 'DateTime'>
 }
