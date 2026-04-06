@@ -14,6 +14,7 @@ export const AccessCodeProvider: FC<PropsWithChildren> = ({ children }) => {
         try {
             const { code } = await orpc.coworking.totem.generateAccessCode.call({})
             setAccessCode(code);
+            console.log("Novo Código:", code)
         } catch (error) {
             setError("Erro ao carregar QR Code");
         } finally {

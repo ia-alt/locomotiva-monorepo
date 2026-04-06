@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import CheckinCard from '../../components/CheckinCard';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import { CheckinCard } from '../../components/CheckinCard';
 import { CheckinProvider } from '../../contexts/checkin-context';
 import { useAuth } from '../../contexts/auth-context';
 
+type InicioScreenRouteProp = RouteProp<{ Início: { code?: string } }, 'Início'>;
+
 export default function InicioScreen() {
     const { authUser } = useAuth();
+    const route = useRoute<InicioScreenRouteProp>();
+
+    const rawCode = route.params?.code;
+    const cleanCode = rawCode ? rawCode.replace(/['"]/g, '') : undefined;
+
+    useEffect(() => {
+        if (cleanCode) {
+            console.log("\n=============================");
+            console.log("🔥 FAKE CHECKIN CHAMADO 🔥");
+            console.log("CÓDIGO RECEBIDO:", cleanCode);
+            console.log("=============================\n");
+        }
+    }, [cleanCode]);
 
     // Fallback to "Visitante" if name is not available, but user wants "Mariana" as example or the actual name from context
     const firstName = authUser?.name ? authUser.name.split(' ')[0] : 'Mariana';
@@ -23,7 +39,7 @@ export default function InicioScreen() {
                     </Text>
                 </View>
 
-                <CheckinCard />
+                <CheckinCard accessCode={cleanCode} />
             </View>
         </CheckinProvider>
     );

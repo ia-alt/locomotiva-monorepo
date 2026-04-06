@@ -8,6 +8,7 @@ export const performCheckinRoute = protectedRoute
     .input(PerformCheckinUseCase.InputSchema)
     .output(PerformCheckinUseCase.OutputSchema)
     .handler(async ({ input, context }) => {
+        console.log(input);
         return orpcSafe(async () => {
             const performCheckinUseCase = container.getPerformCheckinUseCase(context.user);
             return performCheckinUseCase.execute(input);

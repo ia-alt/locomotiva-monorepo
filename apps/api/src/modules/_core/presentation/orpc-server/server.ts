@@ -52,7 +52,7 @@ export class ORPCServer {
                         version: '1.0.0',
                     },
                     servers: [
-                        { url: '/api' }, /** Should use absolute URLs in production */
+                        { url: '/rest' }, /** Should use absolute URLs in production */
                     ],
                     security: [{ bearerAuth: [] }],
                     components: {
@@ -112,13 +112,8 @@ export class ORPCServer {
                     headers.append(key, value as string);
                 }
             }
-            const result = await openApiHandler.handle(req, res, {
-                context: { headers },
-                prefix: "/api",
-            })
 
-            if (result.matched) return
-
+            // Handle RPC format requests first on /api
             const rpcResult = await rpcHandler.handle(req, res, {
                 context: { headers },
                 prefix: "/api",
@@ -127,6 +122,14 @@ export class ORPCServer {
             console.log(req.url, rpcResult)
 
             if (rpcResult.matched) return
+
+            // Handle REST formatted requests on /rest
+            const openApiResult = await openApiHandler.handle(req, res, {
+                context: { headers },
+                prefix: "/rest",
+            })
+
+            if (openApiResult.matched) return
 
             res.statusCode = 404
             res.end('No procedure matched')
