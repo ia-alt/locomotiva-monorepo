@@ -7,8 +7,8 @@ export const Teste: FC = () => {
     const orpc = useORPC()
     const [streaming, setStreaming] = useState<AsyncIterableIterator<{ message: string }>>()
     useEffect(() => {
-        orpc.coworking.totem.checkin.call({ name: "tomate" }).then(r => {
-            setStreaming(r)
+        orpc.coworking.totem.onCheckin.call({ name: "tomate" }).then((r) => {
+            setStreaming(r as AsyncIterableIterator<{ message: string }>)
         })
     }, [])
     useEffect(() => {

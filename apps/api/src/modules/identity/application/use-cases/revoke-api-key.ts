@@ -19,7 +19,7 @@ export class RevokeApiKeyUseCase implements UseCase<RevokeApiKeyUseCase.Input, v
             throw new ORPCError('NOT_FOUND', { message: "API Key não encontrada." });
         }
 
-        await this.apiKeyRepository.delete(apiKeyId);
+        await this.apiKeyRepository.deactivate(input.id);
     }
 }
 

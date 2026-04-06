@@ -24,11 +24,12 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
 
     async findAll(): Promise<ApiKey[]> {
         const data = await this.prisma.apiKey.findMany({
+            where: { active: true },
             orderBy: { createdAt: 'desc' },
         });
 
         return data.map(
-            (row) => new ApiKey(UniqueId.fromString(row.id), row.name, row.keyHash, row.createdAt)
+            (row) => new ApiKey(UniqueId.fromString(row.id), row.name, row.keyHash, row.createdAt, row.active)
         );
     }
 
@@ -44,12 +45,13 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
             data.name,
             data.keyHash,
             data.createdAt,
+            data.active,
         );
     }
 
     async findByKeyHash(keyHash: string): Promise<ApiKey | null> {
         const data = await this.prisma.apiKey.findFirst({
-            where: { keyHash },
+            where: { keyHash, active: true },
         });
 
         if (!data) return null;
@@ -59,10 +61,18 @@ export class PrismaApiKeyRepository implements ApiKeyRepository {
             data.name,
             data.keyHash,
             data.createdAt,
+            data.active,
         );
     }
 
-    async delete(id: UniqueId): Promise<void> {
+    async deactivate(id: string): Promise<void> {
+        await this.prisma.apiKey.update({
+            where: { id },
+            data: { active: false },
+        });
+    }
+
+    async delete(id: string): Promise<void> {
         await this.prisma.apiKey.delete({
             where: { id: id.value },
         });

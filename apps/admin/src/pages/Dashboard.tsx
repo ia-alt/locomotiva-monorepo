@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
           "pageSize": 1
         },
           "filter": {
-            "status": ["pending"]
+            "status": ["pending" as never]
           }
       });
     },

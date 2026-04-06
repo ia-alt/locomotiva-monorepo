@@ -153,6 +153,12 @@ export function TotemLayout({
                     <Text style={s.backText}>Voltar</Text>
                 </Pressable>
             )}
+            {!!apiKeyName && (
+                <View style={s.apiKeyBadge}>
+                    <MaterialCommunityIcons name="key-outline" size={11} color="rgba(255,255,255,0.7)" />
+                    <Text style={s.apiKeyBadgeText}>{apiKeyName}</Text>
+                </View>
+            )}
 
             <View style={s.expandedCenter}>
                 <Surface style={s.card} elevation={5}>

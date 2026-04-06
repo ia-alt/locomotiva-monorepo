@@ -46,13 +46,13 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
       setEmail(user.email);
       setCpf(formatCpf(user.cpf));
       setBirthDate(user.birthDate);
-      setUserType(user.userType);
+      setUserType(user.userType === 'system' ? 'admin' : user.userType);
     }
   }, [user]);
 
   const mutation = useMutation({
     mutationFn: (input: { userId: string; data: { name: string; email: string; cpf: string; birthDate: string; userType: 'user' | 'admin' } }) =>
-      orpc.identy.updateUser(input),
+      orpc.identy.updateUser(input as Parameters<typeof orpc.identy.updateUser>[0]),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
       onClose();

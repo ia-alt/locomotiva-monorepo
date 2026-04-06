@@ -37,7 +37,7 @@ export function CheckinProvider({ children }: { children: React.ReactNode }) {
             isCheckedIn,
             checkInTime,
             isLoading,
-            checkIn: () => checkInMutation.mutateAsync({}).then(() => { }),
+            checkIn: () => checkInMutation.mutateAsync({ totemName: null }).then(() => { }),
             checkOut: () => checkOutMutation.mutateAsync({}).then(() => { })
         }
     }, [isCheckedIn, checkInTime, isLoading, checkInMutation, checkOutMutation]);

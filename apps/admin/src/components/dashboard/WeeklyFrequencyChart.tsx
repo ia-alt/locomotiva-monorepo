@@ -70,7 +70,7 @@ export const WeeklyFrequencyChart: React.FC = () => {
             height={300}
             margin={{ top: 8, right: 8, bottom: 32, left: 32 }}
             grid={{ horizontal: true }}
-            slotProps={{ legend: { hidden: true } }}
+            slots={{ legend: () => null }}
             sx={{
               '& .MuiChartsGrid-line': {
                 stroke: '#f0f0f0',

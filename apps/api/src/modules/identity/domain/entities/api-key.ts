@@ -7,6 +7,7 @@ class ApiKey extends AggregateRoot {
         public name: string,
         private _keyHash: string,
         public readonly createdAt: Date,
+        public active: boolean = true,
     ) {
         super(id);
     }
@@ -17,6 +18,7 @@ class ApiKey extends AggregateRoot {
             props.name,
             props.keyHash,
             new Date(),
+            true,
         );
     }
 
@@ -24,11 +26,16 @@ class ApiKey extends AggregateRoot {
         return this._keyHash;
     }
 
+    deactivate(): void {
+        this.active = false;
+    }
+
     toJSON(): ApiKey.JsonSchema {
         return {
             id: this.id.value,
             name: this.name,
             createdAt: this.createdAt,
+            active: this.active,
         };
     }
 }
@@ -43,6 +50,7 @@ namespace ApiKey {
         id: z.string(),
         name: z.string(),
         createdAt: z.date(),
+        active: z.boolean(),
     });
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }
