@@ -3,6 +3,7 @@ import { View, StyleSheet, Image, Pressable, useWindowDimensions } from 'react-n
 import { Text, TextInput, Button, Surface, HelperText } from 'react-native-paper'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useTotemFlow, UseTotemFlowParams } from '../hooks/useTotemFlow'
+import { CheckinQrcode } from './checkin-qrcode'
 
 const LOGO_LOCOMOTIVA = { uri: '/locomotiva_logo-.png' }
 const LOGO_INOVA = { uri: '/inova%20logo.avif' }
@@ -71,7 +72,7 @@ export function TotemLayout({
             <View style={s.root}>
                 {/* LEFT – QR Code */}
                 <View style={[s.qrPanel, { paddingHorizontal: panelPaddingH }]}>
-                    <Image source={QR_CODE} style={{ width: qrSz, height: qrSz, marginBottom: 24 }} resizeMode="contain" />
+                    <CheckinQrcode />
                     <Text style={[s.qrTitle, { fontSize: qrTitleFs }]}>Acesse o App Locomotiva</Text>
                     <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5 }]}>
                         Escaneie o QR Code para se cadastrar,{'\n'}

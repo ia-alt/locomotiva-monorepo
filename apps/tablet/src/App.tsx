@@ -11,6 +11,7 @@ import TotemScreen from './screens/TotemScreen'
 import CheckoutScreen from './screens/CheckoutScreen'
 import SetupScreen, { LS_TABLET_MODE } from './screens/SetupScreen'
 import { NotificationProvider } from './providers/notification'
+import { AccessCodeProvider } from './providers/access-code'
 
 const theme = {
     ...MD3LightTheme,
@@ -62,9 +63,11 @@ function AppContent() {
     }
 
     return (
-        <NotificationProvider>
-            {state === 'checkout' ? <CheckoutScreen /> : <TotemScreen />}
-        </NotificationProvider>
+        <AccessCodeProvider>
+            <NotificationProvider>
+                {state === 'checkout' ? <CheckoutScreen /> : <TotemScreen />}
+            </NotificationProvider>
+        </AccessCodeProvider>
     )
 
 }

@@ -7,7 +7,7 @@ const BLUE = '#1A7BFF'
 
 export default function TotemScreen() {
     const orpc = useORPC()
-    const { data } = useQuery((orpc.identy.getApiKeyInfo as any).queryOptions())
+    const { data } = useQuery(orpc.identy.getApiKeyInfo.queryOptions())
 
     return (
         <TotemLayout
