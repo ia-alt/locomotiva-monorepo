@@ -5,5 +5,6 @@ export interface ApiKeyRepository {
     findAll(): Promise<ApiKey[]>;
     findById(id: string): Promise<ApiKey | null>;
     findByKeyHash(keyHash: string): Promise<ApiKey | null>;
+    deactivate(id: string): Promise<void>;
     delete(id: string): Promise<void>;
 }

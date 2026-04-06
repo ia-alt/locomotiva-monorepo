@@ -13,7 +13,7 @@ export const onTotemCheckinRoute = systemRoute
         // for test — interval é limpo quando a conexão fecha
         const testInterval = setInterval(() => {
             totemCheckinNotifier.notify(totemName);
-        }, 40000);
+        }, 10000);
 
         try {
             for await (const payload of iterator) {
