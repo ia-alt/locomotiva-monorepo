@@ -242,8 +242,8 @@ export class DiContainer {
     private _sendEmailService?: SendEmailService;
     public getSendEmailService(): SendEmailService {
         if (!this._sendEmailService) {
-            this._sendEmailService = (env.EMAIL_USER && env.EMAIL_PASS)
-                ? new NodemailerSendEmailService(env.EMAIL_USER, env.EMAIL_PASS)
+            this._sendEmailService = (env.NODEMAILER_EMAIL_USER && env.NODEMAILER_EMAIL_PASS)
+                ? new NodemailerSendEmailService(env.NODEMAILER_EMAIL_USER, env.NODEMAILER_EMAIL_PASS)
                 : new ConsoleSendEmailService();
         }
         return this._sendEmailService;
