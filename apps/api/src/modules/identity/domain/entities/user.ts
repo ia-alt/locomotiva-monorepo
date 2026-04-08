@@ -56,6 +56,12 @@ class User extends AggregateRoot {
         this._userType = data.userType;
     }
 
+    updateSelf(data: { name: string; email: EmailAddress; birthDate: BirthDate }): void {
+        this._name = data.name;
+        this.email = data.email;
+        this.birthDate = data.birthDate;
+    }
+
     getPasswordHash() {
         return this._passwordHash;
     }

@@ -1,4 +1,5 @@
 import { getMeRoute } from "./routes/get-me";
+import { updateMeRoute } from "./routes/update-me";
 import { loginRoute } from "./routes/login";
 import { registerUserRoute } from "./routes/register-user";
 import { requestPasswordResetRoute } from "./routes/request-password-reset";
@@ -18,6 +19,7 @@ import { getApiKeyInfoRoute } from "./routes/get-api-key-info";
 export const identyRoutes = {
     registerUser: registerUserRoute,
     getMe: getMeRoute,
+    updateMe: updateMeRoute,
     login: loginRoute,
     requestPasswordReset: requestPasswordResetRoute,
     changePassword: changePasswordRoute,

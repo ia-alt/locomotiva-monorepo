@@ -11,7 +11,8 @@ import DetalhesReservaScreen from '../screens/private/DetalhesReservaScreen';
 import ConfirmarReservaScreen from '../screens/private/ConfirmarReservaScreen';
 import ReservaSucessoScreen from '../screens/private/ReservaSucessoScreen';
 import DetalhesMinhaReservaScreen from '../screens/private/DetalhesMinhaReservaScreen';
-import { ORPCOutputs } from '../locomotiva-api/types';
+import EditarPerfilScreen from '../screens/private/EditarPerfilScreen';
+import AlterarSenhaScreen from '../screens/private/AlterarSenhaScreen';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 
@@ -36,6 +37,8 @@ export type PrivateStackParamList = {
     DetalhesMinhaReserva: {
         bookingId: string;
     };
+    EditarPerfil: undefined;
+    AlterarSenha: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -78,7 +81,9 @@ function DrawerRoutes() {
                 name="Menu principal"
                 component={BottomTabs}
                 options={{
-                    title: 'Locomotiva'
+                    title: 'Locomotiva',
+                    headerLeft: () => null,
+                    swipeEnabled: false,
                 }}
             />
         </Drawer.Navigator>
@@ -120,6 +125,16 @@ export default function PrivateNavigator() {
                 name="DetalhesMinhaReserva"
                 component={DetalhesMinhaReservaScreen}
                 options={{ title: 'Detalhes da Reserva', animation: 'slide_from_right' }}
+            />
+            <Stack.Screen
+                name="EditarPerfil"
+                component={EditarPerfilScreen}
+                options={{ title: 'Editar Perfil' }}
+            />
+            <Stack.Screen
+                name="AlterarSenha"
+                component={AlterarSenhaScreen}
+                options={{ title: 'Alterar Senha' }}
             />
         </Stack.Navigator>
     );
