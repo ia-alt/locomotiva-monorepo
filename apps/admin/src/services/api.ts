@@ -7,7 +7,7 @@ export type AppRouter = typeof router;
 
 export const orpc: RouterClient<typeof router> = createORPCClient(
   new RPCLink({
-    url: 'http://localhost:3000/api',
+    url: import.meta.env.VITE_API_URL,
     headers: () => {
       const token = localStorage.getItem('token');
       return {

@@ -24,7 +24,6 @@ import {
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
-  Notifications as NotificationsIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
 } from '@mui/icons-material';

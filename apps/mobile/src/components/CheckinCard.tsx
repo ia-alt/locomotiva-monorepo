@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FC } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Surface, useTheme, ActivityIndicator } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useCheckin } from '../contexts/checkin-context';
 
-export default function CheckinCard() {
+export const CheckinCard: FC<{ accessCode?: string }> = ({ accessCode }) => {
     const theme = useTheme();
     const { isCheckedIn, checkInTime, checkIn, checkOut, isLoading } = useCheckin();
     const [timeElapsed, setTimeElapsed] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+
+    useEffect(() => {
+        if (accessCode && !isCheckedIn && !isLoading) {
+            checkIn(accessCode)
+        }
+    }, [accessCode, isLoading, isCheckedIn, checkIn])
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -67,7 +74,7 @@ export default function CheckinCard() {
 
                 <TouchableOpacity
                     style={[styles.button, { backgroundColor: theme.colors.primary }]}
-                    onPress={checkIn}
+                    onPress={() => { }}
                     activeOpacity={0.8}
                 >
                     <MaterialCommunityIcons name="qrcode-scan" size={20} color="#FFF" style={styles.buttonIcon} />

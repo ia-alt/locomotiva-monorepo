@@ -15,12 +15,14 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
                 userId: data.userId,
                 entryTime: data.entryTime,
                 exitTime: data.exitTime,
+                checkinTotemId: data.checkinTotemId,
             },
             create: {
                 id: data.id,
                 userId: data.userId,
                 entryTime: data.entryTime,
                 exitTime: data.exitTime,
+                checkinTotemId: data.checkinTotemId,
             },
         });
         DomainEvents.dispatchEventsForAggregate(log.id);
@@ -36,14 +38,14 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
                         userId: data.userId,
                         entryTime: data.entryTime,
                         exitTime: data.exitTime,
-                        checkinTotemName: data.checkinTotemName,
+                        checkinTotemId: data.checkinTotemId,
                     },
                     create: {
                         id: data.id,
                         userId: data.userId,
                         entryTime: data.entryTime,
                         exitTime: data.exitTime,
-                        checkinTotemName: data.checkinTotemName,
+                        checkinTotemId: data.checkinTotemId,
                     },
                 });
             })
@@ -147,7 +149,7 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
             UniqueId.fromString(dbLog.userId),
             dbLog.entryTime,
             dbLog.exitTime,
-            dbLog.checkinTotemName,
+            dbLog.checkinTotemId ? UniqueId.fromString(dbLog.checkinTotemId) : null,
         );
     }
 }

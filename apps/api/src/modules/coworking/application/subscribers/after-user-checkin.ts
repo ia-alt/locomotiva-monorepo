@@ -6,7 +6,6 @@ import { TotemCheckinNotifier } from "../services/totem-checkin-notifier";
 export class AfterUserCheckin {
     constructor(
         private readonly totemCheckinNotifier: TotemCheckinNotifier,
-        private readonly userRepository: UserRepository,
     ) {
         this.setupSubscriptions();
     }
@@ -18,14 +17,11 @@ export class AfterUserCheckin {
     private async onUserCheckin(event: CheckinDoneEvent): Promise<void> {
         try {
             const { accessLog } = event;
-            if (!accessLog.checkinTotemName) return;
+            if (!accessLog.checkinTotemId) return;
 
-            const user = await this.userRepository.findById(accessLog.userId);
-            if (!user) return;
+            this.totemCheckinNotifier.notify(accessLog.checkinTotemId);
 
-            this.totemCheckinNotifier.notify(accessLog.checkinTotemName, user.firstName);
-
-            console.log(`[AfterUserCheckin] Notificação enviada para totem ${accessLog.checkinTotemName} para o usuário ${user.firstName}`);
+            console.log(`[AfterUserCheckin] Notificação enviada para totem ${accessLog.checkinTotemId}`);
         } catch (error) {
             console.error('[AfterUserCheckin] Error sending notification:', error);
         }

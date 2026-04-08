@@ -4,6 +4,7 @@ import { ORPCProvider } from './locomotiva-api/provider';
 import { QueryClientProvider, QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/auth-context';
 import { CheckinProvider } from './contexts/checkin-context';
+import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -86,11 +87,13 @@ export default function Main() {
             <QueryClientProvider client={queryClient}>
               <ORPCProvider>
                 <AuthProvider>
+                  <QRCodeReaderProvider>
 
-                  <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                    <App />
-                  </SafeAreaView>
+                    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                      <App />
+                    </SafeAreaView>
 
+                  </QRCodeReaderProvider>
                 </AuthProvider>
               </ORPCProvider>
             </QueryClientProvider>

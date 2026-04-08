@@ -24,8 +24,8 @@ import { TemplateStringBookingEmailTemplater } from "@booking/infra/services";
 import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
-import { User } from "src/modules/identity/domain/entities";
-import { AuthService, AuthTokenService, AuthUserService, PasswordHashService, PasswordResetTokenService, PasswordService } from "src/modules/identity/domain/services";
+import { User, ApiKey } from "src/modules/identity/domain/entities";
+import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, PasswordHashService, PasswordResetTokenService, PasswordService } from "src/modules/identity/domain/services";
 import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
@@ -40,7 +40,7 @@ import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
 import { NodemailerSendEmailService } from "@notifications/infra/services/resend-send-email";
 import { env } from "src/modules/env";
-import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase } from "@coworking/application/use-cases";
+import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase, GenerateTotemAccessCodeUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
 import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
@@ -76,6 +76,8 @@ import { AfterBookingStatusChanged } from "@booking/application/subscribers/afte
 import { AfterUserCheckin } from "../coworking/application/subscribers/after-user-checkin";
 import { TotemCheckinNotifier } from "../coworking/application/services/totem-checkin-notifier";
 import { MemoryPublisherTotemCheckinNotifier } from "../coworking/infra/services/memory-publisher-totem-checkin-notifier";
+import { TotemCheckinAccessCodeManager } from "../coworking/application/services/totem-checkin-access-code-manager";
+import { MemoryTotemCheckinAccessCodeManager } from "../coworking/infra/services/memory-totem-checkin-access-code-manager";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -200,6 +202,16 @@ export class DiContainer {
         return this._totemCheckinNotifier;
     }
 
+    private _totemCheckinAccessCodeManager?: TotemCheckinAccessCodeManager;
+    public getTotemCheckinAccessCodeManager(): TotemCheckinAccessCodeManager {
+        if (!this._totemCheckinAccessCodeManager) {
+            this._totemCheckinAccessCodeManager = new MemoryTotemCheckinAccessCodeManager(
+                this.getApiKeyRepository()
+            );
+        }
+        return this._totemCheckinAccessCodeManager;
+    }
+
     private _bookingService?: BookingService;
     public getBookingService(): BookingService {
         if (!this._bookingService) {
@@ -276,6 +288,10 @@ export class DiContainer {
     //#region Use Cases
     public getAuthUserService(authUser: User): AuthUserService {
         return new AuthUserService(authUser);
+    }
+
+    public getAuthApiKeyService(apiKey: ApiKey): AuthApiKeyService {
+        return new AuthApiKeyService(apiKey);
     }
 
     public getRegisterUserUseCase(): RegisterUserUseCase {
@@ -357,11 +373,11 @@ export class DiContainer {
     }
 
     public getPerformCheckinUseCase(authUser: User): PerformCheckinUseCase {
-        const performCheckinUseCase = new PerformCheckinUseCase(
+        return new PerformCheckinUseCase(
             this.getAuthUserService(authUser),
-            this.getAccessService()
+            this.getAccessService(),
+            this.getTotemCheckinAccessCodeManager()
         );
-        return performCheckinUseCase;
     }
 
     public getPerformCheckoutUseCase(authUser: User): PerformCheckoutUseCase {
@@ -459,6 +475,13 @@ export class DiContainer {
             this.getAuthUserService(authUser)
         );
         return countActiveAccessLogsUseCase;
+    }
+
+    public getGenerateTotemAccessCodeUseCase(apiKey: ApiKey): GenerateTotemAccessCodeUseCase {
+        return new GenerateTotemAccessCodeUseCase(
+            this.getAuthApiKeyService(apiKey),
+            this.getTotemCheckinAccessCodeManager()
+        );
     }
 
     public getCreateRoomUseCase(authUser: User): CreateRoomUseCase {
@@ -728,7 +751,6 @@ new AfterBookingStatusChanged(
 
 new AfterUserCheckin(
     container.getTotemCheckinNotifier(),
-    container.getUserRepository(),
 );
 //#endregion
 
