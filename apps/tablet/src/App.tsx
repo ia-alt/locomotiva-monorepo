@@ -64,9 +64,11 @@ function AppContent() {
 
     return (
         <AccessCodeProvider>
-            <NotificationProvider>
-                {state === 'checkout' ? <CheckoutScreen /> : <TotemScreen />}
-            </NotificationProvider>
+            {state === 'checkout' ? <CheckoutScreen /> : (
+                <NotificationProvider>
+                    <TotemScreen />
+                </NotificationProvider>
+            )}
         </AccessCodeProvider>
     )
 

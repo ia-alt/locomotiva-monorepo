@@ -70,14 +70,35 @@ export function TotemLayout({
     if (flow.step === 'idle') {
         return (
             <View style={s.root}>
-                {/* LEFT – QR Code */}
+                {/* LEFT – QR Code (checkin) ou mensagem orientativa (checkout) */}
                 <View style={[s.qrPanel, { paddingHorizontal: panelPaddingH }]}>
-                    <CheckinQrcode />
-                    <Text style={[s.qrTitle, { fontSize: qrTitleFs }]}>Acesse o App Locomotiva</Text>
-                    <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5 }]}>
-                        Escaneie o QR Code para se cadastrar,{'\n'}
-                        fazer login, reservar salas e muito mais.
-                    </Text>
+                    {mode === 'checkout' ? (
+                        <View style={s.checkoutHint}>
+                            <MaterialCommunityIcons name="web" size={48} color="#0F9B6E" style={{ marginBottom: 20 }} />
+                            <Text style={[s.qrTitle, { fontSize: qrTitleFs, marginBottom: 12 }]}>
+                                Faça seu checkout pelo Site
+                            </Text>
+                            <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5, marginBottom: 32 }]}>
+                                Acesse o portal da Locomotiva e registre sua saída online.
+                            </Text>
+                            <View style={s.checkoutDivider} />
+                            <View style={s.checkoutCpfHint}>
+                                <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5, flex: 1 }]}>
+                                    Ou use seu CPF ao lado
+                                </Text>
+                                <MaterialCommunityIcons name="arrow-right" size={24} color="#0F9B6E" />
+                            </View>
+                        </View>
+                    ) : (
+                        <>
+                            <CheckinQrcode />
+                            <Text style={[s.qrTitle, { fontSize: qrTitleFs }]}>Acesse o App Locomotiva</Text>
+                            <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5 }]}>
+                                Escaneie o QR Code para se cadastrar,{'\n'}
+                                fazer login, reservar salas e muito mais.
+                            </Text>
+                        </>
+                    )}
                 </View>
 
                 {/* RIGHT – Painel colorido */}
@@ -334,4 +355,9 @@ const s = StyleSheet.create({
     closeBtn: { marginTop: 20, borderRadius: 10 },
 
     partnersFull: { position: 'absolute', bottom: 12, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', zIndex: 1 },
+
+    // ── Checkout hint (painel esquerdo) ──
+    checkoutHint: { alignItems: 'center', width: '100%' },
+    checkoutDivider: { width: '60%', height: 1, backgroundColor: '#E2E8F0', marginBottom: 24 },
+    checkoutCpfHint: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 })

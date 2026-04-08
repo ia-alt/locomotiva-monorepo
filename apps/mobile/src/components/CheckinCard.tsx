@@ -3,10 +3,26 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Surface, useTheme, ActivityIndicator } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useCheckin } from '../contexts/checkin-context';
+import { useQRCodeReader } from '../contexts/qr-code-reader';
+
+function extractCode(raw: string): string {
+    const queryIndex = raw.indexOf('?');
+    if (queryIndex === -1) return raw;
+    const params = new URLSearchParams(raw.slice(queryIndex + 1));
+    return params.get('code') ?? raw;
+}
 
 export const CheckinCard: FC<{ accessCode?: string }> = ({ accessCode }) => {
     const theme = useTheme();
     const { isCheckedIn, checkInTime, checkIn, checkOut, isLoading } = useCheckin();
+    const { openReader } = useQRCodeReader();
+
+    const handleScanQR = () => {
+        openReader((raw) => {
+            const code = extractCode(raw);
+            checkIn(code);
+        });
+    };
     const [timeElapsed, setTimeElapsed] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
 
@@ -74,7 +90,7 @@ export const CheckinCard: FC<{ accessCode?: string }> = ({ accessCode }) => {
 
                 <TouchableOpacity
                     style={[styles.button, { backgroundColor: theme.colors.primary }]}
-                    onPress={() => { }}
+                    onPress={handleScanQR}
                     activeOpacity={0.8}
                 >
                     <MaterialCommunityIcons name="qrcode-scan" size={20} color="#FFF" style={styles.buttonIcon} />

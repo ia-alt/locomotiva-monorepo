@@ -2,25 +2,29 @@ import React, { FC, PropsWithChildren, useCallback, useEffect, useRef, useState 
 import { Animated, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Audio } from "expo-av";
 import { NotificationContext } from "../contexts/notification";
 import { useORPC } from "../locomotiva-api/context";
 import { useAccessCode } from "../hooks/use-access-code";
 
-const CHECKIN_SOUND = require('../../assets/checkin-sound.wav')
+// Pré-carrega o áudio para evitar delay e contornar autoplay policy
+const _audio = new Audio(require('../../assets/checkin-sound.wav'))
+_audio.volume = 0.6
+
+// Desbloqueia o AudioContext no primeiro toque do usuário
+let _unlocked = false
+function unlockAudio() {
+    if (_unlocked) return
+    _unlocked = true
+    _audio.play().then(() => { _audio.pause(); _audio.currentTime = 0 }).catch(() => {})
+    document.removeEventListener('pointerdown', unlockAudio)
+}
+document.addEventListener('pointerdown', unlockAudio)
 
 export async function playCheckinSound() {
     try {
-        await Audio.setAudioModeAsync({ playsInSilentModeIOS: true })
-        const { sound } = await Audio.Sound.createAsync(CHECKIN_SOUND)
-        await sound.setVolumeAsync(0.6)
-        await sound.playAsync()
-        sound.setOnPlaybackStatusUpdate((status) => {
-            if ('didJustFinish' in status && status.didJustFinish) {
-                sound.unloadAsync()
-            }
-        })
-    } catch { /* ignorar erros de áudio */ }
+        _audio.currentTime = 0
+        await _audio.play()
+    } catch { /* autoplay bloqueado pelo browser */ }
 }
 
 export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
