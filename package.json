@@ -5,7 +5,7 @@
     "apps/*"
   ],
   "scripts": {
-    "start:api": "npm start -w @locomotiva/api",
+    "start:api": "npm run prisma:deploy -w @locomotiva/api && npm start -w @locomotiva/api",
     "dev:api": "npm run dev -w @locomotiva/api",
     "dev:mobile": "npm run dev -w @locomotiva/mobile",
     "dev:admin": "npm run dev -w @locomotiva/admin",
