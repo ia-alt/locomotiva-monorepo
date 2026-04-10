@@ -35,6 +35,7 @@ import { VerifyPasswordResetCodeUseCase } from "src/modules/identity/application
 import { ExecutePasswordResetWithCodeUseCase } from "src/modules/identity/application/use-cases/execute-password-reset-with-code";
 import { ListUsersUseCase } from "src/modules/identity/application/use-cases/list-users";
 import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/update-user";
+import { UpdateMeUseCase } from "src/modules/identity/application/use-cases/update-me";
 import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
 import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
@@ -658,6 +659,13 @@ export class DiContainer {
 
     public getUpdateUserUseCase(authUser: User): UpdateUserUseCase {
         return new UpdateUserUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getUpdateMeUseCase(authUser: User): UpdateMeUseCase {
+        return new UpdateMeUseCase(
             this.getAuthUserService(authUser),
             this.getUserRepository(),
         );

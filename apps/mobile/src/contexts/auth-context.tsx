@@ -7,7 +7,7 @@ import { ORPCOutputs, ORPCInputs } from '../locomotiva-api/types';
 type LoginInput = ORPCInputs['identy']['login'];
 type User = ORPCOutputs['identy']['getMe'];
 type RegisterUserInput = ORPCInputs['identy']['registerUser'];
-
+type UpdateMeInput = ORPCInputs['identy']['updateMe'];
 
 type AuthContextType = {
     authUser: User | null;
@@ -15,6 +15,8 @@ type AuthContextType = {
     login: (credentials: LoginInput) => Promise<void>;
     logout: () => Promise<void>;
     register: (newUserData: RegisterUserInput) => Promise<void>;
+    updateMe: (data: UpdateMeInput) => Promise<void>;
+    refreshUser: () => Promise<void>;
     isLoading: boolean;
 };
 
@@ -82,6 +84,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await registerMutation.mutateAsync(credentials);
     };
 
+    const updateMeMutation = useMutation({
+        ...orpc.identy.updateMe.mutationOptions(),
+        onSuccess: (data) => {
+            setAuthUser(data as any);
+        },
+    });
+
+    const updateMe = async (data: UpdateMeInput) => {
+        await updateMeMutation.mutateAsync(data);
+    };
+
+    const refreshUser = async () => {
+        await getMe();
+    };
+
     const isLoading = !isReady || isUserLoading;
     const isAuthenticated = !!authUser;
 
@@ -92,6 +109,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             login,
             logout,
             register,
+            updateMe,
+            refreshUser,
             isLoading
         }}>
             {children}
