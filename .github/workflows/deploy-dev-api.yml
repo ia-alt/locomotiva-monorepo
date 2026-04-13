@@ -14,5 +14,5 @@ jobs:
       - name: Trigger Coolify Deploy for API
         run: |
           curl --request GET \
-            --url "https://coolify-vps.inova.ma.gov.br/api/v1/deploy?uuid=gk3pvl4vkfo2zel44bmwz766&force=false" \
+            --url "https://coolify-vps.inova.ma.gov.br/api/v1/deploy?uuid=e9ztcrtpbatik09nzgattppe&force=false" \
             --header "Authorization: Bearer ${{ secrets.COOLIFY_DEPLOY_TOKEN }}"
