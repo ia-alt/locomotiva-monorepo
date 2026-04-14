@@ -1,0 +1,19 @@
+name: Deploy Dev Tablet
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'apps/tablet/**'
+      - 'apps/api/**'
+
+jobs:
+  deploy-tablet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify Deploy for Tablet
+        run: |
+          curl --request GET \
+            --url "https://coolify-vps.inova.ma.gov.br/api/v1/deploy?uuid=ug5on1tviwowpac65fp4du4l&force=false" \
+            --header "Authorization: Bearer ${{ secrets.COOLIFY_DEPLOY_TOKEN }}"
