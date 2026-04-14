@@ -12,7 +12,7 @@ function extractCode(raw: string): string {
     return params.get('code') ?? raw;
 }
 
-export const CheckinCard: FC<{ accessCode?: string }> = ({ accessCode }) => {
+export const CheckinCard: FC<{ accessCode?: string, onCodeProcessed?: () => void }> = ({ accessCode, onCodeProcessed }) => {
     const theme = useTheme();
     const { isCheckedIn, checkInTime, checkIn, checkOut, isLoading } = useCheckin();
     const { openReader } = useQRCodeReader();
@@ -28,9 +28,13 @@ export const CheckinCard: FC<{ accessCode?: string }> = ({ accessCode }) => {
 
     useEffect(() => {
         if (accessCode && !isCheckedIn && !isLoading) {
-            checkIn(accessCode)
+            checkIn(accessCode).finally(() => {
+                if (onCodeProcessed) {
+                    onCodeProcessed();
+                }
+            });
         }
-    }, [accessCode, isLoading, isCheckedIn, checkIn])
+    }, [accessCode, isLoading, isCheckedIn, checkIn, onCodeProcessed])
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
