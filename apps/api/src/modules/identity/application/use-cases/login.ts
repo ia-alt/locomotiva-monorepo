@@ -14,7 +14,7 @@ class LoginUseCase implements UseCase<LoginUseCase.Input, LoginUseCase.Output> {
 
         const emailOrCpf = isEmail
             ? new EmailAddress(input.identifier.toLowerCase())
-            : Cpf.fromString(input.identifier);
+            : Cpf.fromString(input.identifier)!;
 
         const token = await this.authService.login(emailOrCpf, input.password);
 

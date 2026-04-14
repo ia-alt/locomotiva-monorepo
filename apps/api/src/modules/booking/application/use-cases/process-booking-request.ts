@@ -27,7 +27,6 @@ class ProcessBookingRequestUseCase extends UseCase<ProcessBookingRequestUseCase.
         } else {
             booking.reject(params.decision.reason);
         }
-
         await this.bookingRepository.save(booking);
     }
 }
@@ -41,7 +40,7 @@ namespace ProcessBookingRequestUseCase {
             }),
             z.object({
                 type: z.literal('reject'),
-                reason: z.string().optional(),
+                reason: z.string(),
             })
         ])
     });

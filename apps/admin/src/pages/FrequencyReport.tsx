@@ -100,7 +100,7 @@ const FrequencyReport: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -213,7 +213,7 @@ const FrequencyReport: React.FC = () => {
                   height={250}
                   margin={{ top: 8, right: 8, bottom: 32, left: 32 }}
                   grid={{ horizontal: true }}
-                  slotProps={{ legend: { hidden: true } }}
+                  slots={{ legend: () => null }}
                   sx={{ '& .MuiChartsGrid-line': { stroke: '#f5f5f5', strokeDasharray: '4 4' } }}
                 />
               )}
@@ -235,7 +235,7 @@ const FrequencyReport: React.FC = () => {
                   height={250}
                   margin={{ top: 8, right: 8, bottom: 32, left: 32 }}
                   grid={{ horizontal: true }}
-                  slotProps={{ legend: { hidden: true } }}
+                  slots={{ legend: () => null }}
                   sx={{ '& .MuiChartsGrid-line': { stroke: '#f5f5f5', strokeDasharray: '4 4' } }}
                 />
               )}
@@ -257,7 +257,7 @@ const FrequencyReport: React.FC = () => {
                   height={220}
                   margin={{ top: 8, right: 8, bottom: 32, left: 32 }}
                   grid={{ horizontal: true }}
-                  slotProps={{ legend: { hidden: true } }}
+                  slots={{ legend: () => null }}
                   sx={{ '& .MuiChartsGrid-line': { stroke: '#f5f5f5', strokeDasharray: '4 4' } }}
                 />
               )}
@@ -279,7 +279,7 @@ const FrequencyReport: React.FC = () => {
                   height={220}
                   margin={{ top: 8, right: 8, bottom: 32, left: 32 }}
                   grid={{ horizontal: true }}
-                  slotProps={{ legend: { hidden: true } }}
+                  slots={{ legend: () => null }}
                   sx={{ '& .MuiChartsGrid-line': { stroke: '#f5f5f5', strokeDasharray: '4 4' } }}
                 />
               )}

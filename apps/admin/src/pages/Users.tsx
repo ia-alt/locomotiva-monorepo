@@ -32,7 +32,6 @@ const PAGE_SIZE = 10;
 const USER_TYPE_LABEL: Record<string, string> = {
   admin: 'Administrador',
   user: 'Cidadão',
-  system: 'Sistema',
 };
 
 const UsersPage: React.FC = () => {
@@ -139,14 +138,14 @@ const UsersPage: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {users.length === 0 ? (
+                {users.filter((u) => u.userType !== 'system').length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                       {search ? 'Nenhum usuário encontrado para esta busca.' : 'Nenhum usuário encontrado.'}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  users.map((user) => (
+                  users.filter((u) => u.userType !== 'system').map((user) => (
                     <TableRow key={user.id} hover>
                       <TableCell>
                         <Avatar sx={{ width: 38, height: 38, fontSize: '0.9rem', bgcolor: 'primary.light' }}>

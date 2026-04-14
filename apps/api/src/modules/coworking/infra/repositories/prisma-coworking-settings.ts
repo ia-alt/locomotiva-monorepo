@@ -17,7 +17,7 @@ export class PrismaCoworkingSettingsRepository implements CoworkingSettingsRepos
                 id: json.id,
                 capacity: json.maxCapacity,
             },
-        });
+        })
     }
 
     async get(): Promise<CoworkingSettings> {

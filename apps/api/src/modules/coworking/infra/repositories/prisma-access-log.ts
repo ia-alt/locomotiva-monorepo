@@ -1,7 +1,7 @@
 import { AccessLogRepository } from "@coworking/domain/repositories";
 import { AccessLog } from "@coworking/domain/entities";
 import { Prisma, PrismaClient, AccessLog as AccessLogDb } from "@core/infra/database/prisma";
-import { UniqueId } from "@core/base-classes";
+import { DomainEvents, UniqueId } from "@core/base-classes";
 import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
 
 export class PrismaAccessLogRepository implements AccessLogRepository {
@@ -15,14 +15,17 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
                 userId: data.userId,
                 entryTime: data.entryTime,
                 exitTime: data.exitTime,
+                checkinTotemId: data.checkinTotemId,
             },
             create: {
                 id: data.id,
                 userId: data.userId,
                 entryTime: data.entryTime,
                 exitTime: data.exitTime,
+                checkinTotemId: data.checkinTotemId,
             },
         });
+        DomainEvents.dispatchEventsForAggregate(log.id);
     }
 
     async saveMany(logs: AccessLog[]): Promise<void> {
@@ -35,16 +38,19 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
                         userId: data.userId,
                         entryTime: data.entryTime,
                         exitTime: data.exitTime,
+                        checkinTotemId: data.checkinTotemId,
                     },
                     create: {
                         id: data.id,
                         userId: data.userId,
                         entryTime: data.entryTime,
                         exitTime: data.exitTime,
+                        checkinTotemId: data.checkinTotemId,
                     },
                 });
             })
         );
+        logs.forEach((log) => DomainEvents.dispatchEventsForAggregate(log.id));
     }
 
     async findById(id: UniqueId): Promise<AccessLog | null> {
@@ -143,6 +149,7 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
             UniqueId.fromString(dbLog.userId),
             dbLog.entryTime,
             dbLog.exitTime,
+            dbLog.checkinTotemId ? UniqueId.fromString(dbLog.checkinTotemId) : null,
         );
     }
 }

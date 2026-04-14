@@ -6,7 +6,7 @@ type CheckinContextType = {
     isCheckedIn: boolean;
     checkInTime: Date | null;
     isLoading: boolean;
-    checkIn: () => Promise<void>;
+    checkIn: (accessCode: string) => Promise<void>;
     checkOut: () => Promise<void>;
 };
 
@@ -21,26 +21,35 @@ export function CheckinProvider({ children }: { children: React.ReactNode }) {
     const isCheckedIn = !!data;
     const checkInTime = useMemo(() => data?.entryTime ? new Date(data.entryTime) : null, [data?.entryTime]);
 
-    const checkInMutation = useMutation(orpc.coworking.checkin.mutationOptions({
+    const { mutateAsync: doCheckIn } = useMutation(orpc.coworking.checkin.mutationOptions({
         onSuccess: () => {
             queryClient.invalidateQueries(orpc.coworking.getMyCheckinStatus.key() as any);
         }
     }));
-    const checkOutMutation = useMutation(orpc.coworking.checkout.mutationOptions({
+    const { mutateAsync: doCheckOut } = useMutation(orpc.coworking.checkout.mutationOptions({
         onSuccess: () => {
             queryClient.invalidateQueries(orpc.coworking.getMyCheckinStatus.key() as any);
         }
     }));
+
+    const checkIn = React.useCallback(async (accessCode: string) => {
+        console.log("chamou. O que mudou?", accessCode, isLoading, isCheckedIn, doCheckIn.name)
+        await doCheckIn({ accessCode });
+    }, [doCheckIn]);
+
+    const checkOut = React.useCallback(async () => {
+        await doCheckOut({});
+    }, [doCheckOut]);
 
     const value = useMemo(() => {
         return {
             isCheckedIn,
             checkInTime,
             isLoading,
-            checkIn: () => checkInMutation.mutateAsync({}).then(() => { }),
-            checkOut: () => checkOutMutation.mutateAsync({}).then(() => { })
+            checkIn,
+            checkOut
         }
-    }, [isCheckedIn, checkInTime, isLoading, checkInMutation, checkOutMutation]);
+    }, [isCheckedIn, checkInTime, isLoading, checkIn, checkOut]);
 
     return (
         <CheckinContext.Provider value={value}>

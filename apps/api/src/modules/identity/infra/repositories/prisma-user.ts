@@ -1,7 +1,7 @@
 import { UserRepository } from "src/modules/identity/domain/repositories";
 import { User } from "src/modules/identity/domain/entities";
 import { Prisma, PrismaClient, User as UserDb } from "@core/infra/database/prisma";
-import { UniqueId } from "@core/base-classes";
+import { UniqueId, DomainEvents } from "@core/base-classes";
 import { EmailAddress, PaginatedQuery, PaginatedResult } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
 import { BirthDate } from "src/modules/identity/domain/value-objects/birth-date";
@@ -27,6 +27,8 @@ export class PrismaUserRepository implements UserRepository {
                 userType: json.userType,
                 passwordHash: user.getPasswordHash(),
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
+                passwordResetCode: user.getPasswordResetCode(),
+                passwordResetCodeExpiry: user.getPasswordResetCodeExpiry(),
             },
             create: {
                 id: json.id,
@@ -37,8 +39,11 @@ export class PrismaUserRepository implements UserRepository {
                 userType: json.userType,
                 passwordHash: user.getPasswordHash(),
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
+                passwordResetCode: user.getPasswordResetCode(),
+                passwordResetCodeExpiry: user.getPasswordResetCodeExpiry(),
             },
         });
+        DomainEvents.dispatchEventsForAggregate(user.id);
     }
 
     async findManyByIds(ids: UniqueId[]): Promise<User[]> {
@@ -66,6 +71,7 @@ export class PrismaUserRepository implements UserRepository {
 
     async delete(id: UniqueId): Promise<void> {
         await this.prisma.user.delete({ where: { id: id.value } });
+        DomainEvents.dispatchEventsForAggregate(id);
     }
 
     async findAll(pagination: PaginatedQuery, search?: string): Promise<PaginatedResult<typeof User.JsonSchema, User>> {
@@ -93,7 +99,9 @@ export class PrismaUserRepository implements UserRepository {
             BirthDate.fromDate(user.birthDate),
             user.userType as User.UserType,
             user.passwordHash,
-            user.lastPasswordResetDate
+            user.lastPasswordResetDate,
+            user.passwordResetCode,
+            user.passwordResetCodeExpiry
         );
     }
 }

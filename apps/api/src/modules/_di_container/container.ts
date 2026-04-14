@@ -1,10 +1,15 @@
 import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
-import { PrismaUserRepository } from "src/modules/identity/infra/repositories";
-import { UserRepository } from "src/modules/identity/domain/repositories";
+import { TemplateStringPasswordResetCodeEmailTemplater } from "src/modules/identity/infra/services/template-string-password-reset-code-email-templater";
+import { AfterPasswordResetCodeRequested } from "src/modules/identity/application/subscribers/after-password-reset-code-requested";
+import { PasswordResetCodeEmailTemplater } from "src/modules/identity/domain/services/password-reset-code-email-templater";
+import { PrismaUserRepository, PrismaApiKeyRepository } from "src/modules/identity/infra/repositories";
+import { UserRepository, ApiKeyRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { prisma } from "@core/infra/database/prisma/prisma-instance";
 import { RegisterUserUseCase } from "src/modules/identity/application/use-cases/register-user";
-import { RegisterSystemUserUseCase } from "src/modules/identity/application/use-cases/register-system-user";
+import { CreateApiKeyUseCase } from "src/modules/identity/application/use-cases/create-api-key";
+import { ListApiKeysUseCase } from "src/modules/identity/application/use-cases/list-api-keys";
+import { RevokeApiKeyUseCase } from "src/modules/identity/application/use-cases/revoke-api-key";
 import { CoworkingSettingsRepository, AccessLogRepository } from "@coworking/domain/repositories";
 import { PrismaCoworkingSettingsRepository } from "@coworking/infra/repositories/prisma-coworking-settings";
 import { PrismaAccessLogRepository } from "@coworking/infra/repositories/prisma-access-log";
@@ -14,22 +19,29 @@ import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
 import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
 import { PrismaBookingRepository } from "@booking/infra/repositories/prisma-booking";
 import { PrismaRoomRepository } from "@booking/infra/repositories/prisma-room";
-import { BookingService } from "@booking/domain/services";
+import { BookingService, BookingEmailTemplater } from "@booking/domain/services";
+import { TemplateStringBookingEmailTemplater } from "@booking/infra/services";
 import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
-import { User } from "src/modules/identity/domain/entities";
-import { AuthService, AuthTokenService, AuthUserService, PasswordHashService, PasswordResetTokenService, PasswordService } from "src/modules/identity/domain/services";
+import { User, ApiKey } from "src/modules/identity/domain/entities";
+import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, PasswordHashService, PasswordResetTokenService, PasswordService } from "src/modules/identity/domain/services";
 import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
 import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
+import { RequestPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/request-password-reset-code";
+import { VerifyPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/verify-password-reset-code";
+import { ExecutePasswordResetWithCodeUseCase } from "src/modules/identity/application/use-cases/execute-password-reset-with-code";
 import { ListUsersUseCase } from "src/modules/identity/application/use-cases/list-users";
 import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/update-user";
+import { UpdateMeUseCase } from "src/modules/identity/application/use-cases/update-me";
 import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
 import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
-import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase } from "@coworking/application/use-cases";
+import { NodemailerSendEmailService } from "@notifications/infra/services/resend-send-email";
+import { env } from "src/modules/env";
+import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase, GenerateTotemAccessCodeUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
 import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
@@ -44,6 +56,7 @@ import { FindBookingsUseCase } from "@booking/application/use-cases/find-booking
 import { FindMyBookingsUseCase } from "@booking/application/use-cases/find-my-bookings";
 import { FindBookingsAdminUseCase } from "@booking/application/use-cases/find-bookings-admin";
 import { AdminCreateBookingUseCase } from "@booking/application/use-cases/admin-create-booking";
+import { GetBookingByIdUseCase } from "@booking/application/use-cases/get-booking-by-id";
 import { MarkBookingNoShowUseCase } from "@booking/application/use-cases/mark-booking-no-show";
 import { ListAvailableSlotsByDayUseCase } from "@booking/application/use-cases/list-available-slots-by-day";
 import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-cases/send-booking-reminders-of-tomorrow";
@@ -59,6 +72,13 @@ import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yea
 import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
 import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
+import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
+import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
+import { AfterUserCheckin } from "../coworking/application/subscribers/after-user-checkin";
+import { TotemCheckinNotifier } from "../coworking/application/services/totem-checkin-notifier";
+import { MemoryPublisherTotemCheckinNotifier } from "../coworking/infra/services/memory-publisher-totem-checkin-notifier";
+import { TotemCheckinAccessCodeManager } from "../coworking/application/services/totem-checkin-access-code-manager";
+import { MemoryTotemCheckinAccessCodeManager } from "../coworking/infra/services/memory-totem-checkin-access-code-manager";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -74,6 +94,14 @@ export class DiContainer {
             this._userRepository = new PrismaUserRepository(this.prisma);
         }
         return this._userRepository;
+    }
+
+    private _apiKeyRepository?: ApiKeyRepository;
+    public getApiKeyRepository(): ApiKeyRepository {
+        if (!this._apiKeyRepository) {
+            this._apiKeyRepository = new PrismaApiKeyRepository(this.prisma);
+        }
+        return this._apiKeyRepository;
     }
 
     private _coworkingSettingsRepository?: CoworkingSettingsRepository;
@@ -151,6 +179,14 @@ export class DiContainer {
         return this._passwordResetEmailTemplater;
     }
 
+    private _passwordResetCodeEmailTemplater?: PasswordResetCodeEmailTemplater;
+    public getPasswordResetCodeEmailTemplater(): PasswordResetCodeEmailTemplater {
+        if (!this._passwordResetCodeEmailTemplater) {
+            this._passwordResetCodeEmailTemplater = new TemplateStringPasswordResetCodeEmailTemplater();
+        }
+        return this._passwordResetCodeEmailTemplater;
+    }
+
     private _spaceOperatingHoursService?: SpaceOperatingHoursService;
     public getSpaceOperatingHoursService(): SpaceOperatingHoursService {
         if (!this._spaceOperatingHoursService) {
@@ -159,6 +195,23 @@ export class DiContainer {
         return this._spaceOperatingHoursService;
     }
 
+    private _totemCheckinNotifier?: TotemCheckinNotifier;
+    public getTotemCheckinNotifier(): TotemCheckinNotifier {
+        if (!this._totemCheckinNotifier) {
+            this._totemCheckinNotifier = new MemoryPublisherTotemCheckinNotifier();
+        }
+        return this._totemCheckinNotifier;
+    }
+
+    private _totemCheckinAccessCodeManager?: TotemCheckinAccessCodeManager;
+    public getTotemCheckinAccessCodeManager(): TotemCheckinAccessCodeManager {
+        if (!this._totemCheckinAccessCodeManager) {
+            this._totemCheckinAccessCodeManager = new MemoryTotemCheckinAccessCodeManager(
+                this.getApiKeyRepository()
+            );
+        }
+        return this._totemCheckinAccessCodeManager;
+    }
 
     private _bookingService?: BookingService;
     public getBookingService(): BookingService {
@@ -169,6 +222,14 @@ export class DiContainer {
             );
         }
         return this._bookingService;
+    }
+
+    private _bookingEmailTemplater?: BookingEmailTemplater;
+    public getBookingEmailTemplater(): BookingEmailTemplater {
+        if (!this._bookingEmailTemplater) {
+            this._bookingEmailTemplater = new TemplateStringBookingEmailTemplater();
+        }
+        return this._bookingEmailTemplater;
     }
 
     private _bookingReminderEmailTemplater?: BookingReminderEmailTemplater;
@@ -182,7 +243,9 @@ export class DiContainer {
     private _sendEmailService?: SendEmailService;
     public getSendEmailService(): SendEmailService {
         if (!this._sendEmailService) {
-            this._sendEmailService = new ConsoleSendEmailService();
+            this._sendEmailService = (env.NODEMAILER_EMAIL_USER && env.NODEMAILER_EMAIL_PASS)
+                ? new NodemailerSendEmailService(env.NODEMAILER_EMAIL_USER, env.NODEMAILER_EMAIL_PASS)
+                : new ConsoleSendEmailService();
         }
         return this._sendEmailService;
     }
@@ -204,9 +267,7 @@ export class DiContainer {
             this._passwordService = new PasswordService(
                 this.getPasswordHashService(),
                 this.getUserRepository(),
-                this.getPasswordResetTokenService(),
-                this.getPasswordResetEmailTemplater(),
-                this.getSendEmailService()
+                this.getPasswordResetTokenService()
             );
         }
         return this._passwordService;
@@ -230,6 +291,10 @@ export class DiContainer {
         return new AuthUserService(authUser);
     }
 
+    public getAuthApiKeyService(apiKey: ApiKey): AuthApiKeyService {
+        return new AuthApiKeyService(apiKey);
+    }
+
     public getRegisterUserUseCase(): RegisterUserUseCase {
         const registerUserUseCase = new RegisterUserUseCase(
             this.getAuthService(),
@@ -237,12 +302,28 @@ export class DiContainer {
         return registerUserUseCase;
     }
 
-    public getRegisterSystemUserUseCase(): RegisterSystemUserUseCase {
-        return new RegisterSystemUserUseCase(
-            this.getUserRepository(),
-            this.getPasswordHashService(),
+    public getCreateApiKeyUseCase(authUser: User): CreateApiKeyUseCase {
+        return new CreateApiKeyUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
         );
     }
+
+    public getListApiKeysUseCase(authUser: User): ListApiKeysUseCase {
+        return new ListApiKeysUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
+        );
+    }
+
+    public getRevokeApiKeyUseCase(authUser: User): RevokeApiKeyUseCase {
+        return new RevokeApiKeyUseCase(
+            this.getAuthUserService(authUser),
+            this.getApiKeyRepository()
+        );
+    }
+
+
 
     public getGetAuthUserUseCase(authUser: User): GetAuthUserUseCase {
         const getAuthUserUseCase = new GetAuthUserUseCase(
@@ -272,6 +353,18 @@ export class DiContainer {
         return executePasswordResetUseCase;
     }
 
+    public getRequestPasswordResetCodeUseCase(): RequestPasswordResetCodeUseCase {
+        return new RequestPasswordResetCodeUseCase(this.getPasswordService());
+    }
+
+    public getVerifyPasswordResetCodeUseCase(): VerifyPasswordResetCodeUseCase {
+        return new VerifyPasswordResetCodeUseCase(this.getPasswordService());
+    }
+
+    public getExecutePasswordResetWithCodeUseCase(): ExecutePasswordResetWithCodeUseCase {
+        return new ExecutePasswordResetWithCodeUseCase(this.getPasswordService());
+    }
+
     public getChangePasswordUseCase(authUser: User): ChangePasswordUseCase {
         const changePasswordUseCase = new ChangePasswordUseCase(
             this.getAuthUserService(authUser),
@@ -281,11 +374,11 @@ export class DiContainer {
     }
 
     public getPerformCheckinUseCase(authUser: User): PerformCheckinUseCase {
-        const performCheckinUseCase = new PerformCheckinUseCase(
+        return new PerformCheckinUseCase(
             this.getAuthUserService(authUser),
-            this.getAccessService()
+            this.getAccessService(),
+            this.getTotemCheckinAccessCodeManager()
         );
-        return performCheckinUseCase;
     }
 
     public getPerformCheckoutUseCase(authUser: User): PerformCheckoutUseCase {
@@ -294,6 +387,32 @@ export class DiContainer {
             this.getAccessService()
         );
         return performCheckoutUseCase;
+    }
+
+    public getCheckinByCpfUseCase(): CheckinByCpfUseCase {
+        return new CheckinByCpfUseCase(
+            this.getUserRepository(),
+            this.getAccessService()
+        );
+    }
+
+    public getCheckoutByCpfUseCase(): CheckoutByCpfUseCase {
+        return new CheckoutByCpfUseCase(
+            this.getUserRepository(),
+            this.getAccessService()
+        );
+    }
+
+    public getFindMemberByCpfUseCase(): FindMemberByCpfUseCase {
+        return new FindMemberByCpfUseCase(this.getUserRepository());
+    }
+
+    public getFindActiveMemberByCpfUseCase(): FindActiveMemberByCpfUseCase {
+        return new FindActiveMemberByCpfUseCase(this.getUserRepository(), this.getAccessLogRepository());
+    }
+
+    public getQuickCheckoutByCpfUseCase(): QuickCheckoutByCpfUseCase {
+        return new QuickCheckoutByCpfUseCase(this.getUserRepository(), this.getAccessService());
     }
 
     public getListUserAccessLogsUseCase(authUser: User): ListUserAccessLogsUseCase {
@@ -320,9 +439,8 @@ export class DiContainer {
         return listAllAccessLogsUseCase;
     }
 
-    public getAutoCheckoutAllUseCase(authUser: User): AutoCheckoutAllUseCase {
+    public getAutoCheckoutAllUseCase(): AutoCheckoutAllUseCase {
         const autoCheckoutAllUseCase = new AutoCheckoutAllUseCase(
-            this.getAuthUserService(authUser),
             this.getAccessService()
         );
         return autoCheckoutAllUseCase;
@@ -358,6 +476,13 @@ export class DiContainer {
             this.getAuthUserService(authUser)
         );
         return countActiveAccessLogsUseCase;
+    }
+
+    public getGenerateTotemAccessCodeUseCase(apiKey: ApiKey): GenerateTotemAccessCodeUseCase {
+        return new GenerateTotemAccessCodeUseCase(
+            this.getAuthApiKeyService(apiKey),
+            this.getTotemCheckinAccessCodeManager()
+        );
     }
 
     public getCreateRoomUseCase(authUser: User): CreateRoomUseCase {
@@ -420,7 +545,7 @@ export class DiContainer {
     public getProcessBookingRequestUseCase(authUser: User): ProcessBookingRequestUseCase {
         const processBookingRequestUseCase = new ProcessBookingRequestUseCase(
             this.getAuthUserService(authUser),
-            this.getBookingRepository()
+            this.getBookingRepository(),
         );
         return processBookingRequestUseCase;
     }
@@ -436,7 +561,7 @@ export class DiContainer {
     public getAdminCancelBookingUseCase(authUser: User): AdminCancelBookingUseCase {
         const adminCancelBookingUseCase = new AdminCancelBookingUseCase(
             this.getAuthUserService(authUser),
-            this.getBookingRepository()
+            this.getBookingRepository(),
         );
         return adminCancelBookingUseCase;
     }
@@ -457,6 +582,13 @@ export class DiContainer {
         return findMyBookingsUseCase;
     }
 
+    public getGetBookingByIdUseCase(authUser: User): GetBookingByIdUseCase {
+        return new GetBookingByIdUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingRepository()
+        );
+    }
+
     public getListAvailableSlotsByDayUseCase(authUser: User): ListAvailableSlotsByDayUseCase {
         const listAvailableSlotsByDayUseCase = new ListAvailableSlotsByDayUseCase(
             this.getAuthUserService(authUser),
@@ -465,9 +597,8 @@ export class DiContainer {
         return listAvailableSlotsByDayUseCase;
     }
 
-    public getSendBookingRemindersOfTomorrowUseCase(authUser: User): SendBookingRemindersOfTomorrowUseCase {
+    public getSendBookingRemindersOfTomorrowUseCase(): SendBookingRemindersOfTomorrowUseCase {
         const sendBookingRemindersOfTomorrowUseCase = new SendBookingRemindersOfTomorrowUseCase(
-            this.getAuthUserService(authUser),
             this.getBookingRepository(),
             this.getUserRepository(),
             this.getBookingReminderEmailTemplater(),
@@ -528,6 +659,13 @@ export class DiContainer {
 
     public getUpdateUserUseCase(authUser: User): UpdateUserUseCase {
         return new UpdateUserUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
+    public getUpdateMeUseCase(authUser: User): UpdateMeUseCase {
+        return new UpdateMeUseCase(
             this.getAuthUserService(authUser),
             this.getUserRepository(),
         );
@@ -600,5 +738,29 @@ export class DiContainer {
 }
 
 const container = new DiContainer();
+
+//#region Domain Events
+new AfterPasswordResetRequested(
+    container.getSendEmailService(),
+    container.getPasswordResetEmailTemplater()
+);
+
+new AfterPasswordResetCodeRequested(
+    container.getSendEmailService(),
+    container.getPasswordResetCodeEmailTemplater()
+);
+
+new AfterBookingStatusChanged(
+    container.getSendEmailService(),
+    container.getUserRepository(),
+    container.getRoomRepository(),
+    container.getBookingEmailTemplater()
+);
+
+new AfterUserCheckin(
+    container.getTotemCheckinNotifier(),
+);
+//#endregion
+
 
 export default container;

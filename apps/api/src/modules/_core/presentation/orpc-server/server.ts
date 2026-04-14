@@ -36,7 +36,7 @@ export class ORPCServer {
             // Enable CORS manually for development
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
 
             if (req.method === 'OPTIONS') {
                 res.writeHead(204);
@@ -52,7 +52,7 @@ export class ORPCServer {
                         version: '1.0.0',
                     },
                     servers: [
-                        { url: '/api' }, /** Should use absolute URLs in production */
+                        { url: '/rest' }, /** Should use absolute URLs in production */
                     ],
                     security: [{ bearerAuth: [] }],
                     components: {
@@ -112,21 +112,25 @@ export class ORPCServer {
                     headers.append(key, value as string);
                 }
             }
-            const result = await openApiHandler.handle(req, res, {
-                context: { headers },
-                prefix: "/api",
-            })
 
-            if (result.matched) return
-
+            // Handle RPC format requests first on /api
             const rpcResult = await rpcHandler.handle(req, res, {
                 context: { headers },
                 prefix: "/api",
             })
+            
 
             console.log(req.url, rpcResult)
 
             if (rpcResult.matched) return
+
+            // Handle REST formatted requests on /rest
+            const openApiResult = await openApiHandler.handle(req, res, {
+                context: { headers },
+                prefix: "/rest",
+            })
+
+            if (openApiResult.matched) return
 
             res.statusCode = 404
             res.end('No procedure matched')
@@ -134,8 +138,8 @@ export class ORPCServer {
 
         server.listen(
             env.PORT,
-            'localhost',
-            () => console.log(`Listening on http://localhost:${env.PORT}/docs`)
+            '0.0.0.0',
+            () => console.log(`Listening on http://0.0.0.0:${env.PORT}/docs`)
         )
     }
 }

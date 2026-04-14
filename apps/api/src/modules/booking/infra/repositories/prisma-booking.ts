@@ -1,6 +1,6 @@
 import { BookingRepository } from "@booking/domain/repositories";
 import { Booking as BookingDb, Prisma, PrismaClient } from "@core/infra/database/prisma";
-import { UniqueId } from "@core/base-classes";
+import { UniqueId, DomainEvents } from "@core/base-classes";
 import { Booking } from "@booking/domain/entities";
 import { DatePeriod, PaginatedResult } from "@core/value-objects";
 
@@ -19,7 +19,6 @@ export class PrismaBookingRepository implements BookingRepository {
                 startTime: bookingData.period.from,
                 endTime: bookingData.period.to,
                 status: bookingData.status,
-                description: bookingData.description,
                 rejectionCancelReason: bookingData.rejectionCancelReason,
             },
             create: {
@@ -31,10 +30,10 @@ export class PrismaBookingRepository implements BookingRepository {
                 startTime: bookingData.period.from,
                 endTime: bookingData.period.to,
                 status: bookingData.status,
-                description: bookingData.description,
                 rejectionCancelReason: bookingData.rejectionCancelReason,
             },
         });
+        DomainEvents.dispatchEventsForAggregate(booking.id);
     }
 
     async findAll(params: BookingRepository.FindAllParams): Promise<PaginatedResult<typeof Booking.JsonSchema, Booking>> {
@@ -114,7 +113,6 @@ export class PrismaBookingRepository implements BookingRepository {
             new DatePeriod({ from: booking.startTime, to: booking.endTime }),
             Booking.StatusSchema.parse(booking.status),
             booking.rejectionCancelReason ?? undefined,
-            booking.description ?? undefined,
         );
     }
 }

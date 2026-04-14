@@ -10,15 +10,7 @@ export class UserNotAdminError extends DomainError {
     }
 }
 
-export class UserNotSystemError extends DomainError {
-    constructor() {
-        super(
-            "USER_NOT_SYSTEM",
-            "Usuário não é sistema",
-            ErrorType.FORBIDDEN
-        );
-    }
-}
+
 
 export class UnsafePasswordError extends DomainError {
     constructor() {
@@ -87,15 +79,5 @@ export class UserNotFoundError extends DomainError {
             "Usuário não encontrado.",
             ErrorType.NOT_FOUND
         );
-    }
-}
-
-export class SystemHasCpfOrUserNotHaveCpf extends DomainError{
-    constructor(){
-        super(
-            "SYSTEM_HAS_CPF_OR_USER_DONT_HAVE_CPF",
-            "Sistema tem CPF ou Usuário não tem CPF",
-            ErrorType.INTERNAL_SERVER_ERROR
-        )
     }
 }

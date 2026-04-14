@@ -8,7 +8,6 @@ import { EmailAddress } from "./modules/_core/value-objects";
 class FeedDbDev {
 
     private _adminUser?: User;
-    private _systemUser?: User;
     private _user?: User;
 
     private get adminUser() {
@@ -18,12 +17,7 @@ class FeedDbDev {
         return this._adminUser;
     }
 
-    private get systemUser() {
-        if (!this._systemUser) {
-            throw new Error("System user not found");
-        }
-        return this._systemUser;
-    }
+
 
     private get user() {
         if (!this._user) {
@@ -37,8 +31,8 @@ class FeedDbDev {
         await this.cleanDatabase();
 
         await this.getOrCreateAdminUser();
-        await this.createSystemUser();
-        await this.createUser();
+        await this.getOrCreateSystemApiKey();
+        await this.getOrCreateUser();
 
         await this.createRooms();
     }
@@ -72,27 +66,36 @@ class FeedDbDev {
         this._adminUser = adminUser;
     }
 
-    async createSystemUser() {
-        const systemUser = await container.getRegisterSystemUserUseCase().execute({
-            name: "System",
-            email: "system@test.com",
-            password: "Abc123456789@",
-            birthDate: "1990-01-01",
-        })
-
-        this._systemUser = (await this.getUserById(systemUser.id))!;
+    async getOrCreateSystemApiKey() {
+        const existing = await prisma.apiKey.findFirst({ where: { name: "System API Key" } });
+        if (!existing) {
+            const result = await container.getCreateApiKeyUseCase(this.adminUser).execute({
+                name: "System API Key"
+            });
+            console.log("=========================================");
+            console.log("SYSTEM API KEY GENERATED: ", result.plainKey);
+            console.log("Please save this key, it won't be shown again.");
+            console.log("=========================================");
+        }
     }
 
-    async createUser() {
-        const user = await container.getRegisterUserUseCase().execute({
-            name: "User",
-            email: "user@test.com",
-            password: "Abc123456789@",
-            cpf: "75016674035",
-            birthDate: "1990-01-01",
-        })
+    async getOrCreateUser() {
+        const email = "user@test.com";
 
-        this._user = (await this.getUserById(user.id))!;
+        let user = await this.getUserEmail(email);
+        if (!user) {
+            const { id: userId } = await container.getRegisterUserUseCase().execute({
+                name: "User",
+                email: "user@test.com",
+                password: "Abc123456789@",
+                cpf: "75016674035",
+                birthDate: "1990-01-01",
+            })
+
+            user = (await this.getUserById(userId))!;
+        }
+
+        this._user = user;
     }
 
     async createRooms() {
@@ -222,7 +225,7 @@ class FeedDbDev {
         await prisma.accessLog.deleteMany();
         await prisma.booking.deleteMany();
         await prisma.room.deleteMany();
-        await prisma.user.deleteMany();
+        //await prisma.user.deleteMany();
     }
 
     async getUserById(id: string) {
@@ -239,4 +242,4 @@ class FeedDbDev {
 
 
 
-export const feedDbDev = new FeedDbDev().run();
+export const feedDbDev = new FeedDbDev();

@@ -886,6 +886,11 @@ export type SpaceOperatingHoursFindManyArgs<ExtArgs extends runtime.Types.Extens
    * Skip the first `n` SpaceOperatingHours.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of SpaceOperatingHours.
+   */
   distinct?: Prisma.SpaceOperatingHoursScalarFieldEnum | Prisma.SpaceOperatingHoursScalarFieldEnum[]
 }
 

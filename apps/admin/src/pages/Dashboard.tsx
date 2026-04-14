@@ -24,14 +24,14 @@ const Dashboard: React.FC = () => {
           "pageSize": 1
         },
           "filter": {
-            "status": ["pending"]
+            "status": ["pending" as never]
           }
       });
     },
   });
 
   return (
-    <Box>
+    <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold' }}>
         Visão Geral
       </Typography>

@@ -1,19 +1,29 @@
-import { Entity, UniqueId } from "@core/base-classes";
+import { AggregateRoot, UniqueId } from "@core/base-classes";
 import z from "zod";
 import { AccessLogAlreadyCheckedOutError } from "../errors";
+import { CheckinDoneEvent } from "../events/checkin-done";
 
-class AccessLog extends Entity {
+class AccessLog extends AggregateRoot {
     constructor(
         id: UniqueId,
         public readonly userId: UniqueId,
         public readonly entryTime: Date,
-        public exitTime?: Date | null
+        private exitTime: Date | null,
+        public readonly checkinTotemId: UniqueId | null
     ) {
         super(id);
     }
 
     static create(input: AccessLog.CreateParams): AccessLog {
-        return new AccessLog(UniqueId.create(), input.userId, new Date());
+        const accessLog = new AccessLog(
+            UniqueId.create(),
+            input.userId,
+            new Date(),
+            null,
+            input.checkinTotemId ?? null
+        );
+        accessLog.addDomainEvent(new CheckinDoneEvent(accessLog));
+        return accessLog;
     }
 
     doCheckout(): void {
@@ -28,7 +38,8 @@ class AccessLog extends Entity {
             id: this.id.value,
             userId: this.userId.value,
             entryTime: this.entryTime.toISOString(),
-            exitTime: this.exitTime ? this.exitTime.toISOString() : null,
+            exitTime: this.exitTime?.toISOString() ?? null,
+            checkinTotemId: this.checkinTotemId?.value ?? null,
         };
     }
 }
@@ -43,10 +54,12 @@ namespace AccessLog {
         userId: z.string(),
         entryTime: z.string(),
         exitTime: z.string().nullable(),
+        checkinTotemId: z.string().nullable(),
     });
 
     export type CreateParams = {
         userId: UniqueId;
+        checkinTotemId?: UniqueId | null;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }

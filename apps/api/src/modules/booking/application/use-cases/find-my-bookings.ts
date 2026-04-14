@@ -17,11 +17,11 @@ class FindMyBookingsUseCase extends UseCase<FindMyBookingsUseCase.Input, FindMyB
         const { id: userId } = this.authUserService.getUser();
         const findAllParams: BookingRepository.FindAllParams = {
             pagination: PaginatedQuery.create(params.pagination),
-            filter: params.filter ? {
-                period: params.filter.period ? DatePeriod.fromPrimitive(params.filter.period) : undefined,
+            filter: {
+                period: params.filter?.period ? DatePeriod.fromPrimitive(params.filter.period) : undefined,
                 userId,
-                status: params.filter.status,
-            } : undefined,
+                status: params.filter?.status,
+            },
         }
         const bookings = await this.bookingRepository.findAll(findAllParams);
         return bookings.toJSON();

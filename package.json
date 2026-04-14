@@ -5,10 +5,17 @@
     "apps/*"
   ],
   "scripts": {
-    "start:api": "npm start -w @locomotiva/api",
+    "start:api": "npm run prisma:deploy -w @locomotiva/api && npm start -w @locomotiva/api",
     "dev:api": "npm run dev -w @locomotiva/api",
     "dev:mobile": "npm run dev -w @locomotiva/mobile",
-    "dev": "concurrently \"npm run dev:api\" \"npm run dev:mobile\""
+    "dev:admin": "npm run dev -w @locomotiva/admin",
+    "build:api": "npm run build -w @locomotiva/api",
+    "build:admin": "npm run build -w @locomotiva/admin",
+    "build:mobile": "npm run build -w @locomotiva/mobile",
+    "prisma:studio": "npm run prisma:studio -w @locomotiva/api",
+    "dev:tablet": "npm run dev -w @locomotiva/tablet",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:mobile\"",
+    "promote-to-admin": "npm run promote-to-admin -w @locomotiva/api --"
   },
   "dependencies": {
     "react-native-worklets": "^0.7.4",
@@ -16,5 +23,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

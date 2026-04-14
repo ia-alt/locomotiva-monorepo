@@ -38,7 +38,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
   const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [birthDate, setBirthDate] = useState('');
-  const [userType, setUserType] = useState<'user' | 'admin' | 'system'>('user');
+  const [userType, setUserType] = useState<'user' | 'admin'>('user');
 
   useEffect(() => {
     if (user) {
@@ -46,13 +46,13 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
       setEmail(user.email);
       setCpf(formatCpf(user.cpf));
       setBirthDate(user.birthDate);
-      setUserType(user.userType);
+      setUserType(user.userType === 'system' ? 'admin' : user.userType);
     }
   }, [user]);
 
   const mutation = useMutation({
-    mutationFn: (input: { userId: string; data: { name: string; email: string; cpf: string; birthDate: string; userType: 'user' | 'admin' | 'system' } }) =>
-      orpc.identy.updateUser(input),
+    mutationFn: (input: { userId: string; data: { name: string; email: string; cpf: string; birthDate: string; userType: 'user' | 'admin' } }) =>
+      orpc.identy.updateUser(input as Parameters<typeof orpc.identy.updateUser>[0]),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
       onClose();
@@ -129,12 +129,11 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
               <Select
                 native
                 value={userType}
-                onChange={(e) => setUserType(e.target.value as 'user' | 'admin' | 'system')}
+                onChange={(e) => setUserType(e.target.value as 'user' | 'admin' )}
                 label="Tipo de usuário"
               >
                 <option value="user">Cidadão</option>
                 <option value="admin">Administrador</option>
-                <option value="system">Sistema</option>
               </Select>
             </FormControl>
           </Box>
