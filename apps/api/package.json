@@ -15,7 +15,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "test": "node --import=tsx --test \"tests/**/*.test.ts\"",
-    "test:watch": "node --import=tsx --test --watch \"tests/**/*.test.ts\""
+    "test:watch": "node --import=tsx --test --watch \"tests/**/*.test.ts\"",
+    "promote-to-admin": "tsx scripts/promote-to-admin.ts"
   },
   "keywords": [],
   "author": "",
