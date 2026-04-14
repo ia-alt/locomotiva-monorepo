@@ -1,0 +1,19 @@
+name: Deploy Prod Mobile
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/mobile/**'
+      - 'apps/api/**'
+
+jobs:
+  deploy-mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify Deploy for Mobile
+        run: |
+          curl --request GET \
+            --url "https://coolify-vps.inova.ma.gov.br/api/v1/deploy?uuid=gcwlqkckazx6q8kpqkinvhxj&force=false" \
+            --header "Authorization: Bearer ${{ secrets.COOLIFY_DEPLOY_TOKEN }}"

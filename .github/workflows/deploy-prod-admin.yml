@@ -1,0 +1,19 @@
+name: Deploy Prod Admin
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/admin/**'
+      - 'apps/api/**'
+
+jobs:
+  deploy-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify Deploy for Admin
+        run: |
+          curl --request GET \
+            --url "https://coolify-vps.inova.ma.gov.br/api/v1/deploy?uuid=ulputj5akenlb9cvjny115k3&force=false" \
+            --header "Authorization: Bearer ${{ secrets.COOLIFY_DEPLOY_TOKEN }}"
