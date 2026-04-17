@@ -138,10 +138,10 @@ const makeStyles = (theme: any) => StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingTop: 60,
-        paddingBottom: 24,
+        paddingTop: 40,
+        paddingBottom: 40,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
     },
     card: {
         width: '100%',
