@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet } from 'react-native';
 import { Text, Button, Avatar, Divider, List } from 'react-native-paper';
 import { useAuth } from '../../contexts/auth-context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { version } from '../../../package.json';
 
 function getInitials(name: string | undefined): string {
     if (!name) return '?';
@@ -103,6 +104,8 @@ export default function PerfilScreen() {
                     Sair da conta
                 </Button>
             </View>
+
+            <Text style={styles.versionText}>v{version}</Text>
         </ScrollView>
     );
 }
@@ -152,5 +155,12 @@ const styles = StyleSheet.create({
     logoutButton: {
         borderColor: '#d32f2f',
         width: '100%',
+    },
+    versionText: {
+        textAlign: 'center',
+        fontSize: 11,
+        color: '#94A3B8',
+        marginTop: 24,
+        paddingBottom: 8,
     },
 });

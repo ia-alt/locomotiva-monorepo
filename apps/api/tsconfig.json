@@ -40,7 +40,8 @@
         "src/modules/env.ts"
       ]
     },
-    "composite": true
+    "composite": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*"

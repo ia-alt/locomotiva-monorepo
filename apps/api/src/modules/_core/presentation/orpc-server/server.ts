@@ -1,4 +1,5 @@
 import { createServer } from 'node:http'
+import { createRequire } from 'node:module'
 import { OpenAPIHandler } from '@orpc/openapi/node'
 import { RPCHandler } from '@orpc/server/node'
 import { CORSPlugin } from '@orpc/server/plugins'
@@ -7,6 +8,9 @@ import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4'
 import { OpenAPIGenerator } from '@orpc/openapi'
 import { SmartCoercionPlugin } from '@orpc/json-schema'
 import { env } from '@env'
+
+const require = createRequire(import.meta.url)
+const { version } = require('../../../../../package.json')
 
 const openAPIGenerator = new OpenAPIGenerator({
     schemaConverters: [
@@ -48,8 +52,8 @@ export class ORPCServer {
                 const spec = await openAPIGenerator.generate(router, {
 
                     info: {
-                        title: 'My Playground',
-                        version: '1.0.0',
+                        title: 'Locomotiva_Api',
+                        version,
                     },
                     servers: [
                         { url: '/rest' }, /** Should use absolute URLs in production */
