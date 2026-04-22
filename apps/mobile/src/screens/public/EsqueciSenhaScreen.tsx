@@ -74,7 +74,14 @@ export default function EsqueciSenhaScreen() {
                                     placeholder="Digite seu CPF"
                                     value={value}
                                     onBlur={onBlur}
-                                    onChangeText={onChange}
+                                    onChangeText={(text) => {
+                                        const digits = text.replace(/[^\d]/g, '').slice(0, 11);
+                                        let masked = digits;
+                                        if (digits.length > 9) masked = digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6, 9) + '-' + digits.slice(9);
+                                        else if (digits.length > 6) masked = digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6);
+                                        else if (digits.length > 3) masked = digits.slice(0, 3) + '.' + digits.slice(3);
+                                        onChange(masked);
+                                    }}
                                     error={!!errors.cpf}
                                     left={<TextInput.Icon icon="account-details" color={theme.colors.onSurfaceVariant} />}
                                     outlineColor={theme.colors.outline}
@@ -127,10 +134,10 @@ const makeStyles = (theme: any) => StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingTop: 60,
-        paddingBottom: 24,
+        paddingTop: 40,
+        paddingBottom: 40,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
     },
     card: {
         width: '100%',

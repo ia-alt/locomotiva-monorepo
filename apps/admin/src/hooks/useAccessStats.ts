@@ -7,7 +7,7 @@ export const useAccessStats = () => {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [...ACCESS_STATS_QUERY_KEY],
     queryFn: () => orpc.coworking.getAccessStats({}),
-    staleTime: 5 * 60 * 1_000,
+    staleTime: 0,
   });
 
   return { data, isLoading, isError, error };

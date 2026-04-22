@@ -1,7 +1,10 @@
 import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
 import { TemplateStringPasswordResetCodeEmailTemplater } from "src/modules/identity/infra/services/template-string-password-reset-code-email-templater";
+import { TemplateStringWelcomeEmailTemplater } from "src/modules/identity/infra/services/template-string-welcome-email-templater";
 import { AfterPasswordResetCodeRequested } from "src/modules/identity/application/subscribers/after-password-reset-code-requested";
+import { AfterUserRegistered } from "src/modules/identity/application/subscribers/after-user-registered";
 import { PasswordResetCodeEmailTemplater } from "src/modules/identity/domain/services/password-reset-code-email-templater";
+import { WelcomeEmailTemplater } from "src/modules/identity/domain/services/welcome-email-templater";
 import { PrismaUserRepository, PrismaApiKeyRepository } from "src/modules/identity/infra/repositories";
 import { UserRepository, ApiKeyRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
@@ -185,6 +188,14 @@ export class DiContainer {
             this._passwordResetCodeEmailTemplater = new TemplateStringPasswordResetCodeEmailTemplater();
         }
         return this._passwordResetCodeEmailTemplater;
+    }
+
+    private _welcomeEmailTemplater?: WelcomeEmailTemplater;
+    public getWelcomeEmailTemplater(): WelcomeEmailTemplater {
+        if (!this._welcomeEmailTemplater) {
+            this._welcomeEmailTemplater = new TemplateStringWelcomeEmailTemplater();
+        }
+        return this._welcomeEmailTemplater;
     }
 
     private _spaceOperatingHoursService?: SpaceOperatingHoursService;
@@ -750,11 +761,17 @@ new AfterPasswordResetCodeRequested(
     container.getPasswordResetCodeEmailTemplater()
 );
 
+new AfterUserRegistered(
+    container.getSendEmailService(),
+    container.getWelcomeEmailTemplater()
+);
+
 new AfterBookingStatusChanged(
     container.getSendEmailService(),
     container.getUserRepository(),
     container.getRoomRepository(),
-    container.getBookingEmailTemplater()
+    container.getBookingEmailTemplater(),
+    env.ADMIN_URL,
 );
 
 new AfterUserCheckin(

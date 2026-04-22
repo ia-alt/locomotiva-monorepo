@@ -79,7 +79,7 @@ export default function CadastroScreen() {
     };
 
     return (
-
+        <View style={styles.container}>
         <ScrollView
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
@@ -377,6 +377,7 @@ export default function CadastroScreen() {
                 </Text>
             </View>
         </ScrollView>
+        </View>
     );
 }
 

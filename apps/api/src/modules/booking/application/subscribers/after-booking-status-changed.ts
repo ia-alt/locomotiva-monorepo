@@ -9,12 +9,15 @@ import { BookingRejectedEvent } from "../../domain/events/booking-rejected";
 import { BookingCancelledEvent } from "../../domain/events/booking-cancelled";
 import { BookingCreatedEvent } from "../../domain/events/booking-created";
 
+const ADMIN_EMAIL = 'locomotivahub@gmail.com';
+
 export class AfterBookingStatusChanged {
     constructor(
         private readonly sendEmailService: SendEmailService,
         private readonly userRepository: UserRepository,
         private readonly roomRepository: RoomRepository,
         private readonly bookingEmailTemplater: BookingEmailTemplater,
+        private readonly adminUrl: string,
     ) {
         this.setupSubscriptions();
     }
@@ -126,20 +129,34 @@ export class AfterBookingStatusChanged {
 
             if (!user || !room) return;
 
-            const html = await this.bookingEmailTemplater.templateForCreatedBooking({
+            const emailParams = {
                 userName: user.firstName,
                 roomName: room.name,
                 day: format(booking.period.value.from, 'dd/MM/yyyy'),
                 hourFrom: format(booking.period.value.from, 'HH:mm'),
                 hourTo: format(booking.period.value.to, 'HH:mm'),
                 title: booking.title,
-            });
+            };
 
-            await this.sendEmailService.send(
-                user.email.value,
-                'Nova Reserva Criada - Locomotiva Hub',
-                html,
-            );
+            const bookingUrl = `${this.adminUrl}/reservations`;
+
+            const [userHtml, adminHtml] = await Promise.all([
+                this.bookingEmailTemplater.templateForCreatedBooking(emailParams),
+                this.bookingEmailTemplater.templateForAdminNewBooking(emailParams, bookingUrl),
+            ]);
+
+            await Promise.all([
+                this.sendEmailService.send(
+                    user.email.value,
+                    'Novo Pedido de Reserva Criado - Locomotiva Hub',
+                    userHtml,
+                ),
+                this.sendEmailService.send(
+                    ADMIN_EMAIL,
+                    `Novo Pedido de Reserva - ${user.firstName} (${emailParams.day})`,
+                    adminHtml,
+                ),
+            ]);
             console.log(`[AfterBookingStatusChanged] Creation email sent for booking ${booking.id.value}`);
         } catch (error) {
             console.error('[AfterBookingStatusChanged] Error sending creation email:', error);

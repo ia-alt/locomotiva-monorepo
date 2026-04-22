@@ -34,12 +34,17 @@ class GetWeeklyFrequencyUseCase implements UseCase<void, GetWeeklyFrequencyUseCa
             days.push({ date: `${y}-${m}-${d}`, count: 0 });
         }
 
+        const seenUserDay = new Set<string>();
         for (const log of logs) {
-            const entry = new Date(log.toJSON().entryTime);
+            const json = log.toJSON();
+            const entry = new Date(json.entryTime);
             const y = entry.getFullYear();
             const m = String(entry.getMonth() + 1).padStart(2, '0');
             const d = String(entry.getDate()).padStart(2, '0');
             const dateStr = `${y}-${m}-${d}`;
+            const key = `${json.userId}::${dateStr}`;
+            if (seenUserDay.has(key)) continue;
+            seenUserDay.add(key);
             const dayEntry = days.find(de => de.date === dateStr);
             if (dayEntry) dayEntry.count++;
         }

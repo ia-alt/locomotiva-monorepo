@@ -8,6 +8,7 @@ const envSchema = z.object({
     PORT: z.coerce.number().optional(),
     NODEMAILER_EMAIL_USER: z.string(),
     NODEMAILER_EMAIL_PASS: z.string(),
+    ADMIN_URL: z.string().default('http://localhost:5173'),
 })
 
 export const env = envSchema.parse(process.env);
