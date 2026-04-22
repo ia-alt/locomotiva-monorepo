@@ -7,6 +7,7 @@ import { StatCard } from '../components/dashboard/StatCard';
 import { WeeklyFrequencyChart } from '../components/dashboard/WeeklyFrequencyChart';
 import { RecentActivities } from '../components/dashboard/RecentActivities';
 
+
 const Dashboard: React.FC = () => {
   const { data: activeLogsData, isLoading: isActiveLogsLoading } = useQuery({
     queryKey: ['coworking', 'active-access-logs-count'],
