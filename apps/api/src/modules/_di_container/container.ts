@@ -770,7 +770,8 @@ new AfterBookingStatusChanged(
     container.getSendEmailService(),
     container.getUserRepository(),
     container.getRoomRepository(),
-    container.getBookingEmailTemplater()
+    container.getBookingEmailTemplater(),
+    env.ADMIN_URL,
 );
 
 new AfterUserCheckin(
