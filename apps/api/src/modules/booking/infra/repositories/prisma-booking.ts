@@ -20,6 +20,8 @@ export class PrismaBookingRepository implements BookingRepository {
                 endTime: bookingData.period.to,
                 status: bookingData.status,
                 rejectionCancelReason: bookingData.rejectionCancelReason,
+                createdAt: bookingData.createdAt,
+                updatedAt: bookingData.updatedAt,
             },
             create: {
                 id: bookingData.id,
@@ -31,6 +33,8 @@ export class PrismaBookingRepository implements BookingRepository {
                 endTime: bookingData.period.to,
                 status: bookingData.status,
                 rejectionCancelReason: bookingData.rejectionCancelReason,
+                createdAt: bookingData.createdAt,
+                updatedAt: bookingData.updatedAt,
             },
         });
         DomainEvents.dispatchEventsForAggregate(booking.id);
@@ -113,6 +117,8 @@ export class PrismaBookingRepository implements BookingRepository {
             new DatePeriod({ from: booking.startTime, to: booking.endTime }),
             Booking.StatusSchema.parse(booking.status),
             booking.rejectionCancelReason ?? undefined,
+            new Date(booking.createdAt),
+            new Date(booking.updatedAt),
         );
     }
 }
