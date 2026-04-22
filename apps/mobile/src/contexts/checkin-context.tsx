@@ -16,7 +16,7 @@ const CheckinContext = createContext<CheckinContextType | undefined>(undefined);
 export function CheckinProvider({ children }: { children: React.ReactNode }) {
     const orpc = useORPC();
     const queryClient = useQueryClient();
-    const { data, isLoading } = useQuery(orpc.coworking.getMyCheckinStatus.queryOptions({ input: {}, refetchInterval: 1000 * 60 }));
+    const { data, isLoading } = useQuery(orpc.coworking.getMyCheckinStatus.queryOptions({ input: {}, refetchInterval: 1000 * 10 }));
 
     const isCheckedIn = !!data;
     const checkInTime = useMemo(() => data?.entryTime ? new Date(data.entryTime) : null, [data?.entryTime]);

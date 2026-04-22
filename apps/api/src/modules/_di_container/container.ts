@@ -1,7 +1,10 @@
 import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
 import { TemplateStringPasswordResetCodeEmailTemplater } from "src/modules/identity/infra/services/template-string-password-reset-code-email-templater";
+import { TemplateStringWelcomeEmailTemplater } from "src/modules/identity/infra/services/template-string-welcome-email-templater";
 import { AfterPasswordResetCodeRequested } from "src/modules/identity/application/subscribers/after-password-reset-code-requested";
+import { AfterUserRegistered } from "src/modules/identity/application/subscribers/after-user-registered";
 import { PasswordResetCodeEmailTemplater } from "src/modules/identity/domain/services/password-reset-code-email-templater";
+import { WelcomeEmailTemplater } from "src/modules/identity/domain/services/welcome-email-templater";
 import { PrismaUserRepository, PrismaApiKeyRepository } from "src/modules/identity/infra/repositories";
 import { UserRepository, ApiKeyRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
@@ -35,6 +38,7 @@ import { VerifyPasswordResetCodeUseCase } from "src/modules/identity/application
 import { ExecutePasswordResetWithCodeUseCase } from "src/modules/identity/application/use-cases/execute-password-reset-with-code";
 import { ListUsersUseCase } from "src/modules/identity/application/use-cases/list-users";
 import { UpdateUserUseCase } from "src/modules/identity/application/use-cases/update-user";
+import { UpdateMeUseCase } from "src/modules/identity/application/use-cases/update-me";
 import { DeleteUserUseCase } from "src/modules/identity/application/use-cases/delete-user";
 import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
@@ -186,6 +190,14 @@ export class DiContainer {
         return this._passwordResetCodeEmailTemplater;
     }
 
+    private _welcomeEmailTemplater?: WelcomeEmailTemplater;
+    public getWelcomeEmailTemplater(): WelcomeEmailTemplater {
+        if (!this._welcomeEmailTemplater) {
+            this._welcomeEmailTemplater = new TemplateStringWelcomeEmailTemplater();
+        }
+        return this._welcomeEmailTemplater;
+    }
+
     private _spaceOperatingHoursService?: SpaceOperatingHoursService;
     public getSpaceOperatingHoursService(): SpaceOperatingHoursService {
         if (!this._spaceOperatingHoursService) {
@@ -242,8 +254,8 @@ export class DiContainer {
     private _sendEmailService?: SendEmailService;
     public getSendEmailService(): SendEmailService {
         if (!this._sendEmailService) {
-            this._sendEmailService = (env.EMAIL_USER && env.EMAIL_PASS)
-                ? new NodemailerSendEmailService(env.EMAIL_USER, env.EMAIL_PASS)
+            this._sendEmailService = (env.NODEMAILER_EMAIL_USER && env.NODEMAILER_EMAIL_PASS)
+                ? new NodemailerSendEmailService(env.NODEMAILER_EMAIL_USER, env.NODEMAILER_EMAIL_PASS)
                 : new ConsoleSendEmailService();
         }
         return this._sendEmailService;
@@ -663,6 +675,13 @@ export class DiContainer {
         );
     }
 
+    public getUpdateMeUseCase(authUser: User): UpdateMeUseCase {
+        return new UpdateMeUseCase(
+            this.getAuthUserService(authUser),
+            this.getUserRepository(),
+        );
+    }
+
     public getDeleteUserUseCase(authUser: User): DeleteUserUseCase {
         return new DeleteUserUseCase(
             this.getAuthUserService(authUser),
@@ -742,11 +761,17 @@ new AfterPasswordResetCodeRequested(
     container.getPasswordResetCodeEmailTemplater()
 );
 
+new AfterUserRegistered(
+    container.getSendEmailService(),
+    container.getWelcomeEmailTemplater()
+);
+
 new AfterBookingStatusChanged(
     container.getSendEmailService(),
     container.getUserRepository(),
     container.getRoomRepository(),
-    container.getBookingEmailTemplater()
+    container.getBookingEmailTemplater(),
+    env.ADMIN_URL,
 );
 
 new AfterUserCheckin(

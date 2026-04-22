@@ -4,6 +4,7 @@ import { Text, TextInput, Button, Surface, HelperText } from 'react-native-paper
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useTotemFlow, UseTotemFlowParams } from '../hooks/useTotemFlow'
 import { CheckinQrcode } from './checkin-qrcode'
+import { NumericKeyboard } from './NumericKeyboard'
 
 const LOGO_LOCOMOTIVA = { uri: '/locomotiva_logo-.png' }
 const LOGO_INOVA = { uri: '/inova%20logo.avif' }
@@ -70,14 +71,35 @@ export function TotemLayout({
     if (flow.step === 'idle') {
         return (
             <View style={s.root}>
-                {/* LEFT – QR Code */}
+                {/* LEFT – QR Code (checkin) ou mensagem orientativa (checkout) */}
                 <View style={[s.qrPanel, { paddingHorizontal: panelPaddingH }]}>
-                    <CheckinQrcode />
-                    <Text style={[s.qrTitle, { fontSize: qrTitleFs }]}>Acesse o App Locomotiva</Text>
-                    <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5 }]}>
-                        Escaneie o QR Code para se cadastrar,{'\n'}
-                        fazer login, reservar salas e muito mais.
-                    </Text>
+                    {mode === 'checkout' ? (
+                        <View style={s.checkoutHint}>
+                            <MaterialCommunityIcons name="web" size={48} color="#0F9B6E" style={{ marginBottom: 20 }} />
+                            <Text style={[s.qrTitle, { fontSize: qrTitleFs, marginBottom: 12 }]}>
+                                Faça seu checkout pelo Site
+                            </Text>
+                            <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5, marginBottom: 32 }]}>
+                                Acesse o portal da Locomotiva e registre sua saída online.
+                            </Text>
+                            <View style={s.checkoutDivider} />
+                            <View style={s.checkoutCpfHint}>
+                                <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5, flex: 1 }]}>
+                                    Ou use seu CPF ao lado
+                                </Text>
+                                <MaterialCommunityIcons name="arrow-right" size={24} color="#0F9B6E" />
+                            </View>
+                        </View>
+                    ) : (
+                        <>
+                            <CheckinQrcode />
+                            <Text style={[s.qrTitle, { fontSize: qrTitleFs }]}>Acesse o App Locomotiva</Text>
+                            <Text style={[s.qrSub, { fontSize: subFs, lineHeight: subFs * 1.5 }]}>
+                                Escaneie o QR Code para se cadastrar,{'\n'}
+                                fazer login, reservar salas e muito mais.
+                            </Text>
+                        </>
+                    )}
                 </View>
 
                 {/* RIGHT – Painel colorido */}
@@ -143,8 +165,8 @@ export function TotemLayout({
     // ── EXPANDIDO: painel tela cheia ────────────────────────────────────────────
     return (
         <View style={[s.root, { backgroundColor: color }]}>
-            {/* Logo e botão voltar ficam ocultos na tela de sucesso */}
-            {flow.step !== 'success' && (
+            {/* Logo visível apenas na tela de confirmação e sucesso */}
+            {flow.step === 'confirm' && (
                 <Image source={LOGO_LOCOMOTIVA} style={[s.logoTopFull, { height: logoH }]} resizeMode="contain" tintColor="white" />
             )}
             {flow.step !== 'success' && (
@@ -174,14 +196,23 @@ export function TotemLayout({
                                 value={flow.cpf}
                                 onChangeText={flow.setCpf}
                                 keyboardType="number-pad"
-                                autoFocus
+                                showSoftInputOnFocus={false}
                                 left={<TextInput.Icon icon="card-account-details" />}
                                 error={!!flow.fieldError}
                                 style={s.input}
-                                returnKeyType="next"
-                                onSubmitEditing={flow.handleCpfNext}
                             />
                             {flow.fieldError && <HelperText type="error" visible>{flow.fieldError}</HelperText>}
+                            <NumericKeyboard
+                                color={color}
+                                onPress={(k) => {
+                                    const digits = flow.cpf.replace(/\D/g, '')
+                                    if (digits.length < 11) flow.setCpf(digits + k)
+                                }}
+                                onDelete={() => {
+                                    const digits = flow.cpf.replace(/\D/g, '')
+                                    flow.setCpf(digits.slice(0, -1))
+                                }}
+                            />
                             <Button
                                 mode="contained"
                                 buttonColor={color}
@@ -209,14 +240,23 @@ export function TotemLayout({
                                 value={flow.birthDate}
                                 onChangeText={flow.setBirthDate}
                                 keyboardType="number-pad"
-                                autoFocus
+                                showSoftInputOnFocus={false}
                                 left={<TextInput.Icon icon="calendar" />}
                                 error={!!flow.fieldError}
                                 style={s.input}
-                                returnKeyType="done"
-                                onSubmitEditing={flow.handleBirthDateSubmit}
                             />
                             {flow.fieldError && <HelperText type="error" visible>{flow.fieldError}</HelperText>}
+                            <NumericKeyboard
+                                color={color}
+                                onPress={(k) => {
+                                    const digits = flow.birthDate.replace(/\D/g, '')
+                                    if (digits.length < 8) flow.setBirthDate(digits + k)
+                                }}
+                                onDelete={() => {
+                                    const digits = flow.birthDate.replace(/\D/g, '')
+                                    flow.setBirthDate(digits.slice(0, -1))
+                                }}
+                            />
                             <Button
                                 mode="contained"
                                 buttonColor={color}
@@ -315,11 +355,11 @@ const s = StyleSheet.create({
     backBtn: { position: 'absolute', top: 24, left: 24, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 2 },
     backText: { color: 'white', fontSize: 16, fontWeight: '600' },
     expandedCenter: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 60 },
-    card: { width: '100%', maxWidth: 480, borderRadius: 20, padding: 32, backgroundColor: 'white' },
-    cardTitle: { fontSize: 24, fontWeight: 'bold', color: '#1E293B', textAlign: 'center', marginBottom: 6 },
-    cardSubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginBottom: 20, lineHeight: 20 },
+    card: { width: '100%', maxWidth: 480, borderRadius: 20, paddingHorizontal: 28, paddingVertical: 20, backgroundColor: 'white' },
+    cardTitle: { fontSize: 22, fontWeight: 'bold', color: '#1E293B', textAlign: 'center', marginBottom: 4 },
+    cardSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'center', marginBottom: 12, lineHeight: 18 },
     input: { marginBottom: 4 },
-    submitBtn: { borderRadius: 10, marginTop: 12 },
+    submitBtn: { borderRadius: 10, marginTop: 8 },
 
     // ── Confirmar (checkout) ──
     confirmInner: { alignItems: 'center', paddingVertical: 8 },
@@ -334,4 +374,9 @@ const s = StyleSheet.create({
     closeBtn: { marginTop: 20, borderRadius: 10 },
 
     partnersFull: { position: 'absolute', bottom: 12, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', zIndex: 1 },
+
+    // ── Checkout hint (painel esquerdo) ──
+    checkoutHint: { alignItems: 'center', width: '100%' },
+    checkoutDivider: { width: '60%', height: 1, backgroundColor: '#E2E8F0', marginBottom: 24 },
+    checkoutCpfHint: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 })

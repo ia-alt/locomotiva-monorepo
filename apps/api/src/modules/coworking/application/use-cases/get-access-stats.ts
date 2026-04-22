@@ -46,11 +46,16 @@ class GetAccessStatsUseCase implements UseCase<void, GetAccessStatsUseCase.Outpu
         // Fetch all data in a single query spanning year start (or prev month) to week end
         const logs = await this.accessLogRepository.findEntriesInRange(earliestFetch, nextMonday);
 
-        // Count by date string
+        // Count unique users per day — a user who checks in multiple times on the same day counts only once
+        const seenUserDay = new Set<string>();
         const countByDate = new Map<string, number>();
         for (const log of logs) {
-            const entry = new Date(log.toJSON().entryTime);
+            const json = log.toJSON();
+            const entry = new Date(json.entryTime);
             const dateStr = toDateStr(entry);
+            const key = `${json.userId}::${dateStr}`;
+            if (seenUserDay.has(key)) continue;
+            seenUserDay.add(key);
             countByDate.set(dateStr, (countByDate.get(dateStr) ?? 0) + 1);
         }
 

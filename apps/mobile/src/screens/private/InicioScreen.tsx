@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { CheckinCard } from '../../components/CheckinCard';
 import { CheckinProvider } from '../../contexts/checkin-context';
 import { useAuth } from '../../contexts/auth-context';
@@ -11,9 +11,14 @@ type InicioScreenRouteProp = RouteProp<{ Início: { code?: string } }, 'Início'
 export default function InicioScreen() {
     const { authUser } = useAuth();
     const route = useRoute<InicioScreenRouteProp>();
+    const navigation = useNavigation<any>();
 
     const rawCode = route.params?.code;
     const cleanCode = rawCode ? rawCode.replace(/['"]/g, '') : undefined;
+
+    const handleCodeProcessed = () => {
+        navigation.setParams({ code: undefined });
+    };
 
     useEffect(() => {
         if (cleanCode) {
@@ -39,7 +44,7 @@ export default function InicioScreen() {
                     </Text>
                 </View>
 
-                <CheckinCard accessCode={cleanCode} />
+                <CheckinCard accessCode={cleanCode} onCodeProcessed={handleCodeProcessed} />
             </View>
         </CheckinProvider>
     );
