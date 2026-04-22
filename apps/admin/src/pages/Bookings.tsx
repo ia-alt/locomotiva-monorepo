@@ -18,7 +18,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { orpc } from '../services/api';
 import { useBookingsAdmin } from '../hooks/useBookingsAdmin';
-import type { BookingAdminItem } from '../hooks/useBookingsAdmin';
 import { BookingStatusChip } from '../components/bookings/BookingStatusChip';
 import { BookingViewModal } from '../components/bookings/BookingViewModal';
 import { CreateBookingDialog } from '../components/bookings/CreateBookingDialog';
@@ -27,10 +26,10 @@ import { BookingCalendar } from '../components/bookings/BookingCalendar';
 const PAGE_SIZE = 5;
 
 const STATUS_FILTER_OPTIONS = [
-  { value: 'pending',    label: 'Aguardando' },
-  { value: 'confirmed',  label: 'Confirmado' },
-  { value: 'rejected',   label: 'Rejeitado' },
-  { value: 'no_show',    label: 'Não compareceu' },
+  { value: 'pending', label: 'Aguardando' },
+  { value: 'confirmed', label: 'Confirmado' },
+  { value: 'rejected', label: 'Rejeitado' },
+  { value: 'no_show', label: 'Não compareceu' },
 ];
 
 function formatDateRange(from: string, to: string) {
@@ -60,7 +59,7 @@ const BookingsPage: React.FC = () => {
   const [appliedDateTo, setAppliedDateTo] = useState('');
   const [appliedRoomId, setAppliedRoomId] = useState('');
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [_searchParams, setSearchParams] = useSearchParams();
 
   const handleOpenBooking = (id: string) => {
     setSearchParams((prev) => {
