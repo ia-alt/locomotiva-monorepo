@@ -35,6 +35,8 @@ export type UserMinAggregateOutputType = {
   passwordResetCode: string | null
   passwordResetCodeExpiry: Date | null
   userType: string | null
+  company: string | null
+  jobTitle: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +52,8 @@ export type UserMaxAggregateOutputType = {
   passwordResetCode: string | null
   passwordResetCodeExpiry: Date | null
   userType: string | null
+  company: string | null
+  jobTitle: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -65,6 +69,8 @@ export type UserCountAggregateOutputType = {
   passwordResetCode: number
   passwordResetCodeExpiry: number
   userType: number
+  company: number
+  jobTitle: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -82,6 +88,8 @@ export type UserMinAggregateInputType = {
   passwordResetCode?: true
   passwordResetCodeExpiry?: true
   userType?: true
+  company?: true
+  jobTitle?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -97,6 +105,8 @@ export type UserMaxAggregateInputType = {
   passwordResetCode?: true
   passwordResetCodeExpiry?: true
   userType?: true
+  company?: true
+  jobTitle?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +122,8 @@ export type UserCountAggregateInputType = {
   passwordResetCode?: true
   passwordResetCodeExpiry?: true
   userType?: true
+  company?: true
+  jobTitle?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -200,6 +212,8 @@ export type UserGroupByOutputType = {
   passwordResetCode: string | null
   passwordResetCodeExpiry: Date | null
   userType: string
+  company: string | null
+  jobTitle: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -236,6 +250,8 @@ export type UserWhereInput = {
   passwordResetCode?: Prisma.StringNullableFilter<"User"> | string | null
   passwordResetCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   userType?: Prisma.StringFilter<"User"> | string
+  company?: Prisma.StringNullableFilter<"User"> | string | null
+  jobTitle?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }
@@ -251,6 +267,8 @@ export type UserOrderByWithRelationInput = {
   passwordResetCode?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordResetCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   userType?: Prisma.SortOrder
+  company?: Prisma.SortOrderInput | Prisma.SortOrder
+  jobTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -269,6 +287,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   passwordResetCode?: Prisma.StringNullableFilter<"User"> | string | null
   passwordResetCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   userType?: Prisma.StringFilter<"User"> | string
+  company?: Prisma.StringNullableFilter<"User"> | string | null
+  jobTitle?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }, "id" | "email" | "cpf">
@@ -284,6 +304,8 @@ export type UserOrderByWithAggregationInput = {
   passwordResetCode?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordResetCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   userType?: Prisma.SortOrder
+  company?: Prisma.SortOrderInput | Prisma.SortOrder
+  jobTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -305,6 +327,8 @@ export type UserScalarWhereWithAggregatesInput = {
   passwordResetCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   passwordResetCodeExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   userType?: Prisma.StringWithAggregatesFilter<"User"> | string
+  company?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  jobTitle?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -320,6 +344,8 @@ export type UserCreateInput = {
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
   userType: string
+  company?: string | null
+  jobTitle?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -335,6 +361,8 @@ export type UserUncheckedCreateInput = {
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
   userType: string
+  company?: string | null
+  jobTitle?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -350,6 +378,8 @@ export type UserUpdateInput = {
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userType?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -365,6 +395,8 @@ export type UserUncheckedUpdateInput = {
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userType?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -380,6 +412,8 @@ export type UserCreateManyInput = {
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
   userType: string
+  company?: string | null
+  jobTitle?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -395,6 +429,8 @@ export type UserUpdateManyMutationInput = {
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userType?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -410,6 +446,8 @@ export type UserUncheckedUpdateManyInput = {
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userType?: Prisma.StringFieldUpdateOperationsInput | string
+  company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -425,6 +463,8 @@ export type UserCountOrderByAggregateInput = {
   passwordResetCode?: Prisma.SortOrder
   passwordResetCodeExpiry?: Prisma.SortOrder
   userType?: Prisma.SortOrder
+  company?: Prisma.SortOrder
+  jobTitle?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -440,6 +480,8 @@ export type UserMaxOrderByAggregateInput = {
   passwordResetCode?: Prisma.SortOrder
   passwordResetCodeExpiry?: Prisma.SortOrder
   userType?: Prisma.SortOrder
+  company?: Prisma.SortOrder
+  jobTitle?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -455,6 +497,8 @@ export type UserMinOrderByAggregateInput = {
   passwordResetCode?: Prisma.SortOrder
   passwordResetCodeExpiry?: Prisma.SortOrder
   userType?: Prisma.SortOrder
+  company?: Prisma.SortOrder
+  jobTitle?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -488,6 +532,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   passwordResetCode?: boolean
   passwordResetCodeExpiry?: boolean
   userType?: boolean
+  company?: boolean
+  jobTitle?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -503,6 +549,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   passwordResetCode?: boolean
   passwordResetCodeExpiry?: boolean
   userType?: boolean
+  company?: boolean
+  jobTitle?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -518,6 +566,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   passwordResetCode?: boolean
   passwordResetCodeExpiry?: boolean
   userType?: boolean
+  company?: boolean
+  jobTitle?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -533,11 +583,13 @@ export type UserSelectScalar = {
   passwordResetCode?: boolean
   passwordResetCodeExpiry?: boolean
   userType?: boolean
+  company?: boolean
+  jobTitle?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "cpf" | "birthDate" | "passwordHash" | "lastPasswordResetDate" | "passwordResetCode" | "passwordResetCodeExpiry" | "userType" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "cpf" | "birthDate" | "passwordHash" | "lastPasswordResetDate" | "passwordResetCode" | "passwordResetCodeExpiry" | "userType" | "company" | "jobTitle" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
@@ -553,6 +605,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     passwordResetCode: string | null
     passwordResetCodeExpiry: Date | null
     userType: string
+    company: string | null
+    jobTitle: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -988,6 +1042,8 @@ export interface UserFieldRefs {
   readonly passwordResetCode: Prisma.FieldRef<"User", 'String'>
   readonly passwordResetCodeExpiry: Prisma.FieldRef<"User", 'DateTime'>
   readonly userType: Prisma.FieldRef<"User", 'String'>
+  readonly company: Prisma.FieldRef<"User", 'String'>
+  readonly jobTitle: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

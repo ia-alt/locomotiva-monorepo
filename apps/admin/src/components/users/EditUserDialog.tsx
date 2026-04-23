@@ -38,6 +38,8 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
   const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [company, setCompany] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [userType, setUserType] = useState<'user' | 'admin'>('user');
 
   useEffect(() => {
@@ -46,12 +48,14 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
       setEmail(user.email);
       setCpf(formatCpf(user.cpf));
       setBirthDate(user.birthDate);
+      setCompany((user as any).company ?? '');
+      setJobTitle((user as any).jobTitle ?? '');
       setUserType(user.userType === 'system' ? 'admin' : user.userType);
     }
   }, [user]);
 
   const mutation = useMutation({
-    mutationFn: (input: { userId: string; data: { name: string; email: string; cpf: string; birthDate: string; userType: 'user' | 'admin' } }) =>
+    mutationFn: (input: { userId: string; data: { name: string; email: string; cpf: string; birthDate: string; userType: 'user' | 'admin'; company?: string | null; jobTitle?: string | null } }) =>
       orpc.identy.updateUser(input as Parameters<typeof orpc.identy.updateUser>[0]),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -65,7 +69,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
-    mutation.mutate({ userId: user.id, data: { name, email, cpf, birthDate, userType } });
+    mutation.mutate({ userId: user.id, data: { name, email, cpf, birthDate, userType, company: company || null, jobTitle: jobTitle || null } });
   };
 
   const error = mutation.error instanceof Error ? mutation.error.message : null;
@@ -122,6 +126,20 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
+            />
+
+            <TextField
+              label="Empresa/Instituição (opcional)"
+              fullWidth
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+            />
+
+            <TextField
+              label="Cargo (opcional)"
+              fullWidth
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
             />
 
             <FormControl fullWidth required>

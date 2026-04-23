@@ -73,6 +73,26 @@ export default function PerfilScreen() {
                     description={formatDate(authUser?.birthDate)}
                     left={(props) => <List.Icon {...props} icon="calendar-outline" />}
                 />
+                {(authUser as any)?.company ? (
+                    <>
+                        <Divider />
+                        <List.Item
+                            title="Empresa/Instituição"
+                            description={(authUser as any).company}
+                            left={(props) => <List.Icon {...props} icon="domain" />}
+                        />
+                    </>
+                ) : null}
+                {(authUser as any)?.jobTitle ? (
+                    <>
+                        <Divider />
+                        <List.Item
+                            title="Cargo"
+                            description={(authUser as any).jobTitle}
+                            left={(props) => <List.Icon {...props} icon="briefcase-outline" />}
+                        />
+                    </>
+                ) : null}
             </View>
 
             <Divider style={styles.divider} />
