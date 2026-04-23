@@ -596,7 +596,9 @@ export class DiContainer {
     public getGetBookingByIdUseCase(authUser: User): GetBookingByIdUseCase {
         return new GetBookingByIdUseCase(
             this.getAuthUserService(authUser),
-            this.getBookingRepository()
+            this.getBookingRepository(),
+            this.getRoomRepository(),
+            this.getUserRepository()
         );
     }
 

@@ -17,22 +17,25 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
-import type { BookingAdminItem } from '../../hooks/useBookingsAdmin';
+import type { ORPCOutputs } from '../../services/types';
+
+type Booking = ORPCOutputs['booking']['getBookingById'];
 
 interface BookingDetailDialogProps {
   open: boolean;
   onClose: () => void;
-  booking: BookingAdminItem | null;
+  booking: Booking | null;
+  isLoading?: boolean;
 }
 
 type ActionMode = 'view' | 'rejecting';
 
 const STATUS_BADGE: Record<string, { label: string; dot: string; bg: string; border: string; text: string }> = {
-  pending:   { label: 'Aguardando',      dot: '#f59e0b', bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
-  confirmed: { label: 'Confirmado',      dot: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0', text: '#166534' },
-  rejected:  { label: 'Rejeitado',       dot: '#ef4444', bg: '#fef2f2', border: '#fecaca', text: '#991b1b' },
-  cancelled: { label: 'Cancelado',       dot: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', text: '#5b21b6' },
-  no_show:   { label: 'Não compareceu',  dot: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', text: '#4b5563' },
+  pending: { label: 'Aguardando', dot: '#f59e0b', bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
+  confirmed: { label: 'Confirmado', dot: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0', text: '#166534' },
+  rejected: { label: 'Rejeitado', dot: '#ef4444', bg: '#fef2f2', border: '#fecaca', text: '#991b1b' },
+  cancelled: { label: 'Cancelado', dot: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', text: '#5b21b6' },
+  no_show: { label: 'Não compareceu', dot: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', text: '#4b5563' },
 };
 
 const IconLabel: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({ icon, children }) => (
@@ -51,7 +54,7 @@ const IconLabel: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> 
   </Typography>
 );
 
-export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, onClose, booking }) => {
+export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, onClose, booking, isLoading }) => {
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<ActionMode>('view');
   const [reason, setReason] = useState('');
@@ -88,55 +91,36 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
     onClose();
   };
 
-  if (!booking) return null;
+  if (!booking && !isLoading) return null;
 
-  const fromDate = new Date(booking.period.from);
-  const toDate = new Date(booking.period.to);
-  const isPending = booking.status === 'pending';
-  const isConfirmed = booking.status === 'confirmed';
+  let dialogContent = null;
+  let dialogActions = null;
 
-  const anyPending =
-    confirmMutation.isPending ||
-    rejectMutation.isPending ||
-    noShowMutation.isPending;
-
-  const mutationError =
-    confirmMutation.error || rejectMutation.error || noShowMutation.error;
-  const errorMsg = mutationError instanceof Error ? mutationError.message : null;
-
-  const badge = STATUS_BADGE[booking.status] ?? { label: booking.status, dot: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', text: '#4b5563' };
-
-  return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      fullWidth
-      maxWidth="sm"
-      slotProps={{
-        backdrop: { sx: { backdropFilter: 'blur(5px)', backgroundColor: 'rgba(0,0,0,0.25)' } },
-        paper: { sx: { borderRadius: 3, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(0,0,0,0.12)' } },
-      }}
-    >
-      {/* Header */}
-      <Box sx={{
-        px: 3, py: 2.5,
-        borderBottom: '1px solid #f1f5f9',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        bgcolor: 'white',
-      }}>
-        <Typography sx={{ fontSize: 18, fontWeight: 700, color: '#1e293b', letterSpacing: '-0.01em' }}>
-          Detalhes da Reserva
-        </Typography>
-        <IconButton onClick={handleClose} size="small" sx={{ color: '#94a3b8', '&:hover': { bgcolor: '#f8fafc' } }}>
-          <Close fontSize="small" />
-        </IconButton>
+  if (isLoading && !booking) {
+    dialogContent = (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+        <CircularProgress />
       </Box>
+    );
+  } else if (booking) {
+    const fromDate = new Date(booking.period.from);
+    const toDate = new Date(booking.period.to);
+    const isPending = booking.status === 'pending';
+    const isConfirmed = booking.status === 'confirmed';
 
-      {/* Content */}
-      <DialogContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
+    const anyPending =
+      confirmMutation.isPending ||
+      rejectMutation.isPending ||
+      noShowMutation.isPending;
 
+    const mutationError =
+      confirmMutation.error || rejectMutation.error || noShowMutation.error;
+    const errorMsg = mutationError instanceof Error ? mutationError.message : null;
+
+    const badge = STATUS_BADGE[booking.status] ?? { label: booking.status, dot: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', text: '#4b5563' };
+
+    dialogContent = (
+      <>
         {errorMsg && <Alert severity="error" sx={{ borderRadius: 2 }}>{errorMsg}</Alert>}
 
         {/* Status */}
@@ -270,17 +254,11 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
             Solicitado originalmente em {new Date(booking.createdAt).toLocaleString('pt-BR')}
           </Typography>
         </Box>
-      </DialogContent>
+      </>
+    );
 
-      {/* Actions */}
-      <DialogActions sx={{
-        px: 3, py: 2.5,
-        bgcolor: '#f8fafc',
-        borderTop: '1px solid #f1f5f9',
-        gap: 1.5,
-        flexWrap: 'wrap',
-        justifyContent: 'flex-end',
-      }}>
+    dialogActions = (
+      <>
         {mode === 'view' && (
           <>
             {isPending && (
@@ -373,7 +351,56 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
             </Button>
           </>
         )}
-      </DialogActions>
+      </>
+    );
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{
+        backdrop: { sx: { backdropFilter: 'blur(5px)', backgroundColor: 'rgba(0,0,0,0.25)' } },
+        paper: { sx: { borderRadius: 3, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(0,0,0,0.12)' } },
+      }}
+    >
+      {/* Header */}
+      <Box sx={{
+        px: 3, py: 2.5,
+        borderBottom: '1px solid #f1f5f9',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        bgcolor: 'white',
+      }}>
+        <Typography sx={{ fontSize: 18, fontWeight: 700, color: '#1e293b', letterSpacing: '-0.01em' }}>
+          Detalhes da Reserva
+        </Typography>
+        <IconButton onClick={handleClose} size="small" sx={{ color: '#94a3b8', '&:hover': { bgcolor: '#f8fafc' } }}>
+          <Close fontSize="small" />
+        </IconButton>
+      </Box>
+
+      {/* Content */}
+      <DialogContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {dialogContent}
+      </DialogContent>
+
+      {/* Actions */}
+      {dialogActions && (
+        <DialogActions sx={{
+          px: 3, py: 2.5,
+          bgcolor: '#f8fafc',
+          borderTop: '1px solid #f1f5f9',
+          gap: 1.5,
+          flexWrap: 'wrap',
+          justifyContent: 'flex-end',
+        }}>
+          {dialogActions}
+        </DialogActions>
+      )}
     </Dialog>
   );
 };

@@ -8,8 +8,8 @@ import { BookingEmailTemplater } from "../../domain/services";
 import { BookingRejectedEvent } from "../../domain/events/booking-rejected";
 import { BookingCancelledEvent } from "../../domain/events/booking-cancelled";
 import { BookingCreatedEvent } from "../../domain/events/booking-created";
+import { env } from "src/modules/env";
 
-const ADMIN_EMAIL = 'locomotivahub@gmail.com';
 
 export class AfterBookingStatusChanged {
     constructor(
@@ -138,7 +138,7 @@ export class AfterBookingStatusChanged {
                 title: booking.title,
             };
 
-            const bookingUrl = `${this.adminUrl}/reservations`;
+            const bookingUrl = `${this.adminUrl}/reservations?view=${booking.id.value}`;
 
             const [userHtml, adminHtml] = await Promise.all([
                 this.bookingEmailTemplater.templateForCreatedBooking(emailParams),
@@ -152,7 +152,7 @@ export class AfterBookingStatusChanged {
                     userHtml,
                 ),
                 this.sendEmailService.send(
-                    ADMIN_EMAIL,
+                    env.NODEMAILER_EMAIL_USER,
                     `Novo Pedido de Reserva - ${user.firstName} (${emailParams.day})`,
                     adminHtml,
                 ),

@@ -15,21 +15,21 @@ import {
   FormatListBulleted as ListIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { orpc } from '../services/api';
 import { useBookingsAdmin } from '../hooks/useBookingsAdmin';
-import type { BookingAdminItem } from '../hooks/useBookingsAdmin';
 import { BookingStatusChip } from '../components/bookings/BookingStatusChip';
-import { BookingDetailDialog } from '../components/bookings/BookingDetailDialog';
+import { BookingViewModal } from '../components/bookings/BookingViewModal';
 import { CreateBookingDialog } from '../components/bookings/CreateBookingDialog';
 import { BookingCalendar } from '../components/bookings/BookingCalendar';
 
 const PAGE_SIZE = 5;
 
 const STATUS_FILTER_OPTIONS = [
-  { value: 'pending',    label: 'Aguardando' },
-  { value: 'confirmed',  label: 'Confirmado' },
-  { value: 'rejected',   label: 'Rejeitado' },
-  { value: 'no_show',    label: 'Não compareceu' },
+  { value: 'pending', label: 'Aguardando' },
+  { value: 'confirmed', label: 'Confirmado' },
+  { value: 'rejected', label: 'Rejeitado' },
+  { value: 'no_show', label: 'Não compareceu' },
 ];
 
 function formatDateRange(from: string, to: string) {
@@ -59,10 +59,17 @@ const BookingsPage: React.FC = () => {
   const [appliedDateTo, setAppliedDateTo] = useState('');
   const [appliedRoomId, setAppliedRoomId] = useState('');
 
+  const [_searchParams, setSearchParams] = useSearchParams();
+
+  const handleOpenBooking = (id: string) => {
+    setSearchParams((prev) => {
+      prev.set('view', id);
+      return prev;
+    }, { replace: true });
+  };
+
   // Dialogs
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookingAdminItem | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Pending count for badge (no filters)
   const { data: pendingData } = useQuery({
@@ -315,7 +322,7 @@ const BookingsPage: React.FC = () => {
                                 <Tooltip title="Ver detalhes">
                                   <IconButton
                                     size="small"
-                                    onClick={() => { setSelectedBooking(booking); setIsDetailOpen(true); }}
+                                    onClick={() => handleOpenBooking(booking.id)}
                                   >
                                     <VisibilityIcon fontSize="small" />
                                   </IconButton>
@@ -345,7 +352,7 @@ const BookingsPage: React.FC = () => {
         {/* Tab: Calendário */}
         {tab === 1 && (
           <BookingCalendar
-            onViewBooking={(booking) => { setSelectedBooking(booking); setIsDetailOpen(true); }}
+            onViewBooking={(booking) => handleOpenBooking(booking.id)}
           />
         )}
       </Paper>
@@ -444,11 +451,7 @@ const BookingsPage: React.FC = () => {
       {/* Dialogs */}
       <CreateBookingDialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
 
-      <BookingDetailDialog
-        open={isDetailOpen}
-        onClose={() => { setIsDetailOpen(false); setSelectedBooking(null); }}
-        booking={selectedBooking}
-      />
+      <BookingViewModal />
     </Box>
   );
 };
