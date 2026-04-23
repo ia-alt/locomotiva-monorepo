@@ -149,7 +149,7 @@ export default function PoliticaDePrivacidadeScreen() {
                     <Paragraph>
                         Não há funcionalidade de exclusão de conta diretamente pelo aplicativo.
                         Para solicitar a exclusão definitiva de todos os seus dados, o usuário
-                        deve enviar um e-mail para <Bold>guilhermereis525@gmail.com</Bold> com
+                        deve enviar um e-mail para <Bold>locomotivahub@gmail.com</Bold> com
                         o assunto <Bold>"Exclusão de dados – Locomotiva Hub"</Bold>, informando o
                         nome completo e o e-mail cadastrado.
                     </Paragraph>
