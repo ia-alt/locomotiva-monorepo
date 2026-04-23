@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box, IconButton, Chip } from '@mui/material';
-import { People as PeopleIcon, Edit as EditIcon, Delete as DeleteIcon, AccessTime as AccessTimeIcon, WarningAmber as WarningAmberIcon } from '@mui/icons-material';
+import { Card, CardContent, CardMedia, Typography, Box, IconButton, Chip } from '@mui/material';
+import { People as PeopleIcon, Edit as EditIcon, Delete as DeleteIcon, AccessTime as AccessTimeIcon, WarningAmber as WarningAmberIcon, MeetingRoom as MeetingRoomIcon } from '@mui/icons-material';
 
 // Definindo a interface baseada no retorno do backend (Room.JsonSchema)
 export interface Room {
@@ -8,6 +8,7 @@ export interface Room {
   name: string;
   capacity: number;
   enabled: boolean;
+  photoUrl: string | null;
   hasOperatingSchedule: boolean;
 }
 
@@ -21,18 +22,19 @@ interface RoomCardProps {
 export const RoomCard: React.FC<RoomCardProps> = ({ room, onEdit, onDelete, onOperatingHours }) => {
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {/* Imagem
-      <Box 
-        sx={{ 
-          height: 140, 
-          bgcolor: 'grey.300', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}
-      >
-        
-      </Box>*/}
+      {room.photoUrl ? (
+        <CardMedia
+          component="img"
+          height={140}
+          image={room.photoUrl}
+          alt={room.name}
+          sx={{ objectFit: 'cover' }}
+        />
+      ) : (
+        <Box sx={{ height: 140, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <MeetingRoomIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+        </Box>
+      )}
 
       <CardContent sx={{ flexGrow: 1, pb: 6 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>

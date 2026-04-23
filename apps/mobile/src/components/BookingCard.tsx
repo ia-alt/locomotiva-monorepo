@@ -42,8 +42,8 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
 
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
 
-    // Use a placeholder if there's no actual room image (the API room might not have an imageUrl)
-    const roomImageUrl = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
+    const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
+    const roomImageUrl = room?.photoUrl || FALLBACK_IMAGE;
 
     return (
         <Surface style={styles.card} elevation={0}>
