@@ -41,6 +41,8 @@ export default function EditarPerfilScreen() {
     const [name, setName] = useState(authUser?.name ?? '');
     const [email, setEmail] = useState(authUser?.email ?? '');
     const [birthDate, setBirthDate] = useState(toDisplayDate(authUser?.birthDate));
+    const [company, setCompany] = useState((authUser as any)?.company ?? '');
+    const [jobTitle, setJobTitle] = useState((authUser as any)?.jobTitle ?? '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +57,7 @@ export default function EditarPerfilScreen() {
         setError(null);
         setLoading(true);
         try {
-            await updateMe({ name: name.trim(), email, birthDate: toApiDate(birthDate) });
+            await updateMe({ name: name.trim(), email, birthDate: toApiDate(birthDate), company: company || null, jobTitle: jobTitle || null });
             navigation.goBack();
         } catch (e: any) {
             setError(e?.message ?? 'Erro ao salvar. Tente novamente.');
@@ -103,6 +105,22 @@ export default function EditarPerfilScreen() {
                 style={styles.input}
             />
             {birthDateError && <HelperText type="error">{birthDateError}</HelperText>}
+
+            <TextInput
+                label="Empresa/Instituição (opcional)"
+                value={company}
+                onChangeText={setCompany}
+                mode="outlined"
+                style={styles.input}
+            />
+
+            <TextInput
+                label="Cargo (opcional)"
+                value={jobTitle}
+                onChangeText={setJobTitle}
+                mode="outlined"
+                style={styles.input}
+            />
 
             {error && (
                 <HelperText type="error" style={styles.globalError}>

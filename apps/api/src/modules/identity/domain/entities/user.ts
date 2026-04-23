@@ -20,7 +20,8 @@ class User extends AggregateRoot {
         private _lastPasswordResetDate: Date,
         private _passwordResetCode: string | null = null,
         private _passwordResetCodeExpiry: Date | null = null,
-
+        private _company: string | null = null,
+        private _jobTitle: string | null = null,
     ) {
         super(id);
     }
@@ -40,7 +41,9 @@ class User extends AggregateRoot {
             props.passwordHash,
             new Date(),
             null,
-            null
+            null,
+            props.company ?? null,
+            props.jobTitle ?? null,
         );
         user.addDomainEvent(new UserRegisteredEvent(user));
         return user;
@@ -54,12 +57,16 @@ class User extends AggregateRoot {
         this.cpf = Cpf.fromString(data.cpf);
         this.birthDate = BirthDate.fromJSON(data.birthDate);
         this._userType = data.userType;
+        this._company = data.company ?? null;
+        this._jobTitle = data.jobTitle ?? null;
     }
 
-    updateSelf(data: { name: string; email: EmailAddress; birthDate: BirthDate }): void {
+    updateSelf(data: { name: string; email: EmailAddress; birthDate: BirthDate; company?: string | null; jobTitle?: string | null }): void {
         this._name = data.name;
         this.email = data.email;
         this.birthDate = data.birthDate;
+        this._company = data.company ?? null;
+        this._jobTitle = data.jobTitle ?? null;
     }
 
     getPasswordHash() {
@@ -112,6 +119,8 @@ class User extends AggregateRoot {
             cpf: this.cpf.toJSON(),
             birthDate: this.birthDate.toJSON(),
             userType: this._userType,
+            company: this._company,
+            jobTitle: this._jobTitle,
             passwordResetCode: this._passwordResetCode,
             passwordResetCodeExpiry: this._passwordResetCodeExpiry,
         };
@@ -137,6 +146,8 @@ namespace User {
         cpf: Cpf;
         birthDate: BirthDate;
         passwordHash: string;
+        company?: string | null;
+        jobTitle?: string | null;
     };
     export type CreateSystemParams = {
         name: string;
@@ -150,6 +161,8 @@ namespace User {
         cpf: Cpf.JsonSchema,
         birthDate: BirthDate.JsonSchema,
         userType: z.enum(UserType),
+        company: z.string().nullable().optional(),
+        jobTitle: z.string().nullable().optional(),
     });
     export type UpdateParams = z.infer<typeof UpdateSchema>;
     export const JsonSchema = z.object({
@@ -159,6 +172,8 @@ namespace User {
         cpf: Cpf.JsonSchema,
         birthDate: BirthDate.JsonSchema,
         userType: z.enum(UserType),
+        company: z.string().nullable().optional(),
+        jobTitle: z.string().nullable().optional(),
         passwordResetCode: z.string().nullable().optional(),
         passwordResetCodeExpiry: z.date().nullable().optional(),
     });
