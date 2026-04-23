@@ -83,7 +83,10 @@ export default function TermosDeServicoScreen() {
                 <Section title="5. Cadastro e Conta de Usuário">
                     <Paragraph>
                         5.1. Para utilizar os recursos do aplicativo, o usuário deve criar uma conta
-                        fornecendo: nome completo, e-mail, CPF e data de nascimento.
+                        fornecendo: nome completo, e-mail, CPF e data de nascimento. Os campos{' '}
+                        <Bold>Empresa/Instituição</Bold> e <Bold>Cargo</Bold> são opcionais e podem
+                        ser preenchidos voluntariamente para identificação do vínculo institucional
+                        do usuário.
                     </Paragraph>
                     <Paragraph>
                         5.2. O usuário é responsável pela veracidade, atualidade e exatidão das
