@@ -358,9 +358,9 @@ export default function CadastroScreen() {
                     Ao criar uma conta, você concorda com os nossos
                 </Text>
                 <Text style={styles.termsTextRow}>
-                    <Text style={styles.termsLink} onPress={() => { }}>Termos de Serviço</Text>
+                    <Text style={styles.termsLink} onPress={() => navigation.navigate('TermosDeServico')}>Termos de Serviço</Text>
                     <Text style={styles.termsText}> e </Text>
-                    <Text style={styles.termsLink} onPress={() => { }}>Política de Privacidade</Text>.
+                    <Text style={styles.termsLink} onPress={() => navigation.navigate('PoliticaDePrivacidade')}>Política de Privacidade</Text>.
                 </Text>
             </View>
 

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator, StatusBar, Dimensions } from 'react-native';
 import { Text, Surface, Divider } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useORPC } from '../locomotiva-api/context';
 import { useQuery } from '@tanstack/react-query';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface RoomSelectorProps {
     selectedRoomId: string | null;
@@ -15,11 +17,14 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
     const { data: rooms, isLoading } = useQuery(orpc.booking.listRooms.queryOptions({ input: {} }));
 
     const [modalVisible, setModalVisible] = useState(false);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const selectedRoom = rooms?.find(r => r.id === selectedRoomId);
 
-    // Filter to only show enabled rooms in the selector, although API should ideally only return available
     const availableRooms = rooms?.filter(r => r.enabled) || [];
+
+    const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
+    const getRoomImage = (room: typeof selectedRoom) => room?.photoUrl || FALLBACK_IMAGE;
 
     return (
         <View style={styles.container}>
@@ -34,7 +39,7 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
                     ) : (
                         <>
                             <Image
-                                source={{ uri: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200' }}
+                                source={{ uri: getRoomImage(selectedRoom) }}
                                 style={styles.image}
                             />
                             <View style={styles.textContainer}>
@@ -80,10 +85,23 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
                                             setModalVisible(false);
                                         }}
                                     >
-                                        <Image
-                                            source={{ uri: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200' }}
-                                            style={styles.modalItemImage}
-                                        />
+                                        <TouchableOpacity
+                                            onPress={(e) => {
+                                                e.stopPropagation();
+                                                setPreviewImage(getRoomImage(item));
+                                            }}
+                                            activeOpacity={0.8}
+                                        >
+                                            <View>
+                                                <Image
+                                                    source={{ uri: getRoomImage(item) }}
+                                                    style={styles.modalItemImage}
+                                                />
+                                                <View style={styles.previewBadge}>
+                                                    <Ionicons name="expand-outline" size={10} color="#fff" />
+                                                </View>
+                                            </View>
+                                        </TouchableOpacity>
                                         <View style={styles.modalItemText}>
                                             <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{item.name}</Text>
                                             <Text variant="bodyMedium" style={{ color: '#6B7280' }}>Capacidade: {item.capacity} pessoas</Text>
@@ -98,6 +116,23 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
                             />
                         )}
                     </Surface>
+                </View>
+            </Modal>
+
+            {/* Modal visualização em tela cheia */}
+            <Modal visible={!!previewImage} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setPreviewImage(null)}>
+                <View style={styles.fullscreenOverlay}>
+                    <StatusBar hidden />
+                    <TouchableOpacity style={styles.fullscreenClose} onPress={() => setPreviewImage(null)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                        <Ionicons name="close-circle" size={36} color="#fff" />
+                    </TouchableOpacity>
+                    {previewImage && (
+                        <Image
+                            source={{ uri: previewImage }}
+                            style={styles.fullscreenImage}
+                            resizeMode="contain"
+                        />
+                    )}
                 </View>
             </Modal>
         </View>
@@ -179,5 +214,29 @@ const styles = StyleSheet.create({
     },
     modalItemText: {
         flex: 1,
-    }
+    },
+    previewBadge: {
+        position: 'absolute',
+        bottom: 2,
+        right: 2,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        borderRadius: 4,
+        padding: 2,
+    },
+    fullscreenOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullscreenClose: {
+        position: 'absolute',
+        top: 48,
+        right: 20,
+        zIndex: 10,
+    },
+    fullscreenImage: {
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT * 0.75,
+    },
 });
