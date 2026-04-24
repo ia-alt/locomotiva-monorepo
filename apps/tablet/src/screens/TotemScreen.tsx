@@ -2,6 +2,7 @@ import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { TotemLayout } from '../components/TotemLayout'
 import { useORPC } from '../locomotiva-api/context'
+import { version } from '../../package.json'
 
 const BLUE = '#1A7BFF'
 
@@ -14,6 +15,7 @@ export default function TotemScreen() {
             mode="checkin"
             color={BLUE}
             apiKeyName={(data as any)?.name}
+        version={version}
             lookupFn={(input) => (orpc.coworking.findMemberByCpf as any).call(input)}
             mutationFn={(input) => (orpc.coworking.checkinByCpf as any).call(input)}
             idleIcon="account-key"

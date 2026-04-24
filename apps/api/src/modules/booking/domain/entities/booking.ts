@@ -17,7 +17,9 @@ export class Booking extends AggregateRoot {
         public readonly description: string,
         private _period: DatePeriod,
         private status: Booking.Status,
-        private rejectionCancelReason?: string,
+        private rejectionCancelReason: string | undefined,
+        private createdAt: Date,
+        private updatedAt: Date,
     ) {
         super(id);
         new BookingTitle(title);
@@ -41,6 +43,9 @@ export class Booking extends AggregateRoot {
             input.description ?? '',
             input.period,
             Booking.Status.PENDING,
+            undefined,
+            new Date(),
+            new Date(),
         );
         booking.addDomainEvent(new BookingCreatedEvent(booking));
         return booking;
@@ -51,6 +56,7 @@ export class Booking extends AggregateRoot {
             throw new BookingNotInPendingStateError();
         }
         this.status = Booking.Status.CONFIRMED;
+        this.updatedAt = new Date();
         this.addDomainEvent(new BookingConfirmedEvent(this));
     }
 
@@ -76,6 +82,7 @@ export class Booking extends AggregateRoot {
 
         this.status = Booking.Status.CANCELLED;
         this.rejectionCancelReason = reason;
+        this.updatedAt = new Date();
         this.addDomainEvent(new BookingCancelledEvent(this, reason));
     }
 
@@ -88,6 +95,7 @@ export class Booking extends AggregateRoot {
     adminCancel(reason: string): void {
         this.status = Booking.Status.CANCELLED;
         this.rejectionCancelReason = reason;
+        this.updatedAt = new Date();
         this.addDomainEvent(new BookingCancelledEvent(this, reason));
     }
 
@@ -98,11 +106,13 @@ export class Booking extends AggregateRoot {
         }
         this.status = Booking.Status.REJECTED;
         this.rejectionCancelReason = reason;
+        this.updatedAt = new Date();
         this.addDomainEvent(new BookingRejectedEvent(this, reason));
     }
 
     markNoShow(): void {
         this.status = Booking.Status.NO_SHOW;
+        this.updatedAt = new Date();
     }
 
     toJSON(): Booking.JsonSchema {
@@ -115,6 +125,8 @@ export class Booking extends AggregateRoot {
             period: this._period.toJSON(),
             status: this.status,
             rejectionCancelReason: this.rejectionCancelReason,
+            createdAt: this.createdAt.toISOString(),
+            updatedAt: this.updatedAt.toISOString(),
         };
     }
 }
@@ -152,6 +164,8 @@ export namespace Booking {
         period: DatePeriod.ValueSchema,
         status: z.enum(Status),
         rejectionCancelReason: z.string().optional(),
+        createdAt: z.string(),
+        updatedAt: z.string(),
     });
 
     export type CreateParams = {

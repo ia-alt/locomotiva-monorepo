@@ -25,6 +25,8 @@ model User {
   passwordResetCode       String?
   passwordResetCodeExpiry DateTime?
   userType                String
+  company                 String?
+  jobTitle                String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,6 +52,7 @@ model Room {
   name     String
   capacity Int
   enabled  Boolean
+  photoUrl String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

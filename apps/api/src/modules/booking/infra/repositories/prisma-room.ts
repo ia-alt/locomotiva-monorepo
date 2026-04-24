@@ -14,12 +14,14 @@ export class PrismaRoomRepository implements RoomRepository {
                 name: roomData.name,
                 capacity: roomData.capacity,
                 enabled: roomData.enabled,
+                photoUrl: roomData.photoUrl,
             },
             create: {
                 id: roomData.id,
                 name: roomData.name,
                 capacity: roomData.capacity,
                 enabled: roomData.enabled,
+                photoUrl: roomData.photoUrl,
             },
         });
     }
@@ -45,7 +47,8 @@ export class PrismaRoomRepository implements RoomRepository {
             UniqueId.fromString(room.id),
             room.name,
             room.capacity,
-            room.enabled
+            room.enabled,
+            room.photoUrl ?? null,
         );
     }
 

@@ -87,6 +87,8 @@ export const UserScalarFieldEnum = {
   passwordResetCode: 'passwordResetCode',
   passwordResetCodeExpiry: 'passwordResetCodeExpiry',
   userType: 'userType',
+  company: 'company',
+  jobTitle: 'jobTitle',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -111,6 +113,7 @@ export const RoomScalarFieldEnum = {
   name: 'name',
   capacity: 'capacity',
   enabled: 'enabled',
+  photoUrl: 'photoUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
