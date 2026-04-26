@@ -166,6 +166,18 @@ export default function LoginScreen() {
                     Entrar
                 </Button>
 
+                <View style={styles.footer}>
+                    <Text style={styles.footerText}>
+                        Novo por aqui?{' '}
+                        <Text
+                            style={styles.footerLink}
+                            onPress={() => navigation.navigate('Cadastro')}
+                        >
+                            Cadastre-se
+                        </Text>
+                    </Text>
+                </View>
+
                 {/* Divider */}
                 <View style={styles.dividerContainer}>
                     <View style={styles.dividerLine} />
@@ -175,17 +187,7 @@ export default function LoginScreen() {
             </Surface>
 
             {/* Footer */}
-            <View style={styles.footer}>
-                <Text style={styles.footerText}>
-                    Novo por aqui?{' '}
-                    <Text
-                        style={styles.footerLink}
-                        onPress={() => navigation.navigate('Cadastro')}
-                    >
-                        Cadastre-se
-                    </Text>
-                </Text>
-            </View>
+
         </ScrollView>
     );
 }
@@ -272,7 +274,7 @@ const makeStyles = (theme: any) => StyleSheet.create({
     loginButton: {
         borderRadius: 8,
         marginTop: 8,
-        marginBottom: 32,
+        marginBottom: 20,
     },
     dividerContainer: {
         flexDirection: 'row',
@@ -290,7 +292,7 @@ const makeStyles = (theme: any) => StyleSheet.create({
         fontWeight: '500',
     },
     footer: {
-        marginTop: 32,
+        marginBottom: 24,
         alignItems: 'center',
     },
     footerText: {
