@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import path from 'node:path';
 import { SendEmailService } from "@notifications/application/services";
 
-const LOGO_PATH = path.join(import.meta.dirname, '../../assets/logo.png');
+const LOGO_PATH = path.join(import.meta.dirname, '../../../../../assets/logo.png');
 
 export class NodemailerSendEmailService implements SendEmailService {
     private readonly transporter: nodemailer.Transporter;
