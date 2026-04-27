@@ -14,6 +14,7 @@ const QR_CODE = { uri: '/Qr_teste.png' }
 export type TotemLayoutProps = UseTotemFlowParams & {
     color: string
     apiKeyName?: string
+    version?: string
     idleIcon: React.ComponentProps<typeof MaterialCommunityIcons>['name']
     idleTitle: string
     idleSub: string
@@ -33,6 +34,7 @@ export function TotemLayout({
     mutationFn,
     lookupFn,
     apiKeyName,
+    version,
     idleIcon,
     idleTitle,
     idleSub,
@@ -73,6 +75,9 @@ export function TotemLayout({
             <View style={s.root}>
                 {/* LEFT – QR Code (checkin) ou mensagem orientativa (checkout) */}
                 <View style={[s.qrPanel, { paddingHorizontal: panelPaddingH }]}>
+                    {!!version && (
+                        <Text style={s.versionBadge}>v{version}</Text>
+                    )}
                     {mode === 'checkout' ? (
                         <View style={s.checkoutHint}>
                             <MaterialCommunityIcons name="web" size={48} color="#0F9B6E" style={{ marginBottom: 20 }} />
@@ -379,4 +384,6 @@ const s = StyleSheet.create({
     checkoutHint: { alignItems: 'center', width: '100%' },
     checkoutDivider: { width: '60%', height: 1, backgroundColor: '#E2E8F0', marginBottom: 24 },
     checkoutCpfHint: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+
+    versionBadge: { position: 'absolute', bottom: 8, left: 12, fontSize: 11, color: '#94A3B8' },
 })

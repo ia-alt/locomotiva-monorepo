@@ -51,6 +51,8 @@ class AuthService {
             cpf: params.cpf,
             birthDate: params.birthDate,
             passwordHash,
+            company: params.company,
+            jobTitle: params.jobTitle,
         });
 
         await this.userRepository.save(user);
@@ -65,6 +67,8 @@ namespace AuthService {
         cpf: Cpf;
         birthDate: BirthDate;
         password: Password;
+        company?: string | null;
+        jobTitle?: string | null;
     };
 }
 

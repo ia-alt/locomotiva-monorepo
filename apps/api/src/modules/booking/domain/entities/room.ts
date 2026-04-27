@@ -7,6 +7,7 @@ class Room extends Entity {
         private _name: string,
         private capacity: number,
         private enabled: boolean,
+        private photoUrl: string | null = null,
     ) {
         super(id);
     }
@@ -16,12 +17,13 @@ class Room extends Entity {
     }
 
     static create(input: Room.CreateParams): Room {
-        return new Room(UniqueId.create(), input.name, input.capacity, input.enabled);
+        return new Room(UniqueId.create(), input.name, input.capacity, input.enabled, input.photoUrl ?? null);
     }
 
     update(input: Room.UpdateParams): void {
         this._name = input.name;
         this.capacity = input.capacity;
+        this.photoUrl = input.photoUrl ?? null;
     }
 
     setEnabled(enabled: boolean): void {
@@ -34,6 +36,7 @@ class Room extends Entity {
             name: this._name,
             capacity: this.capacity,
             enabled: this.enabled,
+            photoUrl: this.photoUrl,
         };
     }
 }
@@ -43,11 +46,13 @@ namespace Room {
         name: z.string(),
         capacity: z.number(),
         enabled: z.boolean(),
+        photoUrl: z.string().nullable().optional(),
     });
 
     export const UpdateSchema = z.object({
         name: z.string(),
         capacity: z.number(),
+        photoUrl: z.string().nullable().optional(),
     });
 
     export const JsonSchema = z.object({
@@ -55,6 +60,7 @@ namespace Room {
         name: z.string(),
         capacity: z.number(),
         enabled: z.boolean(),
+        photoUrl: z.string().nullable(),
     });
 
     export type CreateParams = z.infer<typeof CreateSchema>;

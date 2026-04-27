@@ -1,10 +1,12 @@
 import React, { useLayoutEffect, useCallback, useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Modal, StatusBar, Dimensions, Image } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Text, Surface, Dialog, Portal, Button, TextInput } from 'react-native-paper';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -40,7 +42,9 @@ export default function DetalhesMinhaReservaScreen() {
         enabled: !!booking?.roomId
     });
 
-    const roomImageUrl = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
+    const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
+    const roomImageUrl = room?.photoUrl || FALLBACK_IMAGE;
+    const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
 
     const { mutateAsync: cancelBooking, isPending: isCanceling } = useMutation({
         mutationFn: orpc.booking.cancelBooking.mutationOptions().mutationFn,
@@ -109,11 +113,26 @@ export default function DetalhesMinhaReservaScreen() {
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
-            <Animated.Image
-                source={{ uri: roomImageUrl }}
-                style={styles.headerImage}
-                sharedTransitionTag={`room-image-${booking.id}`}
-            />
+            <TouchableOpacity activeOpacity={0.85} onPress={() => setImagePreviewVisible(true)}>
+                <Animated.Image
+                    source={{ uri: roomImageUrl }}
+                    style={styles.headerImage}
+                    sharedTransitionTag={`room-image-${booking.id}`}
+                />
+                <View style={styles.expandBadge}>
+                    <Ionicons name="expand-outline" size={14} color="#fff" />
+                </View>
+            </TouchableOpacity>
+
+            <Modal visible={imagePreviewVisible} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setImagePreviewVisible(false)}>
+                <View style={styles.fullscreenOverlay}>
+                    <StatusBar hidden />
+                    <TouchableOpacity style={styles.fullscreenClose} onPress={() => setImagePreviewVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                        <Ionicons name="close-circle" size={36} color="#fff" />
+                    </TouchableOpacity>
+                    <Image source={{ uri: roomImageUrl }} style={styles.fullscreenImage} resizeMode="contain" />
+                </View>
+            </Modal>
             <Surface style={styles.card} elevation={0}>
                 <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1, alignSelf: 'flex-start' }]}>
                     {config.dot && <View style={[styles.statusDot, { backgroundColor: config.color }]} />}
@@ -299,5 +318,29 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#374151',
         marginLeft: 8,
-    }
+    },
+    expandBadge: {
+        position: 'absolute',
+        bottom: 36,
+        right: 12,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        borderRadius: 6,
+        padding: 6,
+    },
+    fullscreenOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullscreenClose: {
+        position: 'absolute',
+        top: 48,
+        right: 20,
+        zIndex: 10,
+    },
+    fullscreenImage: {
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT * 0.75,
+    },
 });

@@ -82,7 +82,7 @@ export default function AvailabilityTimeline({ roomId, date, onSelectBlock }: Av
                     type: 'occupied',
                     startMin: curMin,
                     endMin: slot.sMin,
-                    label: 'OCUPADO'
+                    label: ''
                 });
             }
             timelineBlocks.push({
@@ -103,7 +103,7 @@ export default function AvailabilityTimeline({ roomId, date, onSelectBlock }: Av
                 type: 'occupied',
                 startMin: curMin,
                 endMin: END_MINS,
-                label: 'OCUPADO'
+                label: ''
             });
         }
 

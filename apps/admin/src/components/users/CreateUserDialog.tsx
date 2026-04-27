@@ -37,6 +37,8 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
   const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [company, setCompany] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +46,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: (input: { name: string; email: string; cpf: string; birthDate: string; password: string }) =>
+    mutationFn: (input: { name: string; email: string; cpf: string; birthDate: string; password: string; company?: string; jobTitle?: string }) =>
       orpc.identy.registerUser(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -60,6 +62,8 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
     setEmail('');
     setCpf('');
     setBirthDate('');
+    setCompany('');
+    setJobTitle('');
     setPassword('');
     setConfirmPassword('');
     setShowPassword(false);
@@ -75,7 +79,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
       return;
     }
     setConfirmPasswordError('');
-    mutation.mutate({ name, email, cpf, birthDate, password });
+    mutation.mutate({ name, email, cpf, birthDate, company: company || undefined, jobTitle: jobTitle || undefined, password });
   };
 
   const error = mutation.error instanceof Error ? mutation.error.message : null;
@@ -132,6 +136,20 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
+            />
+
+            <TextField
+              label="Empresa/Instituição (opcional)"
+              fullWidth
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+            />
+
+            <TextField
+              label="Cargo (opcional)"
+              fullWidth
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
             />
 
             <TextField

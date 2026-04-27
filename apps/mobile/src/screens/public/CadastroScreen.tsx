@@ -12,6 +12,8 @@ const cadastroSchema = z.object({
     email: z.email('Digite um e-mail válido.'),
     cpf: z.string().min(11, 'O CPF deve ter no mínimo 11 dígitos.'),
     birthDate: z.string().min(8, 'Data inválida.'),
+    company: z.string().optional(),
+    jobTitle: z.string().optional(),
     password: z.string()
         .min(8, 'Sua senha deve ter pelo menos 8 caracteres.')
         .regex(/[A-Z]/, 'A senha deve conter pelo menos  uma letra maiúscula.')
@@ -61,6 +63,8 @@ export default function CadastroScreen() {
             email: '',
             cpf: '',
             birthDate: '',
+            company: '',
+            jobTitle: '',
             password: '',
             confirmPassword: ''
         }
@@ -249,6 +253,56 @@ export default function CadastroScreen() {
                     />
                 </View>
 
+                {/* Company Input */}
+                <View style={styles.inputContainer}>
+                    <Text variant="labelMedium" style={styles.inputLabel}>Empresa/Instituição <Text style={{ fontWeight: 'normal', color: '#64748B' }}>(opcional)</Text></Text>
+                    <Controller
+                        control={control}
+                        name="company"
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                mode="outlined"
+                                placeholder="Nome da empresa ou instituição"
+                                value={value}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                right={<TextInput.Icon icon="domain" color={theme.colors.onSurfaceVariant} />}
+                                outlineColor={theme.colors.outline}
+                                activeOutlineColor={theme.colors.primary}
+                                style={styles.input}
+                                outlineStyle={styles.inputOutline}
+                                placeholderTextColor={theme.colors.onSurfaceVariant}
+                                textColor={theme.colors.onSurface}
+                            />
+                        )}
+                    />
+                </View>
+
+                {/* Job Title Input */}
+                <View style={styles.inputContainer}>
+                    <Text variant="labelMedium" style={styles.inputLabel}>Cargo <Text style={{ fontWeight: 'normal', color: '#64748B' }}>(opcional)</Text></Text>
+                    <Controller
+                        control={control}
+                        name="jobTitle"
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                                mode="outlined"
+                                placeholder="Seu cargo ou função"
+                                value={value}
+                                onBlur={onBlur}
+                                onChangeText={onChange}
+                                right={<TextInput.Icon icon="briefcase" color={theme.colors.onSurfaceVariant} />}
+                                outlineColor={theme.colors.outline}
+                                activeOutlineColor={theme.colors.primary}
+                                style={styles.input}
+                                outlineStyle={styles.inputOutline}
+                                placeholderTextColor={theme.colors.onSurfaceVariant}
+                                textColor={theme.colors.onSurface}
+                            />
+                        )}
+                    />
+                </View>
+
                 {/* Password Input */}
                 <View style={styles.inputContainer}>
                     <Text variant="labelMedium" style={styles.inputLabel}>Senha</Text>
@@ -358,9 +412,9 @@ export default function CadastroScreen() {
                     Ao criar uma conta, você concorda com os nossos
                 </Text>
                 <Text style={styles.termsTextRow}>
-                    <Text style={styles.termsLink} onPress={() => { }}>Termos de Serviço</Text>
+                    <Text style={styles.termsLink} onPress={() => navigation.navigate('TermosDeServico')}>Termos de Serviço</Text>
                     <Text style={styles.termsText}> e </Text>
-                    <Text style={styles.termsLink} onPress={() => { }}>Política de Privacidade</Text>.
+                    <Text style={styles.termsLink} onPress={() => navigation.navigate('PoliticaDePrivacidade')}>Política de Privacidade</Text>.
                 </Text>
             </View>
 

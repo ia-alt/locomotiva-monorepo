@@ -29,15 +29,17 @@ export const EditRoomDialog: React.FC<EditRoomDialogProps> = ({ open, onClose, r
   const [name, setName] = useState(room?.name || '');
   const [capacity, setCapacity] = useState<number | string>(room?.capacity || '');
   const [enabled, setEnabled] = useState<boolean>(room?.enabled ?? true);
+  const [photoUrl, setPhotoUrl] = useState<string>(room?.photoUrl || '');
   const [error, setError] = useState<string | null>(null);
 
   const updateMutation = useMutation({
-    mutationFn: async (input: { roomId: string; name: string; capacity: number; enabled: boolean }) => {
+    mutationFn: async (input: { roomId: string; name: string; capacity: number; enabled: boolean; photoUrl: string }) => {
       await orpc.booking.updateRoom({
         roomId: input.roomId,
         data: {
           name: input.name,
           capacity: input.capacity,
+          photoUrl: input.photoUrl || null,
         },
       });
 
@@ -69,7 +71,8 @@ export const EditRoomDialog: React.FC<EditRoomDialogProps> = ({ open, onClose, r
       roomId: room.id,
       name,
       capacity: Number(capacity),
-      enabled
+      enabled,
+      photoUrl,
     });
   };
 
@@ -119,6 +122,16 @@ export const EditRoomDialog: React.FC<EditRoomDialogProps> = ({ open, onClose, r
               slotProps={{
                 htmlInput: { min: 1 }
               }}
+            />
+
+            <TextField
+              label="URL da Foto da Sala"
+              variant="outlined"
+              fullWidth
+              value={photoUrl}
+              onChange={(e) => setPhotoUrl(e.target.value)}
+              placeholder="https://exemplo.com/foto-da-sala.jpg"
+              helperText="Cole a URL de uma imagem para exibir na seleção de salas"
             />
 
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, p: 1, border: '1px solid #e0e0e0', borderRadius: 1 }}>

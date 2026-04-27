@@ -6,6 +6,8 @@ import CadastroScreen from '../screens/public/CadastroScreen';
 import EsqueciSenhaScreen from '../screens/public/EsqueciSenhaScreen';
 import VerificarCodigoScreen from '../screens/public/VerificarCodigoScreen';
 import NovaSenhaScreen from '../screens/public/NovaSenhaScreen';
+import TermosDeServicoScreen from '../screens/public/TermosDeServicoScreen';
+import PoliticaDePrivacidadeScreen from '../screens/public/PoliticaDePrivacidadeScreen';
 
 export type PublicStackParamList = {
     Login: undefined;
@@ -13,6 +15,8 @@ export type PublicStackParamList = {
     EsqueciSenha: { identifier?: string };
     VerificarCodigo: { cpf: string; maskedEmail?: string | null };
     NovaSenha: { cpf: string, code: string };
+    TermosDeServico: undefined;
+    PoliticaDePrivacidade: undefined;
 };
 
 const Stack = createStackNavigator<PublicStackParamList>();
@@ -33,6 +37,8 @@ export default function PublicNavigator() {
             <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />
             <Stack.Screen name="VerificarCodigo" component={VerificarCodigoScreen} />
             <Stack.Screen name="NovaSenha" component={NovaSenhaScreen} />
+            <Stack.Screen name="TermosDeServico" component={TermosDeServicoScreen} />
+            <Stack.Screen name="PoliticaDePrivacidade" component={PoliticaDePrivacidadeScreen} />
         </Stack.Navigator>
     );
 }

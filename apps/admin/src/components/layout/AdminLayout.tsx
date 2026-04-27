@@ -30,6 +30,7 @@ import {
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { useThemeMode } from '../../contexts/ThemeContext';
+import { version } from '../../../package.json';
 
 const drawerWidth = 280;
 
@@ -145,6 +146,13 @@ export const AdminLayout: React.FC = () => {
             );
           })}
         </List>
+
+        <Typography
+          variant="caption"
+          sx={{ color: 'text.disabled', textAlign: 'center', display: 'block', pb: 1 }}
+        >
+          v{version}
+        </Typography>
 
         <Divider />
 
