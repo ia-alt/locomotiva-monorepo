@@ -7,6 +7,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
+import { AvailabilityTimeline } from './AvailabilityTimeline';
 
 interface CreateBookingDialogProps {
   open: boolean;
@@ -164,6 +165,24 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
               value={date}
               onChange={(e) => setDate(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
+            />
+
+            <AvailabilityTimeline 
+              roomId={roomId} 
+              date={date} 
+              onSelectBlock={(from, to) => {
+                const formatTime = (d: Date) => `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                setStartTime(formatTime(from));
+                
+                const calculatedEndTime = new Date(from);
+                calculatedEndTime.setHours(calculatedEndTime.getHours() + 4);
+                
+                if (calculatedEndTime > to) {
+                  setEndTime(formatTime(to));
+                } else {
+                  setEndTime(formatTime(calculatedEndTime));
+                }
+              }} 
             />
 
             <Box sx={{ display: 'flex', gap: 2 }}>
