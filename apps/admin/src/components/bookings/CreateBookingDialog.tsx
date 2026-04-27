@@ -7,6 +7,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
+import { AvailabilityTimeline } from './AvailabilityTimeline';
 
 interface CreateBookingDialogProps {
   open: boolean;
@@ -133,15 +134,6 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
             />
 
             <TextField
-              label="Título"
-              fullWidth
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Reunião de alinhamento..."
-            />
-
-            <TextField
               select
               label="Sala"
               fullWidth
@@ -166,6 +158,24 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
               slotProps={{ inputLabel: { shrink: true } }}
             />
 
+            <AvailabilityTimeline
+              roomId={roomId}
+              date={date}
+              onSelectBlock={(from, to) => {
+                const formatTime = (d: Date) => `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                setStartTime(formatTime(from));
+
+                const calculatedEndTime = new Date(from);
+                calculatedEndTime.setHours(calculatedEndTime.getHours() + 4);
+
+                if (calculatedEndTime > to) {
+                  setEndTime(formatTime(to));
+                } else {
+                  setEndTime(formatTime(calculatedEndTime));
+                }
+              }}
+            />
+
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="Horário de início"
@@ -188,6 +198,16 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
             </Box>
 
             <TextField
+              label="Título"
+              fullWidth
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Reunião de alinhamento..."
+              sx={{ marginTop: 2 }}
+            />
+
+            <TextField
               label="Finalidade"
               fullWidth
               multiline
@@ -198,7 +218,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
               placeholder="Ex: Reunião de projeto, Workshop..."
             />
 
-            
+
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
