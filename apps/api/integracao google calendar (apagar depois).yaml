@@ -1,0 +1,20 @@
+module booking
+
+domain -> entity: CalendarEvent (id, eventId, bookingId)
+
+domain -> service: calendarService (interface)
+- com funções: addEventOfBooking(booking), removeEventOfBookingIfExists(booking)
+
+domain -> repositories: calendarRepository (interface)
+- com funções: save, findByBookingId(bookingId), delete(calendarEventId)
+
+application -> subscribers: after-booking-status-changed
+ - onBookingConfirmed:  addEventOfBooking
+ - onBookingRejected: removeEventOfBookingIfExists
+ - onBookingCancelled: removeEventOfBookingIfExists
+
+infra -> repositories: prismaClendarRepository
+
+infra -> services: GoogleCalendarService
+
+container_di
