@@ -60,11 +60,16 @@ export default function PoliticaDePrivacidadeScreen() {
                         • <Bold>CPF</Bold> – identificação inequívoca do usuário e autenticação de
                         operações sensíveis na plataforma;{'\n'}
                         • <Bold>Data de nascimento</Bold> – verificação de elegibilidade (idade mínima
-                        de 16 anos) e identificação do usuário.
+                        de 16 anos) e identificação do usuário;{'\n'}
+                        • <Bold>Empresa/Instituição</Bold> (opcional) – identificação do vínculo
+                        institucional do usuário, fornecido voluntariamente;{'\n'}
+                        • <Bold>Cargo</Bold> (opcional) – identificação da função ou cargo do usuário,
+                        fornecido voluntariamente.
                     </Paragraph>
                     <Paragraph>
-                        Não coletamos dados biométricos, número de telefone, localização, dados
-                        financeiros ou quaisquer outros dados além dos listados acima.
+                        Os campos Empresa/Instituição e Cargo são opcionais e não são exigidos para
+                        o uso da plataforma. Não coletamos dados biométricos, número de telefone,
+                        localização, dados financeiros ou quaisquer outros dados além dos listados acima.
                     </Paragraph>
                 </Section>
 
