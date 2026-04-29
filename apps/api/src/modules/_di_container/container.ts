@@ -78,7 +78,6 @@ import { AccessService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
 import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
-import { AfterBookingCalendarSync } from "@booking/application/subscribers/after-booking-calendar-sync";
 import { AfterUserCheckin } from "../coworking/application/subscribers/after-user-checkin";
 import { TotemCheckinNotifier } from "../coworking/application/services/totem-checkin-notifier";
 import { MemoryPublisherTotemCheckinNotifier } from "../coworking/infra/services/memory-publisher-totem-checkin-notifier";
@@ -799,9 +798,6 @@ new AfterBookingStatusChanged(
     container.getRoomRepository(),
     container.getBookingEmailTemplater(),
     env.ADMIN_URL,
-);
-
-new AfterBookingCalendarSync(
     container.getCalendarService(),
 );
 

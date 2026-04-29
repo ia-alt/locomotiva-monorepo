@@ -18,3 +18,15 @@ infra -> repositories: prismaClendarRepository
 infra -> services: GoogleCalendarService
 
 container_di
+
+
+trocar o o googlesync pelo o after-booking-status-changed
+
+env nao pode nao ser opicional
+
+atualizar a versao
+
+novas - colocar um quantidades na reserva 
+admin registrar evento sem user vinculado 
+
+limites de hora da sala nao estao respeitados

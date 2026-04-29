@@ -4,7 +4,7 @@ import { SendEmailService } from "@notifications/application/services";
 import { UserRepository } from "src/modules/identity/domain/repositories";
 import { RoomRepository } from "../../domain/repositories";
 import { format } from "date-fns";
-import { BookingEmailTemplater } from "../../domain/services";
+import { BookingEmailTemplater, CalendarService } from "../../domain/services";
 import { BookingRejectedEvent } from "../../domain/events/booking-rejected";
 import { BookingCancelledEvent } from "../../domain/events/booking-cancelled";
 import { BookingCreatedEvent } from "../../domain/events/booking-created";
@@ -18,6 +18,7 @@ export class AfterBookingStatusChanged {
         private readonly roomRepository: RoomRepository,
         private readonly bookingEmailTemplater: BookingEmailTemplater,
         private readonly adminUrl: string,
+        private readonly calendarService: CalendarService,
     ) {
         this.setupSubscriptions();
     }
@@ -30,8 +31,9 @@ export class AfterBookingStatusChanged {
     }
 
     private async onBookingConfirmed(event: BookingConfirmedEvent): Promise<void> {
+        const { booking } = event;
+
         try {
-            const { booking } = event;
             const [user, room] = await Promise.all([
                 this.userRepository.findById(booking.userId),
                 this.roomRepository.findById(booking.roomId),
@@ -57,11 +59,19 @@ export class AfterBookingStatusChanged {
         } catch (error) {
             console.error('[AfterBookingStatusChanged] Error sending confirmation email:', error);
         }
+
+        try {
+            await this.calendarService.addEventOfBooking(booking);
+            console.log(`[AfterBookingStatusChanged] Event added to calendar for booking ${booking.id.value}`);
+        } catch (error) {
+            console.error('[AfterBookingStatusChanged] Error adding event to calendar:', error);
+        }
     }
 
     private async onBookingRejected(event: BookingRejectedEvent): Promise<void> {
+        const { booking, reason } = event;
+
         try {
-            const { booking, reason } = event;
             const [user, room] = await Promise.all([
                 this.userRepository.findById(booking.userId),
                 this.roomRepository.findById(booking.roomId),
@@ -87,11 +97,19 @@ export class AfterBookingStatusChanged {
         } catch (error) {
             console.error('[AfterBookingStatusChanged] Error sending rejection email:', error);
         }
+
+        try {
+            await this.calendarService.removeEventOfBookingIfExists(booking);
+            console.log(`[AfterBookingStatusChanged] Event removed from calendar for booking ${booking.id.value}`);
+        } catch (error) {
+            console.error('[AfterBookingStatusChanged] Error removing event from calendar:', error);
+        }
     }
 
     private async onBookingCancelled(event: BookingCancelledEvent): Promise<void> {
+        const { booking } = event;
+
         try {
-            const { booking } = event;
             const [user, room] = await Promise.all([
                 this.userRepository.findById(booking.userId),
                 this.roomRepository.findById(booking.roomId),
@@ -116,6 +134,13 @@ export class AfterBookingStatusChanged {
             console.log(`[AfterBookingStatusChanged] Cancellation email sent for booking ${booking.id.value}`);
         } catch (error) {
             console.error('[AfterBookingStatusChanged] Error sending cancellation email:', error);
+        }
+
+        try {
+            await this.calendarService.removeEventOfBookingIfExists(booking);
+            console.log(`[AfterBookingStatusChanged] Event removed from calendar for booking ${booking.id.value}`);
+        } catch (error) {
+            console.error('[AfterBookingStatusChanged] Error removing event from calendar:', error);
         }
     }
 
