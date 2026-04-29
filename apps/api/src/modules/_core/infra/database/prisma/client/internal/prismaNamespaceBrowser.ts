@@ -55,6 +55,7 @@ export const ModelName = {
   ApiKey: 'ApiKey',
   Room: 'Room',
   Booking: 'Booking',
+  CalendarEvent: 'CalendarEvent',
   CoworkingSettings: 'CoworkingSettings',
   AccessLog: 'AccessLog',
   SpaceOperatingHours: 'SpaceOperatingHours'
@@ -136,6 +137,16 @@ export const BookingScalarFieldEnum = {
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  bookingId: 'bookingId',
+  createdAt: 'createdAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
 
 
 export const CoworkingSettingsScalarFieldEnum = {

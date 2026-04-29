@@ -74,7 +74,21 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  calendarEvent CalendarEvent?
+
   @@map("bookings")
+}
+
+model CalendarEvent {
+  id        String  @id
+  eventId   String
+  bookingId String  @unique
+
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@map("calendar_events")
 }
 
 // coworking context

@@ -9,6 +9,9 @@ const envSchema = z.object({
     NODEMAILER_EMAIL_USER: z.string(),
     NODEMAILER_EMAIL_PASS: z.string(),
     ADMIN_URL: z.string().default('http://localhost:5173'),
+    GOOGLE_CALENDAR_ID: z.string().optional(),
+    GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().optional(),
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: z.string().optional(),
 })
 
 export const env = envSchema.parse(process.env);
