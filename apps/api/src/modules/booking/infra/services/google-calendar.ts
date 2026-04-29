@@ -17,6 +17,12 @@ export class GoogleCalendarService implements CalendarService {
     ) { }
 
     private getAuthClient() {
+        const key = this.serviceAccountPrivateKey.replace(/\\n/g, '\n');
+    
+        console.log('[DEBUG] Key starts with:', key.substring(0, 50));
+        console.log('[DEBUG] Key ends with:', key.substring(key.length - 50));
+        console.log('[DEBUG] Has real newlines:', key.includes('\n'));
+        console.log('[DEBUG] Key length:', key.length);
         return new google.auth.JWT({
             email: this.serviceAccountEmail,
             key: this.serviceAccountPrivateKey.replace(/\\n/g, '\n'),
