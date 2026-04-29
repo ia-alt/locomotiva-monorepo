@@ -58,11 +58,11 @@ export class GoogleCalendarService implements CalendarService {
                 description: descriptionLines.join('\n'),
                 start: {
                     dateTime: booking.period.value.from.toISOString(),
-                    timeZone: 'America/Sao_Paulo',
+                    timeZone: 'America/Fortaleza',
                 },
                 end: {
                     dateTime: booking.period.value.to.toISOString(),
-                    timeZone: 'America/Sao_Paulo',
+                    timeZone: 'America/Fortaleza',
                 },
             },
         });
