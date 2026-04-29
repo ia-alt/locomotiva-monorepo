@@ -38,6 +38,11 @@ export type Room = Prisma.RoomModel
  */
 export type Booking = Prisma.BookingModel
 /**
+ * Model CalendarEvent
+ * 
+ */
+export type CalendarEvent = Prisma.CalendarEventModel
+/**
  * Model CoworkingSettings
  * 
  */

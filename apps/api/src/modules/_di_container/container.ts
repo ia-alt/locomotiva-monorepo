@@ -19,11 +19,12 @@ import { PrismaAccessLogRepository } from "@coworking/infra/repositories/prisma-
 import { SpaceOperatingHoursRepository } from "@operating-hours/domain/repositories/space-operating-hours";
 import { PrismaSpaceOperatingHoursRepository } from "@operating-hours/infra/repositories/prisma-space-operating-hours";
 import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
-import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
+import { BookingRepository, RoomRepository, CalendarRepository } from "@booking/domain/repositories";
 import { PrismaBookingRepository } from "@booking/infra/repositories/prisma-booking";
 import { PrismaRoomRepository } from "@booking/infra/repositories/prisma-room";
-import { BookingService, BookingEmailTemplater } from "@booking/domain/services";
-import { TemplateStringBookingEmailTemplater } from "@booking/infra/services";
+import { PrismaCalendarRepository } from "@booking/infra/repositories/prisma-calendar";
+import { BookingService, BookingEmailTemplater, CalendarService } from "@booking/domain/services";
+import { TemplateStringBookingEmailTemplater, GoogleCalendarService } from "@booking/infra/services";
 import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
@@ -145,6 +146,14 @@ export class DiContainer {
             this._roomRepository = new PrismaRoomRepository(this.prisma);
         }
         return this._roomRepository;
+    }
+
+    private _calendarRepository?: CalendarRepository;
+    public getCalendarRepository(): CalendarRepository {
+        if (!this._calendarRepository) {
+            this._calendarRepository = new PrismaCalendarRepository(this.prisma);
+        }
+        return this._calendarRepository;
     }
     //#endregion
 
@@ -294,6 +303,21 @@ export class DiContainer {
             );
         }
         return this._authService;
+    }
+
+    private _calendarService?: CalendarService;
+    public getCalendarService(): CalendarService {
+        if (!this._calendarService) {
+            this._calendarService = new GoogleCalendarService(
+                this.getCalendarRepository(),
+                this.getRoomRepository(),
+                this.getUserRepository(),
+                env.GOOGLE_CALENDAR_ID ?? '',
+                env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? '',
+                env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ?? '',
+            );
+        }
+        return this._calendarService;
     }
     //#endregion
 
@@ -774,6 +798,7 @@ new AfterBookingStatusChanged(
     container.getRoomRepository(),
     container.getBookingEmailTemplater(),
     env.ADMIN_URL,
+    container.getCalendarService(),
 );
 
 new AfterUserCheckin(
