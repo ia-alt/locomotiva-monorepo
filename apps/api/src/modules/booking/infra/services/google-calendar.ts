@@ -17,12 +17,26 @@ export class GoogleCalendarService implements CalendarService {
     ) { }
 
     private getAuthClient() {
-        return new google.auth.JWT({
-            email: this.serviceAccountEmail,
-            key: this.serviceAccountPrivateKey.replace(/\\n/g, '\n'),
-            scopes: ['https://www.googleapis.com/auth/calendar'],
-        });
+    const raw = this.serviceAccountPrivateKey;
+    
+    console.log('[DEBUG] Raw char codes around first newline:');
+    for (let i = 0; i < 60; i++) {
+        console.log(`  [${i}] char: ${JSON.stringify(raw[i])} code: ${raw.charCodeAt(i)}`);
     }
+    
+    const key = raw
+        .replace(/\\n/g, '\n')
+        .replace(/\\\n/g, '\n')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .trim();
+
+    return new google.auth.JWT({
+        email: this.serviceAccountEmail,
+        key,
+        scopes: ['https://www.googleapis.com/auth/calendar'],
+    });
+}
 
     async addEventOfBooking(booking: Booking): Promise<void> {
         const [room, user] = await Promise.all([
@@ -58,11 +72,11 @@ export class GoogleCalendarService implements CalendarService {
                 description: descriptionLines.join('\n'),
                 start: {
                     dateTime: booking.period.value.from.toISOString(),
-                    timeZone: 'America/Sao_Paulo',
+                    timeZone: 'America/Fortaleza',
                 },
                 end: {
                     dateTime: booking.period.value.to.toISOString(),
-                    timeZone: 'America/Sao_Paulo',
+                    timeZone: 'America/Fortaleza',
                 },
             },
         });
