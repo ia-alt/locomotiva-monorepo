@@ -17,25 +17,26 @@ export class GoogleCalendarService implements CalendarService {
     ) { }
 
     private getAuthClient() {
+    const raw = this.serviceAccountPrivateKey;
     
-        const key = this.serviceAccountPrivateKey
-        .replace(/\\n/g, '\n')   // \n literal
-        .replace(/\\\n/g, '\n')  // \ + newline real (bug do Coolify)
-        .replace(/\r\n/g, '\n')  // Windows
-        .replace(/\r/g, '\n')    // CR solto
-        .trim();
-    
-        console.log('[DEBUG] Key starts with:', key.substring(0, 50));
-        console.log('[DEBUG] Key ends with:', key.substring(key.length - 50));
-        console.log('[DEBUG] Has real newlines:', key.includes('\n'));
-        console.log('[DEBUG] Key length:', key.length);
-
-        return new google.auth.JWT({
-            email: this.serviceAccountEmail,
-            key,
-            scopes: ['https://www.googleapis.com/auth/calendar'],
-        });
+    console.log('[DEBUG] Raw char codes around first newline:');
+    for (let i = 0; i < 60; i++) {
+        console.log(`  [${i}] char: ${JSON.stringify(raw[i])} code: ${raw.charCodeAt(i)}`);
     }
+    
+    const key = raw
+        .replace(/\\n/g, '\n')
+        .replace(/\\\n/g, '\n')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .trim();
+
+    return new google.auth.JWT({
+        email: this.serviceAccountEmail,
+        key,
+        scopes: ['https://www.googleapis.com/auth/calendar'],
+    });
+}
 
     async addEventOfBooking(booking: Booking): Promise<void> {
         const [room, user] = await Promise.all([
