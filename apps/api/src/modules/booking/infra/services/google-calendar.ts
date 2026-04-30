@@ -19,11 +19,6 @@ export class GoogleCalendarService implements CalendarService {
     private getAuthClient() {
     const raw = this.serviceAccountPrivateKey;
     
-    console.log('[DEBUG] Raw char codes around first newline:');
-    for (let i = 0; i < 60; i++) {
-        console.log(`  [${i}] char: ${JSON.stringify(raw[i])} code: ${raw.charCodeAt(i)}`);
-    }
-    
     const key = raw
         .replace(/\\n/g, '\n')
         .replace(/\\\n/g, '\n')

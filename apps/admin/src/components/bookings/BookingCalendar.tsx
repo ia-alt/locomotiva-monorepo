@@ -186,7 +186,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onViewBooking 
             <CircularProgress />
           </Box>
         ) : (
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
             {/* Day headers */}
             {WEEK_DAYS.map((d, i) => (
               <Box key={d} sx={{
@@ -213,6 +213,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onViewBooking 
               return (
                 <Box key={i} sx={{
                   minHeight: 100,
+                  minWidth: 0,
+                  overflow: 'hidden',
                   p: 0.75,
                   borderBottom: isLastRow ? 'none' : '1px solid',
                   borderRight: isLastCol ? 'none' : '1px solid',
@@ -243,7 +245,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onViewBooking 
                     )}
                   </Box>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
                     {dayBookings.map((booking) => {
                       const color = roomColorMap[booking.room.id] ?? '#94a3b8';
                       const hour = new Date(booking.period.from).toLocaleTimeString('pt-BR', {
@@ -266,7 +268,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onViewBooking 
                           <Typography variant="caption" noWrap sx={{
                             color, fontWeight: 600, fontSize: '0.7rem', display: 'block',
                           }}>
-                            {booking.room.name} · {hour}
+                            {hour} · {booking.title}
                           </Typography>
                         </Box>
                       );
