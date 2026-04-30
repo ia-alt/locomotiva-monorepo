@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Text, TextInput, Button, Surface, Icon, useTheme, HelperText } from 'react-native-paper';
 import { useAuth } from '../../contexts/auth-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -104,13 +104,21 @@ export default function LoginScreen() {
                 <View style={styles.inputContainer}>
                     <View style={styles.passwordHeader}>
                         <Text variant="labelMedium" style={styles.inputLabel}>Senha</Text>
-                        <Text
-                            variant="labelMedium"
-                            style={styles.forgotPasswordText}
+                        <Pressable
                             onPress={() => navigation.navigate('EsqueciSenha', {})}
+                            style={({ pressed }) => [
+                                styles.forgotPasswordPressable,
+                                pressed && { opacity: 0.7 }
+                            ]}
+                            hitSlop={15}
                         >
-                            Esqueci minha senha
-                        </Text>
+                            <Text
+                                variant="labelMedium"
+                                style={styles.forgotPasswordText}
+                            >
+                                Esqueci minha senha
+                            </Text>
+                        </Pressable>
                     </View>
                     <Controller
                         control={control}
@@ -166,17 +174,22 @@ export default function LoginScreen() {
                     Entrar
                 </Button>
 
-                <View style={styles.footer}>
+                <Pressable
+                    id='register-link'
+                    onPress={() => navigation.navigate('Cadastro')}
+                    style={({ pressed }) => [
+                        styles.footer,
+                        pressed && styles.footerPressed
+                    ]}
+                    hitSlop={20}
+                >
                     <Text style={styles.footerText}>
                         Novo por aqui?{' '}
-                        <Text
-                            style={styles.footerLink}
-                            onPress={() => navigation.navigate('Cadastro')}
-                        >
+                        <Text style={styles.footerLink}>
                             Cadastre-se
                         </Text>
                     </Text>
-                </View>
+                </Pressable>
 
                 {/* Divider */}
                 <View style={styles.dividerContainer}>
@@ -261,6 +274,11 @@ const makeStyles = (theme: any) => StyleSheet.create({
         fontWeight: '600',
         fontSize: 13,
     },
+    forgotPasswordPressable: {
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        marginRight: -8,
+    },
     input: {
         backgroundColor: theme.colors.surface,
     },
@@ -292,8 +310,16 @@ const makeStyles = (theme: any) => StyleSheet.create({
         fontWeight: '500',
     },
     footer: {
-        marginBottom: 24,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        marginBottom: 16,
         alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 8,
+    },
+    footerPressed: {
+        backgroundColor: theme.colors.primaryContainer,
+        opacity: 0.8,
     },
     footerText: {
         color: theme.colors.onSurfaceVariant,
