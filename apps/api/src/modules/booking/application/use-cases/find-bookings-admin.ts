@@ -3,6 +3,7 @@ import { PrismaClient } from "@core/infra/database/prisma";
 import { AuthUserService } from "src/modules/identity/domain/services";
 import z from "zod";
 import { Prisma } from "@core/infra/database/prisma";
+import { endOfDay } from "date-fns";
 
 class FindBookingsAdminUseCase implements UseCase<FindBookingsAdminUseCase.Input, FindBookingsAdminUseCase.Output> {
     constructor(
@@ -25,12 +26,14 @@ class FindBookingsAdminUseCase implements UseCase<FindBookingsAdminUseCase.Input
         if (params.filter?.dateFrom || params.filter?.dateTo) {
             baseWhere.startTime = {};
             if (params.filter.dateFrom) {
-                (baseWhere.startTime as Prisma.DateTimeFilter).gte = new Date(params.filter.dateFrom);
+                (baseWhere.startTime as Prisma.DateTimeFilter).gte = new Date(params.filter.dateFrom + "T12:00:00");
             }
             if (params.filter.dateTo) {
-                (baseWhere.startTime as Prisma.DateTimeFilter).lte = new Date(params.filter.dateTo);
+                (baseWhere.startTime as Prisma.DateTimeFilter).lte = endOfDay(new Date(params.filter.dateTo + "T12:00:00"));
             }
         }
+
+        console.log(baseWhere.startTime)
 
         if (params.filter?.search) {
             const matchingUsers = await this.prisma.user.findMany({
@@ -88,19 +91,19 @@ class FindBookingsAdminUseCase implements UseCase<FindBookingsAdminUseCase.Input
             const [pendingItems, nonPendingItems] = await Promise.all([
                 pendingTake > 0
                     ? this.prisma.booking.findMany({
-                          where: pendingWhere,
-                          orderBy: { startTime: "desc" },
-                          skip: pendingSkip,
-                          take: pendingTake,
-                      })
+                        where: pendingWhere,
+                        orderBy: { startTime: "desc" },
+                        skip: pendingSkip,
+                        take: pendingTake,
+                    })
                     : [],
                 nonPendingTake > 0 && !(otherStatuses.length === 0 && userStatusFilter.length > 0)
                     ? this.prisma.booking.findMany({
-                          where: nonPendingWhere,
-                          orderBy: { startTime: "desc" },
-                          skip: nonPendingSkip,
-                          take: nonPendingTake,
-                      })
+                        where: nonPendingWhere,
+                        orderBy: { startTime: "desc" },
+                        skip: nonPendingSkip,
+                        take: nonPendingTake,
+                    })
                     : [],
             ]);
 
