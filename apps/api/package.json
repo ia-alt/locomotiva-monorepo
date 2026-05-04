@@ -1,6 +1,6 @@
 {
   "name": "@locomotiva/api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Project for secti-locomotiva",
   "main": "index.js",
   "type": "module",
