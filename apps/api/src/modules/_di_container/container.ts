@@ -746,7 +746,7 @@ export class DiContainer {
 
     public getFindBookingsAdminUseCase(authUser: User): FindBookingsAdminUseCase {
         return new FindBookingsAdminUseCase(
-            this.prisma,
+            this.getBookingRepository(),
             this.getAuthUserService(authUser),
         );
     }

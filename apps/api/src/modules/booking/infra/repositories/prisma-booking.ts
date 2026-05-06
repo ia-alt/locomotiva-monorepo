@@ -3,6 +3,7 @@ import { Booking as BookingDb, Prisma, PrismaClient } from "@core/infra/database
 import { UniqueId, DomainEvents } from "@core/base-classes";
 import { Booking } from "@booking/domain/entities";
 import { DatePeriod, PaginatedResult } from "@core/value-objects";
+import { endOfDay } from "date-fns";
 
 export class PrismaBookingRepository implements BookingRepository {
     constructor(private readonly prisma: PrismaClient) { }
@@ -77,6 +78,114 @@ export class PrismaBookingRepository implements BookingRepository {
             total,
             paginatedQuery: params.pagination,
         });
+    }
+
+    async findAllAdmin(params: BookingRepository.FindAllAdminParams): Promise<PaginatedResult<typeof BookingRepository.AdminBookingItemSchema, BookingRepository.AdminBookingItem>> {
+        const baseWhere = await this.buildAdminWhere(params.filter);
+        const [bookingsDb, total] = await this.fetchWithPendingFirst(baseWhere, params.pagination, params.filter?.status ?? []);
+
+        const items = await this.enrichBookings(bookingsDb);
+
+        return PaginatedResult.create<typeof BookingRepository.AdminBookingItemSchema, BookingRepository.AdminBookingItem>({
+            items,
+            total,
+            paginatedQuery: params.pagination,
+        });
+    }
+
+    private async buildAdminWhere(filter: BookingRepository.FindAllAdminParams["filter"]): Promise<Prisma.BookingWhereInput> {
+        const where: Prisma.BookingWhereInput = {};
+
+        if (filter?.roomId) {
+            where.roomId = filter.roomId;
+        }
+
+        if (filter?.dateFrom || filter?.dateTo) {
+            where.startTime = {
+                ...(filter.dateFrom ? { gte: new Date(filter.dateFrom + "T12:00:00") } : {}),
+                ...(filter.dateTo ? { lte: endOfDay(new Date(filter.dateTo + "T12:00:00")) } : {}),
+            };
+        }
+
+        if (filter?.search) {
+            const matchingUsers = await this.prisma.user.findMany({
+                where: { name: { contains: filter.search, mode: "insensitive" } },
+                select: { id: true },
+            });
+            where.userId = { in: matchingUsers.map((u) => u.id) };
+        }
+
+        return where;
+    }
+
+    private async fetchWithPendingFirst(
+        baseWhere: Prisma.BookingWhereInput,
+        pagination: BookingRepository.FindAllAdminParams["pagination"],
+        statusFilter: string[],
+    ): Promise<[Awaited<ReturnType<typeof this.prisma.booking.findMany>>, number]> {
+        const { pageNumber, pageSize } = pagination;
+        const hasPending = statusFilter.length === 0 || statusFilter.includes("pending");
+
+        if (!hasPending) {
+            const where: Prisma.BookingWhereInput = { ...baseWhere, status: { in: statusFilter } };
+            const [total, items] = await Promise.all([
+                this.prisma.booking.count({ where }),
+                this.prisma.booking.findMany({ where, orderBy: { startTime: "desc" }, skip: (pageNumber - 1) * pageSize, take: pageSize }),
+            ]);
+            return [items, total];
+        }
+
+        const otherStatuses = statusFilter.filter((s) => s !== "pending");
+        const pendingWhere: Prisma.BookingWhereInput = { ...baseWhere, status: "pending" };
+        const nonPendingWhere: Prisma.BookingWhereInput = {
+            ...baseWhere,
+            ...(otherStatuses.length > 0 ? { status: { in: otherStatuses } } : { status: { not: "pending" } }),
+        };
+
+        const skipNonPending = otherStatuses.length === 0 && statusFilter.length > 0;
+        const [pendingCount, nonPendingCount] = await Promise.all([
+            this.prisma.booking.count({ where: pendingWhere }),
+            skipNonPending ? Promise.resolve(0) : this.prisma.booking.count({ where: nonPendingWhere }),
+        ]);
+
+        const total = pendingCount + nonPendingCount;
+        const pageStart = (pageNumber - 1) * pageSize;
+        const pendingTake = Math.max(0, Math.min(pageSize, pendingCount - pageStart));
+        const nonPendingTake = pageSize - pendingTake;
+
+        const [pendingItems, nonPendingItems] = await Promise.all([
+            pendingTake > 0 ? this.prisma.booking.findMany({ where: pendingWhere, orderBy: { startTime: "desc" }, skip: Math.min(pageStart, pendingCount), take: pendingTake }) : [],
+            nonPendingTake > 0 && !skipNonPending ? this.prisma.booking.findMany({ where: nonPendingWhere, orderBy: { startTime: "desc" }, skip: Math.max(0, pageStart - pendingCount), take: nonPendingTake }) : [],
+        ]);
+
+        return [[...pendingItems, ...nonPendingItems], total];
+    }
+
+    private async enrichBookings(bookingsDb: Awaited<ReturnType<typeof this.prisma.booking.findMany>>): Promise<BookingRepository.AdminBookingItem[]> {
+        if (bookingsDb.length === 0) return [];
+
+        const userIds = [...new Set(bookingsDb.map((b) => b.userId))];
+        const roomIds = [...new Set(bookingsDb.map((b) => b.roomId))];
+
+        const [users, rooms] = await Promise.all([
+            this.prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, email: true, company: true, jobTitle: true } }),
+            this.prisma.room.findMany({ where: { id: { in: roomIds } }, select: { id: true, name: true, capacity: true } }),
+        ]);
+
+        const userMap = new Map(users.map((u) => [u.id, u]));
+        const roomMap = new Map(rooms.map((r) => [r.id, r]));
+
+        return bookingsDb.map((b) => new BookingRepository.AdminBookingItem({
+            id: b.id,
+            user: { id: b.userId, name: userMap.get(b.userId)?.name ?? "Usuário desconhecido", email: userMap.get(b.userId)?.email ?? "", company: userMap.get(b.userId)?.company ?? null, jobTitle: userMap.get(b.userId)?.jobTitle ?? null },
+            room: { id: b.roomId, name: roomMap.get(b.roomId)?.name ?? "Sala desconhecida", capacity: roomMap.get(b.roomId)?.capacity ?? 0 },
+            period: { from: b.startTime.toISOString(), to: b.endTime.toISOString() },
+            status: b.status,
+            title: b.title,
+            description: b.description ?? undefined,
+            rejectionCancelReason: b.rejectionCancelReason ?? undefined,
+            createdAt: b.createdAt.toISOString(),
+        }));
     }
 
     async findById(id: UniqueId): Promise<Booking | null> {
