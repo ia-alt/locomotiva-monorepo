@@ -13,6 +13,7 @@ import {
   ArticleOutlined,
   InfoOutlined,
   Close,
+  EditOutlined,
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
@@ -212,11 +213,27 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
 
         {/* Título + Descrição */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Box>
-            <IconLabel icon={<ArticleOutlined sx={{ fontSize: 13 }} />}>Título do Evento</IconLabel>
-            <Typography sx={{ fontSize: 15, fontWeight: 500, color: '#1e293b', lineHeight: 1.4 }}>
-              {booking.title}
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+            <Box>
+              <IconLabel icon={<ArticleOutlined sx={{ fontSize: 13 }} />}>Título do Evento</IconLabel>
+              <Typography sx={{ fontSize: 15, fontWeight: 500, color: '#1e293b', lineHeight: 1.4 }}>
+                {booking.title}
+              </Typography>
+            </Box>
+
+            <Box sx={{ textAlign: 'right' }}>
+              <IconLabel icon={<GroupOutlined sx={{ fontSize: 13 }} />}>
+                Quant. de Pessoas
+              </IconLabel>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.75 }}>
+                <Typography sx={{ fontSize: 15, fontWeight: 500, color: booking.numberOfPeople ? '#1e293b' : '#94a3b8', fontStyle: booking.numberOfPeople ? 'normal' : 'italic' }}>
+                  {booking.numberOfPeople ?? 'Não informado'}
+                </Typography>
+                <IconButton size="small" disabled sx={{ p: 0.25, color: '#cbd5e1', cursor: 'default' }}>
+                  <EditOutlined sx={{ fontSize: 14 }} />
+                </IconButton>
+              </Box>
+            </Box>
           </Box>
 
           {booking.description && (

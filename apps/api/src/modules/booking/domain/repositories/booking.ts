@@ -43,6 +43,7 @@ namespace BookingRepository {
         description: z.string().optional(),
         rejectionCancelReason: z.string().optional(),
         createdAt: z.string(),
+        numberOfPeople: z.number().optional(),
     });
 
     export class AdminBookingItem {

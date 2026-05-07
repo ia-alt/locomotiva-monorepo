@@ -13,6 +13,7 @@ import {
   FilterList as FilterListIcon,
   CalendarMonth as CalendarMonthIcon,
   FormatListBulleted as ListIcon,
+  Group as GroupIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -254,6 +255,9 @@ const BookingsPage: React.FC = () => {
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
                           TÍTULO
                         </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem', width: 120 }}>
+                          QUANT. PESSOAS
+                        </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
                           STATUS
                         </TableCell>
@@ -268,7 +272,7 @@ const BookingsPage: React.FC = () => {
                     <TableBody>
                       {bookings.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                          <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                             Nenhuma reserva encontrada.
                           </TableCell>
                         </TableRow>
@@ -312,6 +316,15 @@ const BookingsPage: React.FC = () => {
                                 >
                                   {booking.title}
                                 </Typography>
+                              </TableCell>
+
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: booking.numberOfPeople ? 'text.primary' : 'text.disabled' }}>
+                                  <GroupIcon sx={{ fontSize: 14 }} />
+                                  <Typography variant="body2">
+                                    {booking.numberOfPeople ?? 'Não informado'}
+                                  </Typography>
+                                </Box>
                               </TableCell>
 
                               <TableCell>

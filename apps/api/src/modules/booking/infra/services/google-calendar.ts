@@ -55,6 +55,8 @@ export class GoogleCalendarService implements CalendarService {
             ``,
             `Ação: ${booking.title}`,
             `Finalidade: ${booking.description}`,
+            `Quantidade de Pessoas: ${booking.numberOfPeople}`,
+            
         ];
 
         const auth = this.getAuthClient();

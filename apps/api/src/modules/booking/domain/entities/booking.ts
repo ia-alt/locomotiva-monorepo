@@ -20,6 +20,7 @@ export class Booking extends AggregateRoot {
         private rejectionCancelReason: string | undefined,
         private createdAt: Date,
         private updatedAt: Date,
+        public readonly numberOfPeople?: number,
     ) {
         super(id);
         new BookingTitle(title);
@@ -46,6 +47,7 @@ export class Booking extends AggregateRoot {
             undefined,
             new Date(),
             new Date(),
+            input.numberOfPeople,
         );
         booking.addDomainEvent(new BookingCreatedEvent(booking));
         return booking;
@@ -127,6 +129,7 @@ export class Booking extends AggregateRoot {
             rejectionCancelReason: this.rejectionCancelReason,
             createdAt: this.createdAt.toISOString(),
             updatedAt: this.updatedAt.toISOString(),
+            numberOfPeople: this.numberOfPeople,
         };
     }
 }
@@ -166,6 +169,7 @@ export namespace Booking {
         rejectionCancelReason: z.string().optional(),
         createdAt: z.string(),
         updatedAt: z.string(),
+        numberOfPeople: z.number().optional(),
     });
 
     export type CreateParams = {
@@ -174,6 +178,7 @@ export namespace Booking {
         title: string;
         description?: string;
         period: DatePeriod;
+        numberOfPeople?: number;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }

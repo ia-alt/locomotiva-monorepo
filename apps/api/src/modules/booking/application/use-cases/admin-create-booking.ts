@@ -26,6 +26,7 @@ class AdminCreateBookingUseCase extends UseCase<AdminCreateBookingUseCase.Input,
             title: params.title,
             period,
             description: params.description,
+            numberOfPeople: params.numberOfPeople,
         });
 
         return booking.toJSON();
@@ -39,6 +40,7 @@ namespace AdminCreateBookingUseCase {
         title: z.string(),
         period: DatePeriod.ValueSchema,
         description: z.string().optional(),
+        numberOfPeople: z.number().int().positive().optional(),
     });
 
     export const OutputSchema = Booking.JsonSchema;

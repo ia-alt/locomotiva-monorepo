@@ -238,7 +238,8 @@ export class DiContainer {
         if (!this._bookingService) {
             this._bookingService = new BookingService(
                 this.getBookingRepository(),
-                this.getSpaceOperatingHoursService()
+                this.getSpaceOperatingHoursService(),
+                this.getRoomRepository()
             );
         }
         return this._bookingService;

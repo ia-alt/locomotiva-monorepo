@@ -53,6 +53,16 @@ export class BookingInPastError extends DomainError {
     }
 }
 
+export class RoomCapacityExceededError extends DomainError {
+    constructor(requested: number, capacity: number) {
+        super(
+            'ROOM_CAPACITY_EXCEEDED',
+            `O número de pessoas (${requested}) excede a capacidade da sala (${capacity}).`,
+            ErrorType.BAD_REQUEST
+        );
+    }
+}
+
 export * from "./invalid-booking-title-error";
 export * from "./invalid-booking-description-error";
 

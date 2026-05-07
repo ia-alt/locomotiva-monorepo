@@ -5,6 +5,7 @@ export type BookingEmailParams = {
     hourFrom: string;
     hourTo: string;
     title: string;
+    numberOfPeople?: number;
 };
 
 export interface BookingEmailTemplater {

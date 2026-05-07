@@ -23,6 +23,7 @@ export class PrismaBookingRepository implements BookingRepository {
                 rejectionCancelReason: bookingData.rejectionCancelReason,
                 createdAt: bookingData.createdAt,
                 updatedAt: bookingData.updatedAt,
+                numberOfPeople: bookingData.numberOfPeople,
             },
             create: {
                 id: bookingData.id,
@@ -36,6 +37,7 @@ export class PrismaBookingRepository implements BookingRepository {
                 rejectionCancelReason: bookingData.rejectionCancelReason,
                 createdAt: bookingData.createdAt,
                 updatedAt: bookingData.updatedAt,
+                numberOfPeople: bookingData.numberOfPeople,
             },
         });
         DomainEvents.dispatchEventsForAggregate(booking.id);
@@ -185,6 +187,7 @@ export class PrismaBookingRepository implements BookingRepository {
             description: b.description ?? undefined,
             rejectionCancelReason: b.rejectionCancelReason ?? undefined,
             createdAt: b.createdAt.toISOString(),
+            numberOfPeople: b.numberOfPeople ?? undefined,
         }));
     }
 
@@ -228,6 +231,7 @@ export class PrismaBookingRepository implements BookingRepository {
             booking.rejectionCancelReason ?? undefined,
             new Date(booking.createdAt),
             new Date(booking.updatedAt),
+            booking.numberOfPeople ?? undefined,
         );
     }
 }

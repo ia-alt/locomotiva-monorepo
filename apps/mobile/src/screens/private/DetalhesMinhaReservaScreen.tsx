@@ -144,6 +144,15 @@ export default function DetalhesMinhaReservaScreen() {
                     <Text style={styles.description}>{booking.description}</Text>
                 )}
 
+                <View style={styles.infoRow}>
+                    <Feather name="users" size={16} color="#6B7280" />
+                    <Text style={styles.infoText}>
+                        {booking.numberOfPeople
+                            ? `Reserva para ${booking.numberOfPeople} ${booking.numberOfPeople === 1 ? 'pessoa' : 'pessoas'}`
+                            : 'Quantidade de pessoas não informada'}
+                    </Text>
+                </View>
+
                 {(booking.status === 'cancelled' || booking.status === 'rejected') && !!booking.rejectionCancelReason && (
                     <View style={styles.reasonBox}>
                         <Feather name="info" size={16} color="#DC2626" />
