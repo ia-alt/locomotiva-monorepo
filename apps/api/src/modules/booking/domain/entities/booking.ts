@@ -6,7 +6,7 @@ import { BookingRejectedEvent } from "../events/booking-rejected";
 import { BookingCancelledEvent } from "../events/booking-cancelled";
 import z from "zod";
 import { BookingLeadTimeViolationError, ForbiddenBookingAccessException, BookingNotInPendingStateError, BookingCannotBeCancelledError } from "../errors";
-import { BookingTitle, BookingDescription } from "@core/value-objects";
+import { BookingTitle, BookingDescription, BookingNumberOfPeople } from "@core/value-objects";
 
 export class Booking extends AggregateRoot {
     constructor(
@@ -20,11 +20,12 @@ export class Booking extends AggregateRoot {
         private rejectionCancelReason: string | undefined,
         private createdAt: Date,
         private updatedAt: Date,
-        private _numberOfPeople?: number,
+        private _numberOfPeople: number | null,
     ) {
         super(id);
         new BookingTitle(title);
         new BookingDescription(description);
+        if (_numberOfPeople !== null) new BookingNumberOfPeople(_numberOfPeople);
     }
 
     get period(): DatePeriod {
@@ -35,7 +36,7 @@ export class Booking extends AggregateRoot {
         return this.status;
     }
 
-    get numberOfPeople(): number | undefined {
+    get numberOfPeople(): number | null {
         return this._numberOfPeople;
     }
 
@@ -178,7 +179,7 @@ export namespace Booking {
         rejectionCancelReason: z.string().optional(),
         createdAt: z.string(),
         updatedAt: z.string(),
-        numberOfPeople: z.number().optional(),
+        numberOfPeople: z.number().nullable(),
     });
 
     export type CreateParams = {

@@ -771,7 +771,6 @@ export class DiContainer {
         return new UpdateBookingNumberOfPeopleUseCase(
             this.getAuthUserService(authUser),
             this.getBookingRepository(),
-            this.getRoomRepository(),
         );
     }
 

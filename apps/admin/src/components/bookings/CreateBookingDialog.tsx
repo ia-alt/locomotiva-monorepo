@@ -239,8 +239,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
                 </Typography>
                 <IconButton
                   size="small"
-                  onClick={() => setNumberOfPeople((n) => selectedRoomCapacity !== undefined ? Math.min(selectedRoomCapacity, n + 1) : n + 1)}
-                  disabled={selectedRoomCapacity !== undefined && numberOfPeople >= selectedRoomCapacity}
+                  onClick={() => setNumberOfPeople((n) => n + 1)}
                   sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
                 >
                   <AddIcon fontSize="small" />

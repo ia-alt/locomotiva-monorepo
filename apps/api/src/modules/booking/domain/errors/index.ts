@@ -65,4 +65,5 @@ export class RoomCapacityExceededError extends DomainError {
 
 export * from "./invalid-booking-title-error";
 export * from "./invalid-booking-description-error";
+export * from "./invalid-booking-number-of-people-error";
 

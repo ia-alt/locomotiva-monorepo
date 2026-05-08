@@ -242,34 +242,41 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
                 Quant. de Pessoas
               </IconLabel>
               {mode === 'editingPeople' ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <TextField
-                    size="small"
-                    type="number"
-                    autoFocus
-                    value={numberOfPeopleInput}
-                    onChange={(e) => setNumberOfPeopleInput(e.target.value)}
-                    slotProps={{ htmlInput: { min: 1, max: booking.room.capacity } }}
-                    sx={{ width: 80, '& .MuiOutlinedInput-root': { borderRadius: 1.5 }, '& input': { textAlign: 'center', fontSize: 14 } }}
-                  />
-                  <IconButton
-                    size="small"
-                    disabled={updateNumberOfPeopleMutation.isPending || !numberOfPeopleInput || Number(numberOfPeopleInput) < 1 || Number(numberOfPeopleInput) > booking.room.capacity}
-                    onClick={() => updateNumberOfPeopleMutation.mutate(Number(numberOfPeopleInput))}
-                    sx={{ p: 0.25, color: '#16a34a' }}
-                  >
-                    {updateNumberOfPeopleMutation.isPending
-                      ? <CircularProgress size={14} />
-                      : <CheckOutlined sx={{ fontSize: 14 }} />}
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    disabled={updateNumberOfPeopleMutation.isPending}
-                    onClick={() => { setMode('view'); setNumberOfPeopleInput(''); }}
-                    sx={{ p: 0.25, color: '#94a3b8' }}
-                  >
-                    <CloseOutlined sx={{ fontSize: 14 }} />
-                  </IconButton>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <TextField
+                      size="small"
+                      type="number"
+                      autoFocus
+                      value={numberOfPeopleInput}
+                      onChange={(e) => setNumberOfPeopleInput(e.target.value)}
+                      slotProps={{ htmlInput: { min: 1 } }}
+                      sx={{ width: 80, '& .MuiOutlinedInput-root': { borderRadius: 1.5 }, '& input': { textAlign: 'center', fontSize: 14 } }}
+                    />
+                    <IconButton
+                      size="small"
+                      disabled={updateNumberOfPeopleMutation.isPending || !numberOfPeopleInput || Number(numberOfPeopleInput) < 1}
+                      onClick={() => updateNumberOfPeopleMutation.mutate(Number(numberOfPeopleInput))}
+                      sx={{ p: 0.25, color: '#16a34a' }}
+                    >
+                      {updateNumberOfPeopleMutation.isPending
+                        ? <CircularProgress size={14} />
+                        : <CheckOutlined sx={{ fontSize: 14 }} />}
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      disabled={updateNumberOfPeopleMutation.isPending}
+                      onClick={() => { setMode('view'); setNumberOfPeopleInput(''); }}
+                      sx={{ p: 0.25, color: '#94a3b8' }}
+                    >
+                      <CloseOutlined sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Box>
+                  {numberOfPeopleInput && Number(numberOfPeopleInput) > booking.room.capacity && (
+                    <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, display: 'block' }}>
+                      Limite máximo da sala atingido.
+                    </Typography>
+                  )}
                 </Box>
               ) : (
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.75 }}>
