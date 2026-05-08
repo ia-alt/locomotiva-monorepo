@@ -3,5 +3,3 @@ import type { RouterClientType } from "@backend/_core/presentation/orpc-server/r
 
 export type ORPCOutputs = InferClientOutputs<RouterClientType>
 export type ORPCInputs = InferClientInputs<RouterClientType>
-
-type Tomate = ORPCInputs["booking"]["adminCreateBooking"]
