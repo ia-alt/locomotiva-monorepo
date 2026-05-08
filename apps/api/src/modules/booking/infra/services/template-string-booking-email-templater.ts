@@ -1,19 +1,12 @@
-import { BookingEmailTemplater } from '../../domain/services';
+import { BookingEmailTemplater, BookingEmailParams as BaseBookingEmailParams } from '../../domain/services';
 import { Booking } from '../../domain/entities';
 
 
 const logoSrc = 'cid:logo@locomotiva';
 
-type BookingEmailParams = {
-  userName: string;
-  roomName: string;
-  day: string;
-  hourFrom: string;
-  hourTo: string;
-  title: string;
+type BookingEmailParams = BaseBookingEmailParams & { 
   status: 'confirmed' | 'rejected' | 'cancelled' | 'no_show';
   reason?: string;
-  numberOfPeople?: number;
 };
 
 const STATUS_CONFIG: Record<Exclude<Booking.Status, Booking.Status.PENDING | Booking.Status.ATTENDED>, {

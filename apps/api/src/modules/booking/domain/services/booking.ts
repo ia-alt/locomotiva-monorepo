@@ -25,7 +25,7 @@ class BookingService {
 
         if (!isAdmin) {
             const room = await this.roomRepository.findById(params.roomId);
-            if (room && params.numberOfPeople !== null && params.numberOfPeople > room.toJSON().capacity) {
+            if (room && params.numberOfPeople > room.toJSON().capacity) {
                 throw new RoomCapacityExceededError(params.numberOfPeople, room.toJSON().capacity);
             }
         }
