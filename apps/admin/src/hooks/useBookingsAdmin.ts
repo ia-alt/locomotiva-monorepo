@@ -13,6 +13,7 @@ export type BookingAdminItem = {
   description?: string;
   rejectionCancelReason?: string;
   createdAt: string;
+  numberOfPeople?: number;
 };
 
 type UseBookingsAdminParams = {

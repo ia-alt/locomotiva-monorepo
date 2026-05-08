@@ -1,17 +1,18 @@
-import { BookingRepository } from "@booking/domain/repositories";
+import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
 import { DatePeriod, OnlyDate } from "@core/value-objects";
 import { UniqueId } from "@core/base-classes";
 import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
 import { Booking } from "../entities";
-import { RoomUnavailableError, BookingInPastError } from "../errors";
+import { RoomUnavailableError, BookingInPastError, RoomCapacityExceededError } from "../errors";
 
 class BookingService {
     constructor(
         private readonly bookingRepository: BookingRepository,
         private readonly spaceOperatingHoursService: SpaceOperatingHoursService,
+        private readonly roomRepository: RoomRepository,
     ) { }
 
-    async createBookingRequest(params: Booking.CreateParams): Promise<Booking> {
+    async createBookingRequest(params: Booking.CreateParams, isAdmin: boolean): Promise<Booking> {
         if (params.period.value.from <= new Date()) {
             throw new BookingInPastError();
         }
@@ -20,6 +21,13 @@ class BookingService {
 
         if (!isAvailable) {
             throw new RoomUnavailableError();
+        }
+
+        if (!isAdmin) {
+            const room = await this.roomRepository.findById(params.roomId);
+            if (room && params.numberOfPeople !== null && params.numberOfPeople > room.toJSON().capacity) {
+                throw new RoomCapacityExceededError(params.numberOfPeople, room.toJSON().capacity);
+            }
         }
 
         const booking = Booking.create(params);

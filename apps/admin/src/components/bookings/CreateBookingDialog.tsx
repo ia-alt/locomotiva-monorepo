@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, TextField, Box, CircularProgress, Alert,
-  Autocomplete, MenuItem,
+  Autocomplete, MenuItem, IconButton, Typography,
 } from '@mui/material';
+import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
@@ -27,6 +28,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
   const [endTime, setEndTime] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [numberOfPeople, setNumberOfPeople] = useState(0);
 
   const { data: usersData } = useQuery({
     queryKey: ['users', 'search', userInputValue],
@@ -52,6 +54,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
   }));
 
   const rooms = (roomsData ?? []).filter((r: { enabled: boolean }) => r.enabled);
+  const selectedRoomCapacity = rooms.find((r: { id: string }) => r.id === roomId)?.capacity as number | undefined;
 
   const mutation = useMutation({
     mutationFn: (params: {
@@ -60,6 +63,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
       title: string;
       period: { from: string; to: string };
       description: string;
+      numberOfPeople?: number;
     }) => orpc.booking.adminCreateBooking(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: BOOKINGS_ADMIN_QUERY_KEY });
@@ -76,6 +80,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
     setStartTime('');
     setEndTime('');
     setDescription('');
+    setNumberOfPeople(0);
     onClose();
   };
 
@@ -92,6 +97,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
       title,
       period: { from, to },
       description: description.trim(),
+      numberOfPeople,
     });
   };
 
@@ -139,7 +145,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
               fullWidth
               required
               value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
+              onChange={(e) => { setRoomId(e.target.value); setNumberOfPeople(0); }}
             >
               {rooms.map((r: { id: string; name: string; capacity: number }) => (
                 <MenuItem key={r.id} value={r.id}>
@@ -207,6 +213,45 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
               sx={{ marginTop: 2 }}
             />
 
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.75 }}>
+                Número de pessoas
+                {selectedRoomCapacity !== undefined && (
+                  <Box component="span" sx={{ ml: 1, color: 'text.disabled', fontWeight: 400 }}>
+                    (máx. {selectedRoomCapacity})
+                  </Box>
+                )}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <IconButton
+                  size="small"
+                  onClick={() => setNumberOfPeople((n) => Math.max(0, n - 1))}
+                  disabled={numberOfPeople <= 0}
+                  sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                >
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+                <Typography
+                  variant="body1"
+                  sx={{ minWidth: 80, textAlign: 'center', fontWeight: numberOfPeople > 0 ? 600 : 400, color: numberOfPeople > 0 ? 'text.primary' : 'text.disabled' }}
+                >
+                  {numberOfPeople > 0 ? numberOfPeople : 'Não informado'}
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => setNumberOfPeople((n) => n + 1)}
+                  sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Box>
+              {selectedRoomCapacity !== undefined && numberOfPeople >= selectedRoomCapacity && (
+                <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, display: 'block' }}>
+                  Limite máximo da sala atingido.
+                </Typography>
+              )}
+            </Box>
+
             <TextField
               label="Finalidade"
               fullWidth
@@ -228,7 +273,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
           <Button
             type="submit"
             variant="contained"
-            disabled={mutation.isPending || !selectedUser || !title || !roomId || !date || !startTime || !endTime}
+            disabled={mutation.isPending || !selectedUser || !title || !roomId || !date || !startTime || !endTime || numberOfPeople <= 0}
             startIcon={mutation.isPending ? <CircularProgress size={18} /> : null}
           >
             {mutation.isPending ? 'Criando...' : 'Criar Reserva'}

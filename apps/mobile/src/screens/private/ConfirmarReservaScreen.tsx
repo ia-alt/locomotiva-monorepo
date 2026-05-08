@@ -24,7 +24,8 @@ export default function ConfirmarReservaScreen() {
         startTime,
         endTime,
         title,
-        description
+        description,
+        numberOfPeople,
     } = route.params;
 
     const { data: room } = useQuery(orpc.booking.getRoomById.queryOptions({ input: { id: roomId } }))
@@ -52,7 +53,8 @@ export default function ConfirmarReservaScreen() {
                     to: endTime,
                 },
                 title,
-                description
+                description,
+                numberOfPeople,
             });
 
             navigation.navigate('ReservaSucesso');
@@ -84,6 +86,11 @@ export default function ConfirmarReservaScreen() {
                 <View style={styles.row}>
                     <Text style={styles.label}>Título:</Text>
                     <Text style={styles.value}>{title}</Text>
+                </View>
+
+                <View style={styles.row}>
+                    <Text style={styles.label}>Pessoas:</Text>
+                    <Text style={styles.value}>{numberOfPeople}</Text>
                 </View>
 
                 <View style={[styles.row, { borderBottomWidth: 0, paddingBottom: 0, flexDirection: 'column', alignItems: 'flex-start' }]}>

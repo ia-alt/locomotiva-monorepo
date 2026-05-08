@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
 import RoomSelector from '../../components/RoomSelector';
-import AvailabilityTimeline from '../../components/AvailabilityTimeline';
-import DateSelector from '../../components/DateSelector';
-import TimeSelector from '../../components/TimeSelector';
-import { addDays, startOfDay, addHours } from 'date-fns';
 import { Feather } from '@expo/vector-icons';
 
 type CriarReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'CriarReserva'>;
@@ -15,70 +12,34 @@ type CriarReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamLis
 export default function CriarReservaScreen() {
     const navigation = useNavigation<CriarReservaNavigationProp>();
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-    const [selectedDate, setSelectedDate] = useState(() => startOfDay(addDays(new Date(), 1)));
-    const [startTime, setStartTime] = useState<Date | null>(null);
-    const [endTime, setEndTime] = useState<Date | null>(null);
-    const [blockStart, setBlockStart] = useState<Date | null>(null);
-    const [blockEnd, setBlockEnd] = useState<Date | null>(null);
-
-    const isFormValid = !!(
-        selectedRoomId &&
-        selectedDate &&
-        startTime &&
-        endTime &&
-        startTime < endTime
-    );
+    const [selectedRoomCapacity, setSelectedRoomCapacity] = useState<number>(0);
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+            <View style={styles.stepIndicator}>
+                <View style={styles.stepActive}><Text style={styles.stepTextActive}>1</Text></View>
+                <View style={styles.stepLine} />
+                <View style={styles.stepInactive}><Text style={styles.stepTextInactive}>2</Text></View>
+                <View style={styles.stepLine} />
+                <View style={styles.stepInactive}><Text style={styles.stepTextInactive}>3</Text></View>
+            </View>
+
+            <Text style={styles.stepLabel}>Selecione a sala desejada para a reserva.</Text>
+
             <RoomSelector
                 selectedRoomId={selectedRoomId}
-                setSelectedRoomId={setSelectedRoomId}
-            />
-
-            <DateSelector
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-            />
-
-            <AvailabilityTimeline
-                roomId={selectedRoomId}
-                date={selectedDate}
-                onSelectBlock={(from, to) => {
-                    setBlockStart(from);
-                    setBlockEnd(to);
-                    setStartTime(from);
-                    const calculatedEndTime = addHours(from, 4);
-                    // if calculated end time is over block's available `to` limit, cap it
-                    if (calculatedEndTime > to) {
-                        setEndTime(to);
-                    } else {
-                        setEndTime(calculatedEndTime);
-                    }
+                setSelectedRoomId={(id, capacity) => {
+                    setSelectedRoomId(id);
+                    setSelectedRoomCapacity(capacity);
                 }}
             />
 
-            <TimeSelector
-                startTime={startTime}
-                endTime={endTime}
-                baseDate={selectedDate}
-                blockStart={blockStart}
-                blockEnd={blockEnd}
-                onChangeStart={setStartTime}
-                onChangeEnd={setEndTime}
-            />
-
-            <TouchableOpacity 
-                style={[styles.nextButton, !isFormValid && styles.nextButtonDisabled]} 
-                disabled={!isFormValid}
+            <TouchableOpacity
+                style={[styles.nextButton, !selectedRoomId && styles.nextButtonDisabled]}
+                disabled={!selectedRoomId}
                 onPress={() => {
-                    if (selectedRoomId && startTime && endTime) {
-                        navigation.navigate('DetalhesReserva', {
-                            roomId: selectedRoomId,
-                            date: selectedDate.toISOString(),
-                            startTime: startTime.toISOString(),
-                            endTime: endTime.toISOString(),
-                        });
+                    if (selectedRoomId) {
+                        navigation.navigate('DisponibilidadeReserva', { roomId: selectedRoomId, roomCapacity: selectedRoomCapacity });
                     }
                 }}
                 activeOpacity={0.7}
@@ -93,11 +54,55 @@ export default function CriarReservaScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9FAFB'
+        backgroundColor: '#F9FAFB',
     },
     scrollContent: {
         padding: 20,
         paddingBottom: 40,
+    },
+    stepIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    stepActive: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#1E88E5',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    stepInactive: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#E5E7EB',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    stepLine: {
+        flex: 1,
+        height: 2,
+        backgroundColor: '#E5E7EB',
+        marginHorizontal: 6,
+    },
+    stepTextActive: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    stepTextInactive: {
+        color: '#9CA3AF',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    stepLabel: {
+        fontSize: 14,
+        color: '#6B7280',
+        textAlign: 'center',
+        marginBottom: 24,
     },
     nextButton: {
         backgroundColor: '#1E88E5',
@@ -116,5 +121,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#FFFFFF',
-    }
+    },
 });

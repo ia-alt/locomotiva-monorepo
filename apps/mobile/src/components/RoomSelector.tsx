@@ -9,7 +9,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface RoomSelectorProps {
     selectedRoomId: string | null;
-    setSelectedRoomId: (id: string) => void;
+    setSelectedRoomId: (id: string, capacity: number) => void;
 }
 
 export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: RoomSelectorProps) {
@@ -81,7 +81,7 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
                                     <TouchableOpacity
                                         style={styles.modalItem}
                                         onPress={() => {
-                                            setSelectedRoomId(item.id);
+                                            setSelectedRoomId(item.id, item.capacity);
                                             setModalVisible(false);
                                         }}
                                     >

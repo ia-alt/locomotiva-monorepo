@@ -13,6 +13,9 @@ import {
   ArticleOutlined,
   InfoOutlined,
   Close,
+  EditOutlined,
+  CheckOutlined,
+  CloseOutlined,
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
@@ -28,7 +31,7 @@ interface BookingDetailDialogProps {
   isLoading?: boolean;
 }
 
-type ActionMode = 'view' | 'rejecting';
+type ActionMode = 'view' | 'rejecting' | 'editingPeople';
 
 const STATUS_BADGE: Record<string, { label: string; dot: string; bg: string; border: string; text: string }> = {
   pending: { label: 'Aguardando', dot: '#f59e0b', bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
@@ -58,6 +61,7 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<ActionMode>('view');
   const [reason, setReason] = useState('');
+  const [numberOfPeopleInput, setNumberOfPeopleInput] = useState('');
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: BOOKINGS_ADMIN_QUERY_KEY });
@@ -85,9 +89,21 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
     onSuccess: () => { invalidate(); handleClose(); },
   });
 
+  const updateNumberOfPeopleMutation = useMutation({
+    mutationFn: (numberOfPeople: number) =>
+      orpc.booking.updateBookingNumberOfPeople({ bookingId: booking!.id, numberOfPeople }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking', 'admin-view', booking!.id] });
+      invalidate();
+      setMode('view');
+      setNumberOfPeopleInput('');
+    },
+  });
+
   const handleClose = () => {
     setMode('view');
     setReason('');
+    setNumberOfPeopleInput('');
     onClose();
   };
 
@@ -111,10 +127,11 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
     const anyPending =
       confirmMutation.isPending ||
       rejectMutation.isPending ||
-      noShowMutation.isPending;
+      noShowMutation.isPending ||
+      updateNumberOfPeopleMutation.isPending;
 
     const mutationError =
-      confirmMutation.error || rejectMutation.error || noShowMutation.error;
+      confirmMutation.error || rejectMutation.error || noShowMutation.error || updateNumberOfPeopleMutation.error;
     const errorMsg = mutationError instanceof Error ? mutationError.message : null;
 
     const badge = STATUS_BADGE[booking.status] ?? { label: booking.status, dot: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', text: '#4b5563' };
@@ -155,6 +172,14 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
             <IconLabel icon={<PersonOutlined sx={{ fontSize: 13 }} />}>Solicitante</IconLabel>
             <Typography sx={{ fontSize: 15, fontWeight: 600, color: '#1e293b' }}>{booking.user.name}</Typography>
             <Typography sx={{ fontSize: 13, color: '#64748b' }}>{booking.user.email}</Typography>
+            <Typography sx={{ fontSize: 13, color: '#64748b', mt: 0.75 }}>
+              <Box component="span" sx={{ fontWeight: 600 }}>Instituição: </Box>
+              {booking.user.company || 'Não Informado'}
+            </Typography>
+            <Typography sx={{ fontSize: 13, color: '#64748b' }}>
+              <Box component="span" sx={{ fontWeight: 600 }}>Cargo: </Box>
+              {booking.user.jobTitle || 'Não Informado'}
+            </Typography>
           </Box>
           <Box>
             <IconLabel icon={<LocationOnOutlined sx={{ fontSize: 13 }} />}>Sala</IconLabel>
@@ -204,11 +229,70 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
 
         {/* Título + Descrição */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Box>
-            <IconLabel icon={<ArticleOutlined sx={{ fontSize: 13 }} />}>Título do Evento</IconLabel>
-            <Typography sx={{ fontSize: 15, fontWeight: 500, color: '#1e293b', lineHeight: 1.4 }}>
-              {booking.title}
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+            <Box>
+              <IconLabel icon={<ArticleOutlined sx={{ fontSize: 13 }} />}>Título do Evento</IconLabel>
+              <Typography sx={{ fontSize: 15, fontWeight: 500, color: '#1e293b', lineHeight: 1.4 }}>
+                {booking.title}
+              </Typography>
+            </Box>
+
+            <Box sx={{ textAlign: 'right' }}>
+              <IconLabel icon={<GroupOutlined sx={{ fontSize: 13 }} />}>
+                Quant. de Pessoas
+              </IconLabel>
+              {mode === 'editingPeople' ? (
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <TextField
+                      size="small"
+                      type="number"
+                      autoFocus
+                      value={numberOfPeopleInput}
+                      onChange={(e) => setNumberOfPeopleInput(e.target.value)}
+                      slotProps={{ htmlInput: { min: 1 } }}
+                      sx={{ width: 80, '& .MuiOutlinedInput-root': { borderRadius: 1.5 }, '& input': { textAlign: 'center', fontSize: 14 } }}
+                    />
+                    <IconButton
+                      size="small"
+                      disabled={updateNumberOfPeopleMutation.isPending || !numberOfPeopleInput || Number(numberOfPeopleInput) < 1}
+                      onClick={() => updateNumberOfPeopleMutation.mutate(Number(numberOfPeopleInput))}
+                      sx={{ p: 0.25, color: '#16a34a' }}
+                    >
+                      {updateNumberOfPeopleMutation.isPending
+                        ? <CircularProgress size={14} />
+                        : <CheckOutlined sx={{ fontSize: 14 }} />}
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      disabled={updateNumberOfPeopleMutation.isPending}
+                      onClick={() => { setMode('view'); setNumberOfPeopleInput(''); }}
+                      sx={{ p: 0.25, color: '#94a3b8' }}
+                    >
+                      <CloseOutlined sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Box>
+                  {numberOfPeopleInput && Number(numberOfPeopleInput) > booking.room.capacity && (
+                    <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, display: 'block' }}>
+                      Limite máximo da sala atingido.
+                    </Typography>
+                  )}
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.75 }}>
+                  <Typography sx={{ fontSize: 15, fontWeight: 500, color: booking.numberOfPeople ? '#1e293b' : '#94a3b8', fontStyle: booking.numberOfPeople ? 'normal' : 'italic' }}>
+                    {booking.numberOfPeople ?? 'Não informado'}
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => { setNumberOfPeopleInput(String(booking.numberOfPeople ?? '')); setMode('editingPeople'); }}
+                    sx={{ p: 0.25, color: '#94a3b8', '&:hover': { color: '#6366f1' } }}
+                  >
+                    <EditOutlined sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Box>
+              )}
+            </Box>
           </Box>
 
           {booking.description && (
