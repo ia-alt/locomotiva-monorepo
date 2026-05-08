@@ -12,7 +12,7 @@ class BookingService {
         private readonly roomRepository: RoomRepository,
     ) { }
 
-    async createBookingRequest(params: Booking.CreateParams): Promise<Booking> {
+    async createBookingRequest(params: Booking.CreateParams, isAdmin: boolean): Promise<Booking> {
         if (params.period.value.from <= new Date()) {
             throw new BookingInPastError();
         }
