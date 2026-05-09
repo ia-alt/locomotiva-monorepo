@@ -48,6 +48,7 @@ export class AfterBookingStatusChanged {
                 hourFrom: format(booking.period.value.from, 'HH:mm'),
                 hourTo: format(booking.period.value.to, 'HH:mm'),
                 title: booking.title,
+                numberOfPeople: booking.numberOfPeople,
             });
 
             await this.sendEmailService.send(
@@ -86,6 +87,7 @@ export class AfterBookingStatusChanged {
                 hourFrom: format(booking.period.value.from, 'HH:mm'),
                 hourTo: format(booking.period.value.to, 'HH:mm'),
                 title: booking.title,
+                numberOfPeople: booking.numberOfPeople,
             }, reason);
 
             await this.sendEmailService.send(
@@ -124,6 +126,7 @@ export class AfterBookingStatusChanged {
                 hourFrom: format(booking.period.value.from, 'HH:mm'),
                 hourTo: format(booking.period.value.to, 'HH:mm'),
                 title: booking.title,
+                numberOfPeople: booking.numberOfPeople,
             });
 
             await this.sendEmailService.send(
@@ -161,6 +164,7 @@ export class AfterBookingStatusChanged {
                 hourFrom: format(booking.period.value.from, 'HH:mm'),
                 hourTo: format(booking.period.value.to, 'HH:mm'),
                 title: booking.title,
+                numberOfPeople: booking.numberOfPeople,
             };
 
             const bookingUrl = `${this.adminUrl}/reservations?view=${booking.id.value}`;

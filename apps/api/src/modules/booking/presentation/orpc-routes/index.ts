@@ -21,6 +21,7 @@ import { setGlobalBlockedDatesRoute } from "./routes/set-global-blocked-dates";
 import { findBookingsAdminRoute } from "./routes/find-bookings-admin";
 import { adminCreateBookingRoute } from "./routes/admin-create-booking";
 import { markBookingNoShowRoute } from "./routes/mark-booking-no-show";
+import { updateBookingNumberOfPeopleRoute } from "./routes/update-booking-number-of-people";
 
 export const bookingRouter = {
     createRoom: createRoomRoute,
@@ -48,4 +49,5 @@ export const bookingRouter = {
     findBookingsAdmin: findBookingsAdminRoute,
     adminCreateBooking: adminCreateBookingRoute,
     markBookingNoShow: markBookingNoShowRoute,
+    updateBookingNumberOfPeople: updateBookingNumberOfPeopleRoute,
 };

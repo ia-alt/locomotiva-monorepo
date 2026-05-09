@@ -7,6 +7,7 @@ import ReservasScreen from '../screens/private/ReservasScreen';
 import PerfilScreen from '../screens/private/PerfilScreen';
 
 import CriarReservaScreen from '../screens/private/CriarReservaScreen';
+import DisponibilidadeReservaScreen from '../screens/private/DisponibilidadeReservaScreen';
 import DetalhesReservaScreen from '../screens/private/DetalhesReservaScreen';
 import ConfirmarReservaScreen from '../screens/private/ConfirmarReservaScreen';
 import ReservaSucessoScreen from '../screens/private/ReservaSucessoScreen';
@@ -19,8 +20,13 @@ import { useNavigation } from '@react-navigation/native';
 export type PrivateStackParamList = {
     Drawer: undefined;
     CriarReserva: undefined;
+    DisponibilidadeReserva: {
+        roomId: string;
+        roomCapacity: number;
+    };
     DetalhesReserva: {
         roomId: string;
+        roomCapacity: number;
         date: string;
         startTime: string;
         endTime: string;
@@ -32,6 +38,7 @@ export type PrivateStackParamList = {
         endTime: string;
         title: string;
         description: string;
+        numberOfPeople: number;
     };
     ReservaSucesso: undefined;
     DetalhesMinhaReserva: {
@@ -105,6 +112,11 @@ export default function PrivateNavigator() {
                 name="CriarReserva"
                 component={CriarReservaScreen}
                 options={{ title: 'Nova Reserva' }}
+            />
+            <Stack.Screen
+                name="DisponibilidadeReserva"
+                component={DisponibilidadeReservaScreen}
+                options={{ title: 'Data e Horário' }}
             />
             <Stack.Screen
                 name="DetalhesReserva"

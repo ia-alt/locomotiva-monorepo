@@ -62,6 +62,7 @@ import { FindBookingsAdminUseCase } from "@booking/application/use-cases/find-bo
 import { AdminCreateBookingUseCase } from "@booking/application/use-cases/admin-create-booking";
 import { GetBookingByIdUseCase } from "@booking/application/use-cases/get-booking-by-id";
 import { MarkBookingNoShowUseCase } from "@booking/application/use-cases/mark-booking-no-show";
+import { UpdateBookingNumberOfPeopleUseCase } from "@booking/application/use-cases/update-booking-number-of-people";
 import { ListAvailableSlotsByDayUseCase } from "@booking/application/use-cases/list-available-slots-by-day";
 import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-cases/send-booking-reminders-of-tomorrow";
 import { SetDefaultOperatingScheduleUseCase } from "@booking/application/use-cases/set-room-default-operating-hours";
@@ -238,7 +239,8 @@ export class DiContainer {
         if (!this._bookingService) {
             this._bookingService = new BookingService(
                 this.getBookingRepository(),
-                this.getSpaceOperatingHoursService()
+                this.getSpaceOperatingHoursService(),
+                this.getRoomRepository()
             );
         }
         return this._bookingService;
@@ -746,7 +748,7 @@ export class DiContainer {
 
     public getFindBookingsAdminUseCase(authUser: User): FindBookingsAdminUseCase {
         return new FindBookingsAdminUseCase(
-            this.prisma,
+            this.getBookingRepository(),
             this.getAuthUserService(authUser),
         );
     }
@@ -762,6 +764,13 @@ export class DiContainer {
         return new AdminCreateBookingUseCase(
             this.getAuthUserService(authUser),
             this.getBookingService(),
+        );
+    }
+
+    public getUpdateBookingNumberOfPeopleUseCase(authUser: User): UpdateBookingNumberOfPeopleUseCase {
+        return new UpdateBookingNumberOfPeopleUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingRepository(),
         );
     }
 

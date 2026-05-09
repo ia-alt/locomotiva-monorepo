@@ -13,6 +13,7 @@ export type BookingAdminItem = {
   description?: string;
   rejectionCancelReason?: string;
   createdAt: string;
+  numberOfPeople?: number;
 };
 
 type UseBookingsAdminParams = {
@@ -53,7 +54,6 @@ export const useBookingsAdmin = ({
   return {
     bookings: (data?.items ?? []) as BookingAdminItem[],
     pagesCount: data?.pagesCount ?? 0,
-    total: data?.total ?? 0,
     isLoading,
     isError,
     error,

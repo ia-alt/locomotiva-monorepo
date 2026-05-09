@@ -1,16 +1,10 @@
-import { BookingEmailTemplater } from '../../domain/services';
+import { BookingEmailTemplater, BookingEmailParams as BaseBookingEmailParams } from '../../domain/services';
 import { Booking } from '../../domain/entities';
 
 
 const logoSrc = 'cid:logo@locomotiva';
 
-type BookingEmailParams = {
-  userName: string;
-  roomName: string;
-  day: string;
-  hourFrom: string;
-  hourTo: string;
-  title: string;
+type BookingEmailParams = BaseBookingEmailParams & { 
   status: 'confirmed' | 'rejected' | 'cancelled' | 'no_show';
   reason?: string;
 };
@@ -123,9 +117,15 @@ export class TemplateStringBookingEmailTemplater implements BookingEmailTemplate
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:20px 24px;">
+                  <td style="padding:20px 24px;border-bottom:1px solid #e2e8f0;">
                     <p style="margin:0;font-size:11px;font-weight:700;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;">Horário</p>
                     <p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#1a202c;">${params.hourFrom} às ${params.hourTo}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0;font-size:11px;font-weight:700;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;">Pessoas</p>
+                    <p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#1a202c;">${params.numberOfPeople ? `${params.numberOfPeople} ${params.numberOfPeople === 1 ? 'pessoa' : 'pessoas'}` : 'Não informado'}</p>
                   </td>
                 </tr>
               </table>
@@ -216,9 +216,15 @@ export class TemplateStringBookingEmailTemplater implements BookingEmailTemplate
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:20px 24px;">
+                  <td style="padding:20px 24px;border-bottom:1px solid #e2e8f0;">
                     <p style="margin:0;font-size:11px;font-weight:700;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;">Horário</p>
                     <p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#1a202c;">${params.hourFrom} às ${params.hourTo}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0;font-size:11px;font-weight:700;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;">Pessoas</p>
+                    <p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#1a202c;">${params.numberOfPeople ? `${params.numberOfPeople} ${params.numberOfPeople === 1 ? 'pessoa' : 'pessoas'}` : 'Não informado'}</p>
                   </td>
                 </tr>
               </table>
@@ -312,9 +318,15 @@ export class TemplateStringBookingEmailTemplater implements BookingEmailTemplate
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:20px 24px;">
+                  <td style="padding:20px 24px;border-bottom:1px solid #e2e8f0;">
                     <p style="margin:0;font-size:11px;font-weight:700;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;">Horário</p>
                     <p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#1a202c;">${params.hourFrom} às ${params.hourTo}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0;font-size:11px;font-weight:700;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;">Pessoas</p>
+                    <p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#1a202c;">${params.numberOfPeople ? `${params.numberOfPeople} ${params.numberOfPeople === 1 ? 'pessoa' : 'pessoas'}` : 'Não informado'}</p>
                   </td>
                 </tr>
               </table>
