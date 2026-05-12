@@ -37,9 +37,9 @@ export default function ReservaSucessoScreen() {
         <View style={styles.container}>
             <View style={styles.content}>
                 <Feather name="check-circle" size={80} color="#10B981" />
-                <Text style={styles.title}>Reserva confirmada!</Text>
+                <Text style={styles.title}>Solicitação Recebida com Sucesso!</Text>
                 <Text style={styles.subtitle}>
-                    Sua reserva foi agendada com sucesso. Você pode visualizar os detalhes na sua lista de reservas.
+                    Enviamos sua solicitação para nossa equipe. Você receberá uma confirmação em breve. Enquanto isso, acompanhe o status em 'Minhas Reservas'.
                 </Text>
             </View>
 

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useWindowDimensions, View } from 'react-native';
 import { PaperProvider, Snackbar, useTheme } from 'react-native-paper';
 import { ORPCProvider } from './locomotiva-api/provider';
 import { QueryClientProvider, QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
@@ -106,6 +107,18 @@ export default function Main() {
 
 
 
+const MAX_WIDTH = 800;
+
 function App() {
-  return <Navigation />;
+  const { width } = useWindowDimensions();
+  const isWide = width > MAX_WIDTH;
+
+  return (
+    <View style={[
+      { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_WIDTH },
+      isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
+    ]}>
+      <Navigation />
+    </View>
+  );
 }
