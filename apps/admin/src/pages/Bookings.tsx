@@ -82,7 +82,7 @@ const BookingsPage: React.FC = () => {
       }),
     staleTime: 30_000,
   });
-  const pendingCount = pendingData?.total ?? 0;
+  const pendingCount = pendingData?.pagesCount ?? 0;
 
   // Rooms for filter dropdown
   const { data: roomsData } = useQuery({

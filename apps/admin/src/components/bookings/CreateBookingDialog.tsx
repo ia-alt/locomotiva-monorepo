@@ -9,6 +9,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
 import { AvailabilityTimeline } from './AvailabilityTimeline';
+import type { ORPCInputs } from 'src/services/types';
+
 
 interface CreateBookingDialogProps {
   open: boolean;
@@ -57,14 +59,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
   const selectedRoomCapacity = rooms.find((r: { id: string }) => r.id === roomId)?.capacity as number | undefined;
 
   const mutation = useMutation({
-    mutationFn: (params: {
-      userId: string;
-      roomId: string;
-      title: string;
-      period: { from: string; to: string };
-      description: string;
-      numberOfPeople?: number;
-    }) => orpc.booking.adminCreateBooking(params),
+    mutationFn: (params: ORPCInputs["booking"]["adminCreateBooking"]) => orpc.booking.adminCreateBooking(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: BOOKINGS_ADMIN_QUERY_KEY });
       handleClose();

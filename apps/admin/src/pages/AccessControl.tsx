@@ -14,8 +14,9 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { Logout as CheckoutIcon } from '@mui/icons-material';
+import { Logout as CheckoutIcon, History as HistoryIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { orpc } from '../services/api';
 import { useActiveAccessLogs, ACTIVE_ACCESS_LOGS_QUERY_KEY } from '../hooks/useActiveAccessLogs';
 import { QuickCheckinPanel } from '../components/access-control/QuickCheckinPanel';
@@ -75,6 +76,7 @@ const ForceCheckoutButton: React.FC<{ userId: string; userName: string }> = ({ u
 
 const AccessControlPage: React.FC = () => {
   const { sessions, isLoading, isError, error } = useActiveAccessLogs();
+  const navigate = useNavigate();
   const [, setTick] = useState(0);
 
   // Re-render every minute to update elapsed time display
@@ -120,6 +122,14 @@ const AccessControlPage: React.FC = () => {
               {sessions.length}
             </Box>
           )}
+          <Box sx={{ flexGrow: 1 }} />
+          <Button
+            variant="outlined"
+            startIcon={<HistoryIcon />}
+            onClick={() => navigate('/access-history')}
+          >
+            Histórico
+          </Button>
         </Box>
 
         {isLoading ? (
