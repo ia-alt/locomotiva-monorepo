@@ -24,6 +24,11 @@ function formatCpf(cpf: string | undefined): string {
 
 function formatDate(date: string | Date | undefined): string {
     if (!date) return '-';
+    if (typeof date === 'string') {
+        const [year, month, day] = date.split('T')[0].split('-').map(Number);
+        if (!year || !month || !day) return '-';
+        return new Date(year, month - 1, day).toLocaleDateString('pt-BR');
+    }
     const d = new Date(date);
     if (isNaN(d.getTime())) return '-';
     return d.toLocaleDateString('pt-BR');
