@@ -45,7 +45,7 @@ import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
 import { NodemailerSendEmailService } from "@notifications/infra/services/resend-send-email";
 import { env } from "src/modules/env";
-import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase, GenerateTotemAccessCodeUseCase } from "@coworking/application/use-cases";
+import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase, GenerateTotemAccessCodeUseCase, ListAccessLogsByDayUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
 import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
@@ -75,7 +75,7 @@ import { GetWeeklyFrequencyUseCase } from "@coworking/application/use-cases/get-
 import { GetAccessStatsUseCase } from "@coworking/application/use-cases/get-access-stats";
 import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yearly-report";
 import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
-import { AccessService } from "@coworking/domain/services";
+import { AccessService, AccessLogService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
 import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
@@ -281,6 +281,17 @@ export class DiContainer {
             );
         }
         return this._accessService;
+    }
+
+    private _accessLogService?: AccessLogService;
+    public getAccessLogService(): AccessLogService {
+        if (!this._accessLogService) {
+            this._accessLogService = new AccessLogService(
+                this.getAccessLogRepository(),
+                this.getUserRepository()
+            );
+        }
+        return this._accessLogService;
     }
 
     private _passwordService?: PasswordService;
@@ -778,6 +789,13 @@ export class DiContainer {
         return new GetRecentActivitiesUseCase(
             this.prisma,
             this.getAuthUserService(authUser),
+        );
+    }
+
+    public getListAccessLogsByDayUseCase(authUser: User): ListAccessLogsByDayUseCase {
+        return new ListAccessLogsByDayUseCase(
+            this.getAuthUserService(authUser),
+            this.getAccessLogService(),
         );
     }
     //#endregion

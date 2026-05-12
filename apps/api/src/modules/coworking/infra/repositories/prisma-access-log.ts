@@ -2,7 +2,7 @@ import { AccessLogRepository } from "@coworking/domain/repositories";
 import { AccessLog } from "@coworking/domain/entities";
 import { Prisma, PrismaClient, AccessLog as AccessLogDb } from "@core/infra/database/prisma";
 import { DomainEvents, UniqueId } from "@core/base-classes";
-import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
+import { PaginatedQuery, PaginatedResult, OnlyDate } from "@core/value-objects";
 
 export class PrismaAccessLogRepository implements AccessLogRepository {
     constructor(private readonly prisma: PrismaClient) { }
@@ -141,6 +141,21 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
             total,
             paginatedQuery: pagination,
         });
+    }
+
+    async findAllByDay(day: OnlyDate): Promise<AccessLog[]> {
+        const from = day.toDate();
+        from.setHours(0, 0, 0, 0);
+        const to = day.toDate();
+        to.setHours(23, 59, 59, 999);
+
+        const logs = await this.prisma.accessLog.findMany({
+            where: {
+                entryTime: { gte: from, lte: to },
+            },
+            orderBy: { entryTime: 'asc' },
+        });
+        return logs.map((log) => this.accessLogDbToEntity(log));
     }
 
     accessLogDbToEntity(dbLog: AccessLogDb): AccessLog {
