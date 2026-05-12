@@ -6,7 +6,7 @@ import { BookingRejectedEvent } from "../events/booking-rejected";
 import { BookingCancelledEvent } from "../events/booking-cancelled";
 import z from "zod";
 import { BookingLeadTimeViolationError, ForbiddenBookingAccessException, BookingNotInPendingStateError, BookingCannotBeCancelledError } from "../errors";
-import { BookingTitle, BookingDescription } from "@core/value-objects";
+import { BookingTitle, BookingDescription, BookingNumberOfPeople } from "@core/value-objects";
 
 export class Booking extends AggregateRoot {
     constructor(
@@ -20,10 +20,12 @@ export class Booking extends AggregateRoot {
         private rejectionCancelReason: string | undefined,
         private createdAt: Date,
         private updatedAt: Date,
+        private _numberOfPeople: number | null,
     ) {
         super(id);
         new BookingTitle(title);
         new BookingDescription(description);
+        if (_numberOfPeople !== null) new BookingNumberOfPeople(_numberOfPeople);
     }
 
     get period(): DatePeriod {
@@ -32,6 +34,15 @@ export class Booking extends AggregateRoot {
 
     get currentStatus(): Booking.Status {
         return this.status;
+    }
+
+    get numberOfPeople(): number | null {
+        return this._numberOfPeople;
+    }
+
+    updateNumberOfPeople(value: number): void {
+        this._numberOfPeople = value;
+        this.updatedAt = new Date();
     }
 
     static create(input: Booking.CreateParams): Booking {
@@ -46,6 +57,7 @@ export class Booking extends AggregateRoot {
             undefined,
             new Date(),
             new Date(),
+            input.numberOfPeople,
         );
         booking.addDomainEvent(new BookingCreatedEvent(booking));
         return booking;
@@ -127,6 +139,7 @@ export class Booking extends AggregateRoot {
             rejectionCancelReason: this.rejectionCancelReason,
             createdAt: this.createdAt.toISOString(),
             updatedAt: this.updatedAt.toISOString(),
+            numberOfPeople: this._numberOfPeople,
         };
     }
 }
@@ -166,6 +179,7 @@ export namespace Booking {
         rejectionCancelReason: z.string().optional(),
         createdAt: z.string(),
         updatedAt: z.string(),
+        numberOfPeople: z.number().nullable(),
     });
 
     export type CreateParams = {
@@ -174,6 +188,7 @@ export namespace Booking {
         title: string;
         description?: string;
         period: DatePeriod;
+        numberOfPeople: number;
     };
     export type JsonSchema = z.infer<typeof JsonSchema>;
 }

@@ -70,6 +70,7 @@ model Booking {
   endTime               DateTime
   status                String
   rejectionCancelReason String?
+  numberOfPeople        Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

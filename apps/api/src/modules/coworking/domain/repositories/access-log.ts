@@ -1,5 +1,5 @@
 import { AccessLog } from "../entities";
-import { PaginatedQuery, PaginatedResult } from "@core/value-objects";
+import { PaginatedQuery, PaginatedResult, OnlyDate } from "@core/value-objects";
 import { UniqueId } from "@core/base-classes";
 
 export interface AccessLogRepository {
@@ -12,4 +12,5 @@ export interface AccessLogRepository {
     findEntriesInRange(from: Date, to: Date): Promise<AccessLog[]>;
     findHistoryByUserId(userId: UniqueId, pagination: PaginatedQuery): Promise<PaginatedResult<typeof AccessLog.JsonSchema, AccessLog>>;
     findAllHistory(pagination: PaginatedQuery): Promise<PaginatedResult<typeof AccessLog.JsonSchema, AccessLog>>;
+    findAllByDay(day: OnlyDate): Promise<AccessLog[]>;
 }

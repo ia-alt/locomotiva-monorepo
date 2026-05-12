@@ -45,7 +45,7 @@ import { SendEmailService } from "@notifications/application/services";
 import { ConsoleSendEmailService } from "@notifications/infra/services/console-send-email";
 import { NodemailerSendEmailService } from "@notifications/infra/services/resend-send-email";
 import { env } from "src/modules/env";
-import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase, GenerateTotemAccessCodeUseCase } from "@coworking/application/use-cases";
+import { PerformCheckinUseCase, PerformCheckoutUseCase, ListUserAccessLogsUseCase, ListAllAccessLogsUseCase, AutoCheckoutAllUseCase, ConfigureCoworkingUseCase, AdminPerformCheckinUseCase, AdminPerformCheckoutUseCase, CountActiveAccessLogsUseCase, GetMyCheckinStatusUseCase, CheckinByCpfUseCase, CheckoutByCpfUseCase, FindMemberByCpfUseCase, FindActiveMemberByCpfUseCase, QuickCheckoutByCpfUseCase, GenerateTotemAccessCodeUseCase, ListAccessLogsByDayUseCase } from "@coworking/application/use-cases";
 import { CreateRoomUseCase } from "@booking/application/use-cases/create-room";
 import { ListRoomsUseCase } from "@booking/application/use-cases/list-rooms";
 import { GetRoomByIdUseCase } from "@booking/application/use-cases/get-room-by-id";
@@ -62,6 +62,7 @@ import { FindBookingsAdminUseCase } from "@booking/application/use-cases/find-bo
 import { AdminCreateBookingUseCase } from "@booking/application/use-cases/admin-create-booking";
 import { GetBookingByIdUseCase } from "@booking/application/use-cases/get-booking-by-id";
 import { MarkBookingNoShowUseCase } from "@booking/application/use-cases/mark-booking-no-show";
+import { UpdateBookingNumberOfPeopleUseCase } from "@booking/application/use-cases/update-booking-number-of-people";
 import { ListAvailableSlotsByDayUseCase } from "@booking/application/use-cases/list-available-slots-by-day";
 import { SendBookingRemindersOfTomorrowUseCase } from "@booking/application/use-cases/send-booking-reminders-of-tomorrow";
 import { SetDefaultOperatingScheduleUseCase } from "@booking/application/use-cases/set-room-default-operating-hours";
@@ -74,7 +75,7 @@ import { GetWeeklyFrequencyUseCase } from "@coworking/application/use-cases/get-
 import { GetAccessStatsUseCase } from "@coworking/application/use-cases/get-access-stats";
 import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yearly-report";
 import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
-import { AccessService } from "@coworking/domain/services";
+import { AccessService, AccessLogService } from "@coworking/domain/services";
 import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
 import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
 import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
@@ -238,7 +239,8 @@ export class DiContainer {
         if (!this._bookingService) {
             this._bookingService = new BookingService(
                 this.getBookingRepository(),
-                this.getSpaceOperatingHoursService()
+                this.getSpaceOperatingHoursService(),
+                this.getRoomRepository()
             );
         }
         return this._bookingService;
@@ -279,6 +281,17 @@ export class DiContainer {
             );
         }
         return this._accessService;
+    }
+
+    private _accessLogService?: AccessLogService;
+    public getAccessLogService(): AccessLogService {
+        if (!this._accessLogService) {
+            this._accessLogService = new AccessLogService(
+                this.getAccessLogRepository(),
+                this.getUserRepository()
+            );
+        }
+        return this._accessLogService;
     }
 
     private _passwordService?: PasswordService;
@@ -746,7 +759,7 @@ export class DiContainer {
 
     public getFindBookingsAdminUseCase(authUser: User): FindBookingsAdminUseCase {
         return new FindBookingsAdminUseCase(
-            this.prisma,
+            this.getBookingRepository(),
             this.getAuthUserService(authUser),
         );
     }
@@ -765,10 +778,24 @@ export class DiContainer {
         );
     }
 
+    public getUpdateBookingNumberOfPeopleUseCase(authUser: User): UpdateBookingNumberOfPeopleUseCase {
+        return new UpdateBookingNumberOfPeopleUseCase(
+            this.getAuthUserService(authUser),
+            this.getBookingRepository(),
+        );
+    }
+
     public getRecentActivitiesUseCase(authUser: User): GetRecentActivitiesUseCase {
         return new GetRecentActivitiesUseCase(
             this.prisma,
             this.getAuthUserService(authUser),
+        );
+    }
+
+    public getListAccessLogsByDayUseCase(authUser: User): ListAccessLogsByDayUseCase {
+        return new ListAccessLogsByDayUseCase(
+            this.getAuthUserService(authUser),
+            this.getAccessLogService(),
         );
     }
     //#endregion

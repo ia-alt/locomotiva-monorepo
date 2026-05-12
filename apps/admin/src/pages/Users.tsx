@@ -127,6 +127,12 @@ const UsersPage: React.FC = () => {
                     E-MAIL
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
+                    CARGO
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
+                    INSTITUIÇÃO
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
                     TIPO
                   </TableCell>
                   <TableCell
@@ -140,7 +146,7 @@ const UsersPage: React.FC = () => {
               <TableBody>
                 {users.filter((u) => u.userType !== 'system').length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                       {search ? 'Nenhum usuário encontrado para esta busca.' : 'Nenhum usuário encontrado.'}
                     </TableCell>
                   </TableRow>
@@ -160,6 +166,16 @@ const UsersPage: React.FC = () => {
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
                           {user.email}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color={user.jobTitle ? 'text.primary' : 'text.disabled'}>
+                          {user.jobTitle ?? 'Não informado'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color={user.company ? 'text.primary' : 'text.disabled'}>
+                          {user.company ?? 'Não informado'}
                         </Typography>
                       </TableCell>
                       <TableCell>

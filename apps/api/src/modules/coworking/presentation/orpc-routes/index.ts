@@ -20,6 +20,7 @@ import { findMemberByCpfRoute } from "./routes/find-member-by-cpf";
 import { findActiveMemberByCpfRoute } from "./routes/find-active-member-by-cpf";
 import { quickCheckoutByCpfRoute } from "./routes/quick-checkout-by-cpf";
 import { generateTotemAccessCodeRoute } from "./routes/generate-totem-access-code";
+import { listAccessLogsByDayRoute } from "./routes/list-access-logs-by-day";
 
 export const coworkingRoutes = {
     checkin: performCheckinRoute,
@@ -46,5 +47,6 @@ export const coworkingRoutes = {
     findMemberByCpf: findMemberByCpfRoute,
     findActiveMemberByCpf: findActiveMemberByCpfRoute,
     quickCheckoutByCpf: quickCheckoutByCpfRoute,
+    listAccessLogsByDay: listAccessLogsByDayRoute,
 };
 

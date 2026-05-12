@@ -22,6 +22,7 @@ import {
   MeetingRoom as MeetingRoomIcon,
   People as PeopleIcon,
   BarChart as BarChartIcon,
+  History as HistoryIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   DarkMode as DarkModeIcon,
@@ -34,13 +35,33 @@ import { version } from '../../../package.json';
 
 const drawerWidth = 280;
 
-const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Controle de Acesso', icon: <SecurityIcon />, path: '/access-control' },
-  { text: 'Reservas', icon: <CalendarMonthIcon />, path: '/reservations' },
-  { text: 'Salas', icon: <MeetingRoomIcon />, path: '/rooms' },
-  { text: 'Usuários', icon: <PeopleIcon />, path: '/users' },
-  { text: 'Relatório de Frequência', icon: <BarChartIcon />, path: '/frequency-report' },
+const menuGroups = [
+  {
+    items: [
+      { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    ],
+  },
+  {
+    label: 'COWORKING',
+    items: [
+      { text: 'Controle de Acesso', icon: <SecurityIcon />, path: '/access-control' },
+      { text: 'Histórico', icon: <HistoryIcon />, path: '/access-history' },
+    ],
+  },
+  {
+    label: 'RESERVAS',
+    items: [
+      { text: 'Reservas', icon: <CalendarMonthIcon />, path: '/reservations' },
+      { text: 'Salas', icon: <MeetingRoomIcon />, path: '/rooms' },
+    ],
+  },
+  {
+    label: 'ADMIN',
+    items: [
+      { text: 'Usuários', icon: <PeopleIcon />, path: '/users' },
+      { text: 'Relatório de Frequência', icon: <BarChartIcon />, path: '/frequency-report' },
+    ],
+  },
 ];
 
 const bottomItems = [
@@ -118,33 +139,54 @@ export const AdminLayout: React.FC = () => {
         <Divider />
 
         <List sx={{ flexGrow: 1 }}>
-          {menuItems.map((item) => {
-            const selected = location.pathname === item.path;
-            return (
-              <ListItem key={item.text} disablePadding>
-                <ListItemButton
-                  selected={selected}
-                  onClick={() => navigate(item.path)}
+          {menuGroups.map((group, groupIndex) => (
+            <React.Fragment key={groupIndex}>
+              {group.label && (
+                <Typography
+                  variant="caption"
                   sx={{
-                    '&.Mui-selected': {
-                      bgcolor: 'primary.main',
-                      color: 'primary.contrastText',
-                      '& .MuiListItemIcon-root': { color: 'primary.contrastText' },
-                      '&:hover': { bgcolor: 'primary.dark' },
-                    },
-                    borderRadius: 2,
-                    mx: 1,
-                    my: 0.5,
+                    display: 'block',
+                    px: 2,
+                    pt: groupIndex === 0 ? 1 : 2,
+                    pb: 0.5,
+                    color: 'text.disabled',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    fontSize: '0.65rem',
                   }}
                 >
-                  <ListItemIcon sx={{ color: selected ? 'inherit' : 'text.secondary' }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
+                  {group.label}
+                </Typography>
+              )}
+              {group.items.map((item) => {
+                const selected = location.pathname === item.path;
+                return (
+                  <ListItem key={item.text} disablePadding>
+                    <ListItemButton
+                      selected={selected}
+                      onClick={() => navigate(item.path)}
+                      sx={{
+                        '&.Mui-selected': {
+                          bgcolor: 'primary.main',
+                          color: 'primary.contrastText',
+                          '& .MuiListItemIcon-root': { color: 'primary.contrastText' },
+                          '&:hover': { bgcolor: 'primary.dark' },
+                        },
+                        borderRadius: 2,
+                        mx: 1,
+                        my: 0.5,
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: selected ? 'inherit' : 'text.secondary' }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </React.Fragment>
+          ))}
         </List>
 
         <Typography
