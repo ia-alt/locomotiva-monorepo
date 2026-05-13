@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Modal, View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { Modal, View, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
 import {
@@ -26,7 +26,11 @@ interface CalendarModalProps {
     onConfirm: (date: Date) => void;
 }
 
+const MAX_WIDTH = 800;
+
 export default function CalendarModal({ visible, onClose, initialDate, onConfirm }: CalendarModalProps) {
+    const { width } = useWindowDimensions();
+    const modalWidth = Math.min(width, MAX_WIDTH);
     const [currentMonth, setCurrentMonth] = useState(initialDate);
     const [selectedDate, setSelectedDate] = useState(initialDate);
 
@@ -93,7 +97,7 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
             <View style={styles.modalOverlay}>
                 <TouchableOpacity style={styles.touchableOverlay} activeOpacity={1} onPress={onClose} />
-                <View style={styles.modalContent}>
+                <View style={[styles.modalContent, { width: modalWidth, alignSelf: 'center' }]}>
 
                     <View style={styles.dragHandleContainer}>
                         <View style={styles.dragHandle} />
