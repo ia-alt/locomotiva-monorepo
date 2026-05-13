@@ -48,7 +48,7 @@ export default function DetalhesReservaScreen() {
     };
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
             <View style={styles.stepIndicator}>
                 <View style={styles.stepDone}>
                     <Feather name="check" size={16} color="#FFFFFF" />
