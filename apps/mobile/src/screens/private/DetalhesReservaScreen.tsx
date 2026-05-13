@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         padding: 20,
-        paddingBottom: 40,
+        paddingBottom: 64,
     },
     stepIndicator: {
         flexDirection: 'row',
@@ -270,6 +270,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     spinnerButton: {
+        flexShrink: 0,
         paddingHorizontal: 20,
         paddingVertical: 14,
         alignItems: 'center',
@@ -279,7 +280,9 @@ const styles = StyleSheet.create({
         opacity: 0.4,
     },
     spinnerValue: {
-        flex: 1,
+        flexShrink: 1,
+        flexGrow: 1,
+        minWidth: 40,
         borderLeftWidth: 1,
         borderRightWidth: 1,
         borderColor: '#E5E7EB',
