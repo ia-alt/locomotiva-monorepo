@@ -102,6 +102,9 @@ export default function PrivateNavigator() {
         <Stack.Navigator initialRouteName="Drawer" screenOptions={{
             animation: 'slide_from_right',
             cardStyle: { flex: 1 },
+            cardStyleInterpolator: ({ current }) => ({
+                cardStyle: { opacity: current.progress },
+            }),
         }}>
             <Stack.Screen
                 name="Drawer"

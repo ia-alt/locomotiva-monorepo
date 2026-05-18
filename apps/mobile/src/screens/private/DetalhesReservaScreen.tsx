@@ -9,6 +9,12 @@ import { Feather } from '@expo/vector-icons';
 type DetalhesReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'DetalhesReserva'>;
 type DetalhesReservaRouteProp = RouteProp<PrivateStackParamList, 'DetalhesReserva'>;
 
+
+const TITLE_MIN = 3;
+const TITLE_MAX = 50;
+const DESC_MIN = 10;
+const DESC_MAX = 200;
+
 export default function DetalhesReservaScreen() {
     const navigation = useNavigation<DetalhesReservaNavigationProp>();
     const route = useRoute<DetalhesReservaRouteProp>();
@@ -18,9 +24,15 @@ export default function DetalhesReservaScreen() {
     const [description, setDescription] = useState('');
     const [numberOfPeople, setNumberOfPeople] = useState(0);
 
+
+    const titleLen = title.length;
+    const descLen = description.length;
+    const titleBelowMin = titleLen > 0 && titleLen < TITLE_MIN;
+    const descBelowMin = descLen > 0 && descLen < DESC_MIN;
+
     const isFormValid =
-        title.trim().length > 0 &&
-        description.trim().length > 0 &&
+        titleLen >= TITLE_MIN &&
+        descLen >= DESC_MIN &&
         numberOfPeople >= 1;
 
     const handleConfirm = () => {
@@ -36,7 +48,7 @@ export default function DetalhesReservaScreen() {
     };
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
             <View style={styles.stepIndicator}>
                 <View style={styles.stepDone}>
                     <Feather name="check" size={16} color="#FFFFFF" />
@@ -59,26 +71,52 @@ export default function DetalhesReservaScreen() {
             <View style={styles.formGroup}>
                 <Text style={styles.label}>Título da Ação</Text>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, titleBelowMin && styles.inputError]}
                     placeholder="Ex: Reunião de Alinhamento"
                     placeholderTextColor="#9CA3AF"
                     value={title}
-                    onChangeText={setTitle}
+                    onChangeText={(t) => setTitle(t.slice(0, TITLE_MAX))}
+                    maxLength={TITLE_MAX}
                 />
+                <View style={styles.fieldFooter}>
+                    {titleBelowMin ? (
+                        <Text style={styles.helperError}>Escreva um pouco mais</Text>
+                    ) : (
+                        <Text>{''}</Text>
+                    )}
+                    {titleLen > 0 && (
+                        <Text style={[styles.counter, titleBelowMin && styles.counterError]}>
+                            {titleLen}/{TITLE_MAX}
+                        </Text>
+                    )}
+                </View>
             </View>
 
             <View style={styles.formGroup}>
                 <Text style={styles.label}>Breve Descrição</Text>
                 <TextInput
-                    style={[styles.input, styles.textArea]}
+                    style={[styles.input, styles.textArea, descBelowMin && styles.inputError]}
                     placeholder="Ex: Discutir metas do trimestre com a equipe de marketing."
                     placeholderTextColor="#9CA3AF"
                     value={description}
-                    onChangeText={setDescription}
+                    onChangeText={(t) => setDescription(t.slice(0, DESC_MAX))}
+                    maxLength={DESC_MAX}
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
                 />
+                <View style={styles.fieldFooter}>
+                    {descBelowMin ? (
+                        <Text style={styles.helperError}>Escreva um pouco mais</Text>
+                    ) : (
+                        <Text>{''}</Text>
+                    )}
+                    {descLen > 0 && (
+                        <Text style={[styles.counter, descBelowMin && styles.counterError]}>
+                            {descLen}/{DESC_MAX}
+                        </Text>
+                    )}
+                </View>
             </View>
 
             <View style={styles.formGroup}>
@@ -93,13 +131,22 @@ export default function DetalhesReservaScreen() {
                         <Feather name="minus" size={20} color={numberOfPeople <= 0 ? '#D1D5DB' : '#1E88E5'} />
                     </TouchableOpacity>
 
-                    <View style={styles.spinnerValue}>
-                        {numberOfPeople === 0 ? (
-                            <Text style={styles.spinnerPlaceholder}>Não informado</Text>
-                        ) : (
-                            <Text style={styles.spinnerNumber}>{numberOfPeople}</Text>
-                        )}
-                    </View>
+                    <TextInput
+                        style={styles.spinnerValue}
+                        keyboardType="numeric"
+                        placeholder="Não informado"
+                        placeholderTextColor="#9CA3AF"
+                        value={numberOfPeople === 0 ? '' : String(numberOfPeople)}
+                        onChangeText={(t) => {
+                            const n = parseInt(t.replace(/\D/g, ''), 10);
+                            if (isNaN(n) || t === '') {
+                                setNumberOfPeople(0);
+                            } else {
+                                setNumberOfPeople(Math.min(n, roomCapacity));
+                            }
+                        }}
+                        textAlign="center"
+                    />
 
                     <TouchableOpacity
                         style={[styles.spinnerButton, numberOfPeople >= roomCapacity && styles.spinnerButtonDisabled]}
@@ -138,7 +185,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         padding: 20,
-        paddingBottom: 40,
+        paddingBottom: 64,
     },
     stepIndicator: {
         flexDirection: 'row',
@@ -223,6 +270,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     spinnerButton: {
+        flexShrink: 0,
         paddingHorizontal: 20,
         paddingVertical: 14,
         alignItems: 'center',
@@ -232,13 +280,18 @@ const styles = StyleSheet.create({
         opacity: 0.4,
     },
     spinnerValue: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
+        flexShrink: 1,
+        flexGrow: 1,
+        minWidth: 40,
         borderLeftWidth: 1,
         borderRightWidth: 1,
         borderColor: '#E5E7EB',
         paddingVertical: 14,
+        paddingHorizontal: 8,
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#111827',
+        textAlign: 'center',
     },
     spinnerNumber: {
         fontSize: 20,
@@ -273,5 +326,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#FFFFFF',
+    },
+    inputError: {
+        borderColor: '#EF4444',
+    },
+    fieldFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 4,
+        paddingHorizontal: 4,
+    },
+    helperError: {
+        fontSize: 12,
+        color: '#EF4444',
+    },
+    counter: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    counterError: {
+        color: '#EF4444',
     },
 });
