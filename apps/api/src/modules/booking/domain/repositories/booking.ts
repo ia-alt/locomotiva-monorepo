@@ -9,6 +9,7 @@ interface BookingRepository {
     findAllAdmin(params: BookingRepository.FindAllAdminParams): Promise<PaginatedResult<typeof BookingRepository.AdminBookingItemSchema, BookingRepository.AdminBookingItem>>;
     findById(id: UniqueId): Promise<Booking | null>;
     findByDay(params: BookingRepository.FindByDayParams): Promise<Booking[]>;
+    findAllByMonth(year: number, month: number): Promise<Booking[]>;
 }
 
 namespace BookingRepository {

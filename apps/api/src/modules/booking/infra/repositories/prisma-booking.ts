@@ -191,6 +191,19 @@ export class PrismaBookingRepository implements BookingRepository {
         }));
     }
 
+    async findAllByMonth(year: number, month: number): Promise<Booking[]> {
+        const from = new Date(year, month - 1, 1, 0, 0, 0, 0);
+        const to = new Date(year, month, 0, 23, 59, 59, 999);
+
+        const bookingsDb = await this.prisma.booking.findMany({
+            where: {
+                startTime: { gte: from, lte: to },
+            },
+            orderBy: { startTime: 'asc' },
+        });
+        return bookingsDb.map((booking) => this.bookingDbToEntity(booking));
+    }
+
     async findById(id: UniqueId): Promise<Booking | null> {
         const booking = await this.prisma.booking.findUnique({ where: { id: id.value } });
         if (!booking) return null;

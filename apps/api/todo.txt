@@ -1,0 +1,100 @@
+// 1- contexto Booking
+// - Novo value object: BookingWithUser
+// -  Métodos de serviço: BookingService
+//      - findAllByMonthWithUsers
+
+// 2- contexto AccessLog
+// -  Métodos de serviço: AccessLogService
+//      - findAllByMonthWithUsers
+// adicionarPropriedade AccessLogWithUser: duration/permanencia
+
+
+//3 - Criar novo contextÇ Reports
+
+//- domain
+//- Value Object: MonthReport
+// service: ReportService
+
+// application: 
+// generate month report use case
+
+
+
+type DayTotalPeople = {
+    day: number
+    coworking: number
+    booking: number
+}
+
+class MonthReport {
+    public readonly totalPeopleCoworking: number
+    public readonly totaPeopleBooking: number
+    public readonly totalBookings: number
+    public readonly totalPeople: number
+
+    public readonly totalPeoplePerDay: DayTotalPeople[]
+
+    totalPeopleByWeekDay: {
+        weekday: number // 0 - 6
+        total: number
+    }[]
+
+    bookings: BookingWithUser[] // precisa criar
+
+    coworkingLogs: AccessLogWithUser[] //precisa adicionar total
+
+    constructor(
+        year: number
+        month: number
+        bookings: BookingWithUser[]
+        coworkingLogs: AccessLogWithUser[]
+    ) {
+        this.totalPeopleCoworking = coworkingLogs.length;
+        this.totaPeopleBooking = bookings.reduce((acc, booking) => acc + booking.numberOfPeople, 0);
+        this.totalBookings = bookings.length;
+        this.totalPeople = this.totalPeopleCoworking + this.totaPeopleBooking;
+
+        this.totalPeopleByWeekDay = this.calculateTotalPeopleByWeekDay(bookings, coworkingLogs);
+        this.totalPeoplePerDay = this.calculateTotalPeoplePerDay(bookings, coworkingLogs);
+    }
+
+    private calculateTotalPeopleByWeekDay(bookings: BookingWithUser[], coworkingLogs: AccessLogWithUser[]) {
+        throw new Error("not implemented")
+    }
+
+    private calculateTotalPeoplePerDay(bookings: BookingWithUser[], coworkingLogs: AccessLogWithUser[]) {
+        throw new Error("not implemented")
+    }
+
+    toJSON(): MonthReport.Json {
+        return {
+            year: this.year,
+            month: this.month,
+            totalPeopleCoworking: this.totalPeopleCoworking,
+            totaPeopleBooking: this.totaPeopleBooking,
+            totalBookings: this.totalBookings,
+            totalPeople: this.totalPeople,
+            totalPeoplePerDay: this.totalPeoplePerDay,
+            totalPeopleByWeekDay: this.totalPeopleByWeekDay,
+            bookings: this.bookings,
+            coworkingLogs: this.coworkingLogs,
+        };
+    }
+
+}
+
+
+
+// Caso de uso: Gerar relatorio mensal
+//receve mes/ano
+// const monthReport = reportService.generateMonthReport(year, month);
+// return monthReport.toJSON();
+// mothRepot.ValueSchema
+
+
+//ReportService
+// function generateMonthReport
+// const bookingWithUser = await this.bookingService.findAllByMonthWithUsers(year, month)
+// const coworkingLog = await this.accessLogService.findAllByMonthWithUsers(year, month)
+// const report = new MonthReport(year: number, month: number, bookings, cowrkingLogs);
+// return report
