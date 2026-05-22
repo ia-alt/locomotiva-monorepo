@@ -71,7 +71,7 @@ export default function ConfirmarReservaScreen() {
     const parsedEnd = endTime ? new Date(endTime) : new Date();
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
 
             <View style={styles.headerInfo}>
                 <Feather name="check-circle" size={24} color="#1E88E5" />

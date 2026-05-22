@@ -3,6 +3,7 @@ import { AccessLog } from "@coworking/domain/entities";
 import { Prisma, PrismaClient, AccessLog as AccessLogDb } from "@core/infra/database/prisma";
 import { DomainEvents, UniqueId } from "@core/base-classes";
 import { PaginatedQuery, PaginatedResult, OnlyDate } from "@core/value-objects";
+import { endOfMonth, startOfMonth } from "date-fns";
 
 export class PrismaAccessLogRepository implements AccessLogRepository {
     constructor(private readonly prisma: PrismaClient) { }
@@ -141,6 +142,20 @@ export class PrismaAccessLogRepository implements AccessLogRepository {
             total,
             paginatedQuery: pagination,
         });
+    }
+
+    async findAllByMonth(year: number, month: number): Promise<AccessLog[]> {
+        const refDate = new Date(year, month - 1, 1)
+        const from = startOfMonth(refDate);
+        const to = endOfMonth (refDate);
+
+        const logs = await this.prisma.accessLog.findMany({
+            where: {
+                entryTime: { gte: from, lte: to },
+            },
+            orderBy: { entryTime: 'asc' },
+        });
+        return logs.map((log) => this.accessLogDbToEntity(log));
     }
 
     async findAllByDay(day: OnlyDate): Promise<AccessLog[]> {

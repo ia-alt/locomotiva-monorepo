@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator, StatusBar, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator, StatusBar, Dimensions, useWindowDimensions } from 'react-native';
 import { Text, Surface, Divider } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useORPC } from '../locomotiva-api/context';
@@ -12,9 +12,13 @@ interface RoomSelectorProps {
     setSelectedRoomId: (id: string, capacity: number) => void;
 }
 
+const MAX_WIDTH = 800;
+
 export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: RoomSelectorProps) {
     const orpc = useORPC();
     const { data: rooms, isLoading } = useQuery(orpc.booking.listRooms.queryOptions({ input: {} }));
+    const { width } = useWindowDimensions();
+    const modalWidth = Math.min(width, MAX_WIDTH);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -61,7 +65,7 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
             <Modal visible={modalVisible} transparent={true} animationType="slide">
                 <View style={styles.modalOverlay}>
                     <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setModalVisible(false)} />
-                    <Surface style={styles.modalContent}>
+                    <Surface style={[styles.modalContent, { width: modalWidth, alignSelf: 'center' }]}>
                         <View style={styles.modalHeader}>
                             <Text variant="titleLarge" style={{ fontWeight: 'bold' }}>Salas Disponíveis</Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>

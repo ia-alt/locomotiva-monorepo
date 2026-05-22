@@ -14,6 +14,7 @@ import ReservaSucessoScreen from '../screens/private/ReservaSucessoScreen';
 import DetalhesMinhaReservaScreen from '../screens/private/DetalhesMinhaReservaScreen';
 import EditarPerfilScreen from '../screens/private/EditarPerfilScreen';
 import AlterarSenhaScreen from '../screens/private/AlterarSenhaScreen';
+import PerfilIncompletoScreen from '../screens/private/PerfilIncompletoScreen';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 
@@ -46,6 +47,7 @@ export type PrivateStackParamList = {
     };
     EditarPerfil: undefined;
     AlterarSenha: undefined;
+    PerfilIncompleto: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -102,6 +104,9 @@ export default function PrivateNavigator() {
         <Stack.Navigator initialRouteName="Drawer" screenOptions={{
             animation: 'slide_from_right',
             cardStyle: { flex: 1 },
+            cardStyleInterpolator: ({ current }) => ({
+                cardStyle: { opacity: current.progress },
+            }),
         }}>
             <Stack.Screen
                 name="Drawer"
@@ -147,6 +152,11 @@ export default function PrivateNavigator() {
                 name="AlterarSenha"
                 component={AlterarSenhaScreen}
                 options={{ title: 'Alterar Senha' }}
+            />
+            <Stack.Screen
+                name="PerfilIncompleto"
+                component={PerfilIncompletoScreen}
+                options={{ headerShown: false }}
             />
         </Stack.Navigator>
     );
