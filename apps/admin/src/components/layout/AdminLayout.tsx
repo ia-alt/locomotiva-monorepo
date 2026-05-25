@@ -21,12 +21,12 @@ import {
   CalendarMonth as CalendarMonthIcon,
   MeetingRoom as MeetingRoomIcon,
   People as PeopleIcon,
-  BarChart as BarChartIcon,
   History as HistoryIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
+  Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
@@ -59,7 +59,8 @@ const menuGroups = [
     label: 'ADMIN',
     items: [
       { text: 'Usuários', icon: <PeopleIcon />, path: '/users' },
-      { text: 'Relatório de Frequência', icon: <BarChartIcon />, path: '/frequency-report' },
+      //{ text: 'Relatório de Frequência', icon: <BarChartIcon />, path: '/frequency-report' },
+      { text: 'Relatório', icon: <AssessmentIcon />, path: '/report' },
     ],
   },
 ];

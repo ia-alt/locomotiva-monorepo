@@ -4,9 +4,11 @@ import { Text, FAB } from 'react-native-paper';
 import { BookingsProvider, useBookings } from '../../contexts/ReservasContext';
 import BookingCard from '../../components/BookingCard';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { useAuth } from '../../contexts/auth-context';
 
 function ReservasList() {
     const navigation = usePrivateStackNavigation();
+    const { authUser } = useAuth();
     const {
         bookings,
         isLoading,
@@ -75,7 +77,10 @@ function ReservasList() {
                 icon="plus"
                 color="#FFFFFF"
                 style={styles.fab}
-                onPress={() => navigation.navigate('CriarReserva')}
+                onPress={() => {
+                    const profileComplete = !!(authUser as any)?.company && !!(authUser as any)?.jobTitle;
+                    navigation.navigate(profileComplete ? 'CriarReserva' : 'PerfilIncompleto');
+                }}
                 label='Nova Reserva'
             />
         </View>

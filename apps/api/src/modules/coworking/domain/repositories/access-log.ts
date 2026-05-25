@@ -13,4 +13,5 @@ export interface AccessLogRepository {
     findHistoryByUserId(userId: UniqueId, pagination: PaginatedQuery): Promise<PaginatedResult<typeof AccessLog.JsonSchema, AccessLog>>;
     findAllHistory(pagination: PaginatedQuery): Promise<PaginatedResult<typeof AccessLog.JsonSchema, AccessLog>>;
     findAllByDay(day: OnlyDate): Promise<AccessLog[]>;
+    findAllByMonth(year: number, month: number): Promise<AccessLog[]>;
 }
