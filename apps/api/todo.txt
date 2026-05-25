@@ -1,100 +1,39 @@
-// 1- contexto Booking
-// - Novo value object: BookingWithUser
-// -  Métodos de serviço: BookingService
-//      - findAllByMonthWithUsers
+context Report
+domain:
+novo service (apenas interface): RenderReportService
+- renderMonthReport(report: MonthReport): Promise<Buffer>
 
-// 2- contexto AccessLog
-// -  Métodos de serviço: AccessLogService
-//      - findAllByMonthWithUsers
-// adicionarPropriedade AccessLogWithUser: duration/permanencia
+application:
+novo caso de uso: GenerateAndRenderMonthReportUseCase
+async execute(input: RenderMonthReportUseCase.Input): Promise<GenerateMonthReportUseCase.Output> {
+    this.authUserService.checkIsAdmin();
 
-
-//3 - Criar novo contextÇ Reports
-
-//- domain
-//- Value Object: MonthReport
-// service: ReportService
-
-// application: 
-// generate month report use case
-
-
-
-type DayTotalPeople = {
-    day: number
-    coworking: number
-    booking: number
+    const date = new OnlyDate(input.date);
+    const report = await this.reportService.generateMonthReport(date.getYear(), date.getMonth());
+    const pdfBuffer = await this.renderReportService.renderMonthReport(report);
+    return pdfBuffer;
 }
 
-class MonthReport {
-    public readonly totalPeopleCoworking: number
-    public readonly totaPeopleBooking: number
-    public readonly totalBookings: number
-    public readonly totalPeople: number
+namespace GenerateMonthReportUseCase {
+    export const InputSchema = z.object({
+        date: OnlyDate.ValueSchema,
+    });
 
-    public readonly totalPeoplePerDay: DayTotalPeople[]
+    export const OutputSchema = z.instanceof(Buffer);
 
-    totalPeopleByWeekDay: {
-        weekday: number // 0 - 6
-        total: number
-    }[]
-
-    bookings: BookingWithUser[] // precisa criar
-
-    coworkingLogs: AccessLogWithUser[] //precisa adicionar total
-
-    constructor(
-        year: number
-        month: number
-        bookings: BookingWithUser[]
-        coworkingLogs: AccessLogWithUser[]
-    ) {
-        this.totalPeopleCoworking = coworkingLogs.length;
-        this.totaPeopleBooking = bookings.reduce((acc, booking) => acc + booking.numberOfPeople, 0);
-        this.totalBookings = bookings.length;
-        this.totalPeople = this.totalPeopleCoworking + this.totaPeopleBooking;
-
-        this.totalPeopleByWeekDay = this.calculateTotalPeopleByWeekDay(bookings, coworkingLogs);
-        this.totalPeoplePerDay = this.calculateTotalPeoplePerDay(bookings, coworkingLogs);
-    }
-
-    private calculateTotalPeopleByWeekDay(bookings: BookingWithUser[], coworkingLogs: AccessLogWithUser[]) {
-        throw new Error("not implemented")
-    }
-
-    private calculateTotalPeoplePerDay(bookings: BookingWithUser[], coworkingLogs: AccessLogWithUser[]) {
-        throw new Error("not implemented")
-    }
-
-    toJSON(): MonthReport.Json {
-        return {
-            year: this.year,
-            month: this.month,
-            totalPeopleCoworking: this.totalPeopleCoworking,
-            totaPeopleBooking: this.totaPeopleBooking,
-            totalBookings: this.totalBookings,
-            totalPeople: this.totalPeople,
-            totalPeoplePerDay: this.totalPeoplePerDay,
-            totalPeopleByWeekDay: this.totalPeopleByWeekDay,
-            bookings: this.bookings,
-            coworkingLogs: this.coworkingLogs,
-        };
-    }
-
+    export type Input = z.infer<typeof InputSchema>;
+    export type Output = z.infer<typeof OutputSchema>;
 }
 
+em Infra:
+ReactPdfRenderReportService
+const MyDocument = () => (
+  <Document>
+    <Page>
+      <Text>Relatório</Text>
+      <Text>{JSON.stringfy(relatorio.toJSON(), null, 2)}</Text>
+    </Page>
+  </Document>
+);
 
-
-// Caso de uso: Gerar relatorio mensal
-//receve mes/ano
-// const monthReport = reportService.generateMonthReport(year, month);
-// return monthReport.toJSON();
-// mothRepot.ValueSchema
-
-
-//ReportService
-// function generateMonthReport
-// const bookingWithUser = await this.bookingService.findAllByMonthWithUsers(year, month)
-// const coworkingLog = await this.accessLogService.findAllByMonthWithUsers(year, month)
-// const report = new MonthReport(year: number, month: number, bookings, cowrkingLogs);
-// return report
+const pdfBuffer = await renderToBuffer(<MyDocument />);

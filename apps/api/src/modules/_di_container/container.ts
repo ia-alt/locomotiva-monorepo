@@ -85,7 +85,10 @@ import { MemoryPublisherTotemCheckinNotifier } from "../coworking/infra/services
 import { TotemCheckinAccessCodeManager } from "../coworking/application/services/totem-checkin-access-code-manager";
 import { MemoryTotemCheckinAccessCodeManager } from "../coworking/infra/services/memory-totem-checkin-access-code-manager";
 import { ReportService } from "src/modules/report/domain/services/report";
+import { RenderReportService } from "src/modules/report/domain/services/render-report";
+import { ReactPdfRenderReportService } from "src/modules/report/infra/services/react-pdf-render-report";
 import { GenerateMonthReportUseCase } from "src/modules/report/application/use-cases/generate-month-report";
+import { GenerateAndRenderMonthReportUseCase } from "src/modules/report/application/use-cases/generate-and-render-month-report";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -306,6 +309,14 @@ export class DiContainer {
             );
         }
         return this._reportService;
+    }
+
+    private _renderReportService?: RenderReportService;
+    public getRenderReportService(): RenderReportService {
+        if (!this._renderReportService) {
+            this._renderReportService = new ReactPdfRenderReportService();
+        }
+        return this._renderReportService;
     }
 
     private _passwordService?: PasswordService;
@@ -817,6 +828,14 @@ export class DiContainer {
         return new GenerateMonthReportUseCase(
             this.getAuthUserService(authUser),
             this.getReportService(),
+        );
+    }
+
+    public getGenerateAndRenderMonthReportUseCase(authUser: User): GenerateAndRenderMonthReportUseCase {
+        return new GenerateAndRenderMonthReportUseCase(
+            this.getAuthUserService(authUser),
+            this.getReportService(),
+            this.getRenderReportService(),
         );
     }
     //#endregion
