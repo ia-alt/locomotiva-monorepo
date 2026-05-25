@@ -30,6 +30,14 @@ class User extends AggregateRoot {
         return this._name.split(' ')[0];
     }
 
+    get company() {
+        return this._company;
+    }
+
+    get jobTitle() {
+        return this._jobTitle;
+    }
+
     static create(props: User.CreateParams): User {
         const user = new User(
             UniqueId.create(),
@@ -129,8 +137,6 @@ class User extends AggregateRoot {
     isAdmin() {
         return this._userType === User.UserType.ADMIN;
     }
-
-
 
 
 }

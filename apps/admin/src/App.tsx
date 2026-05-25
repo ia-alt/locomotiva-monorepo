@@ -8,6 +8,7 @@ import FrequencyReport from './pages/FrequencyReport';
 import AccessHistoryPage from './pages/AccessHistory';
 import BookingsPage from './pages/Bookings';
 import SettingsPage from './pages/Settings';
+import ReportPage from './pages/Report';
 import { AdminLayout } from './components/layout/AdminLayout';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="/access-history" element={<AccessHistoryPage />} />
           <Route path="/reservations" element={<BookingsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/report" element={<ReportPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

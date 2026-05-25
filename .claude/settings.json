@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \"require\\('./node_modules/tsx/dist/cli.mjs'\\)\")"
+      "Bash(node -e \"require\\('./node_modules/tsx/dist/cli.mjs'\\)\")",
+      "WebSearch"
     ]
   }
 }

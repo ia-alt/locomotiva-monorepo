@@ -84,6 +84,11 @@ import { TotemCheckinNotifier } from "../coworking/application/services/totem-ch
 import { MemoryPublisherTotemCheckinNotifier } from "../coworking/infra/services/memory-publisher-totem-checkin-notifier";
 import { TotemCheckinAccessCodeManager } from "../coworking/application/services/totem-checkin-access-code-manager";
 import { MemoryTotemCheckinAccessCodeManager } from "../coworking/infra/services/memory-totem-checkin-access-code-manager";
+import { ReportService } from "src/modules/report/domain/services/report";
+import { RenderReportService } from "src/modules/report/domain/services/render-report";
+import { ReactPdfRenderReportService } from "src/modules/report/infra/services/react-pdf-render-report";
+import { GenerateMonthReportUseCase } from "src/modules/report/application/use-cases/generate-month-report";
+import { GenerateAndRenderMonthReportUseCase } from "src/modules/report/application/use-cases/generate-and-render-month-report";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -240,7 +245,8 @@ export class DiContainer {
             this._bookingService = new BookingService(
                 this.getBookingRepository(),
                 this.getSpaceOperatingHoursService(),
-                this.getRoomRepository()
+                this.getRoomRepository(),
+                this.getUserRepository()
             );
         }
         return this._bookingService;
@@ -292,6 +298,25 @@ export class DiContainer {
             );
         }
         return this._accessLogService;
+    }
+
+    private _reportService?: ReportService;
+    public getReportService(): ReportService {
+        if (!this._reportService) {
+            this._reportService = new ReportService(
+                this.getBookingService(),
+                this.getAccessLogService()
+            );
+        }
+        return this._reportService;
+    }
+
+    private _renderReportService?: RenderReportService;
+    public getRenderReportService(): RenderReportService {
+        if (!this._renderReportService) {
+            this._renderReportService = new ReactPdfRenderReportService();
+        }
+        return this._renderReportService;
     }
 
     private _passwordService?: PasswordService;
@@ -796,6 +821,21 @@ export class DiContainer {
         return new ListAccessLogsByDayUseCase(
             this.getAuthUserService(authUser),
             this.getAccessLogService(),
+        );
+    }
+
+    public getGenerateMonthReportUseCase(authUser: User): GenerateMonthReportUseCase {
+        return new GenerateMonthReportUseCase(
+            this.getAuthUserService(authUser),
+            this.getReportService(),
+        );
+    }
+
+    public getGenerateAndRenderMonthReportUseCase(authUser: User): GenerateAndRenderMonthReportUseCase {
+        return new GenerateAndRenderMonthReportUseCase(
+            this.getAuthUserService(authUser),
+            this.getReportService(),
+            this.getRenderReportService(),
         );
     }
     //#endregion

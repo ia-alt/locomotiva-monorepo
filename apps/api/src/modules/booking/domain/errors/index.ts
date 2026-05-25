@@ -63,6 +63,16 @@ export class RoomCapacityExceededError extends DomainError {
     }
 }
 
+export class IncompleteUserProfileError extends DomainError {
+    constructor() {
+        super(
+            'INCOMPLETE_USER_PROFILE',
+            'Para fazer uma reserva, você precisa ter empresa/instituição e cargo preenchidos no seu perfil.',
+            ErrorType.BAD_REQUEST
+        );
+    }
+}
+
 export * from "./invalid-booking-title-error";
 export * from "./invalid-booking-description-error";
 export * from "./invalid-booking-number-of-people-error";
