@@ -15,6 +15,7 @@ class AdminCreateBookingUseCase extends UseCase<AdminCreateBookingUseCase.Input,
 
     async execute(params: AdminCreateBookingUseCase.Input): Promise<AdminCreateBookingUseCase.Output> {
         this.authUserService.checkIsAdmin();
+        const adminUser = this.authUserService.getUser();
 
         const userId = UniqueId.fromString(params.userId);
         const roomId = UniqueId.fromString(params.roomId);
@@ -27,7 +28,7 @@ class AdminCreateBookingUseCase extends UseCase<AdminCreateBookingUseCase.Input,
             period,
             description: params.description,
             numberOfPeople: params.numberOfPeople,
-        }, true);
+        }, adminUser);
 
         return booking.toJSON();
     }

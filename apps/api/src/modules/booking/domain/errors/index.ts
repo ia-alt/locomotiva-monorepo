@@ -18,8 +18,8 @@ export class BookingLeadTimeViolationError extends DomainError {
 }
 
 export class RoomUnavailableError extends DomainError {
-    constructor() {
-        super(`ROOM_UNAVAILABLE`, `Sala não está disponível para o período selecionado.`, ErrorType.BAD_REQUEST);
+    constructor(reason: string) {
+        super(`ROOM_UNAVAILABLE`, `Sala não está disponível para o período selecionado. ${reason}`, ErrorType.BAD_REQUEST);
     }
 }
 
@@ -58,6 +58,16 @@ export class RoomCapacityExceededError extends DomainError {
         super(
             'ROOM_CAPACITY_EXCEEDED',
             `O número de pessoas (${requested}) excede a capacidade da sala (${capacity}).`,
+            ErrorType.BAD_REQUEST
+        );
+    }
+}
+
+export class IncompleteUserProfileError extends DomainError {
+    constructor() {
+        super(
+            'INCOMPLETE_USER_PROFILE',
+            'Para fazer uma reserva, você precisa ter empresa/instituição e cargo preenchidos no seu perfil.',
             ErrorType.BAD_REQUEST
         );
     }

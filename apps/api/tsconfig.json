@@ -36,12 +36,16 @@
       "@operating-hours/*": [
         "src/modules/operating-hours/*"
       ],
+      "@report/*": [
+        "src/modules/report/*"
+      ],
       "@env": [
         "src/modules/env.ts"
       ]
     },
     "composite": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "jsx": "react"
   },
   "include": [
     "src/**/*"

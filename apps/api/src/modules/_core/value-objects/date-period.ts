@@ -76,6 +76,10 @@ class DatePeriod extends ValueObject<DatePeriod.Value> {
     return this.value.from < other.value.to && this.value.to > other.value.from;
   }
 
+  contains(other: DatePeriod): boolean {
+    return this.value.from <= other.value.from && this.value.to >= other.value.to;
+  }
+
   subtractAll(others: DatePeriod[]): DatePeriod[] {
     let periods: DatePeriod[] = [this];
 

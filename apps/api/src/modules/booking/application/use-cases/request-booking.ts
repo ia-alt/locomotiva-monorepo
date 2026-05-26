@@ -14,19 +14,19 @@ class RequestBookingUseCase extends UseCase<RequestBookingUseCase.Input, Request
     }
 
     async execute(params: RequestBookingUseCase.Input): Promise<RequestBookingUseCase.Output> {
-        const { id: userId } = this.authUserService.getUser();
+        const user = this.authUserService.getUser();
         const roomId = UniqueId.fromString(params.roomId);
         const period = DatePeriod.fromPrimitive(params.period);
         const { title, description, numberOfPeople } = params;
 
-        const booking = await this.bookingService.createBookingRequest({ 
-            userId,
+        const booking = await this.bookingService.createBookingRequest({
+            userId: user.id,
             roomId,
-            title, 
-            description, 
-            period, 
-            numberOfPeople 
-        }, false);
+            title,
+            description,
+            period,
+            numberOfPeople
+        }, user);
 
         return booking.toJSON();
     }
