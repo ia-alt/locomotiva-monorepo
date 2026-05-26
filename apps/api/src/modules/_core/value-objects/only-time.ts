@@ -79,7 +79,7 @@ class OnlyTime extends ValueObject<OnlyTime.Value> {
   public toString(): string {
     return `${this.value.hour.toString().padStart(2, "0")}:${String(
       this.value.minute,
-    ).padStart(2, "0")}-${String(this.value.second).padStart(2, "0")}`;
+    ).padStart(2, "0")}:${String(this.value.second).padStart(2, "0")}`;
   }
 
   public toDate(): Date {
@@ -104,9 +104,8 @@ class OnlyTime extends ValueObject<OnlyTime.Value> {
   }
 
   valueOf() {
-    return (
-      this.value.second + this.value.minute * 60 + this.value.hour * 60 * 60
-    );
+    const _valueOf = this.value.second + this.value.minute * 60 + this.value.hour * 60 * 60;
+    return _valueOf;
   }
 
   equals(other: OnlyTime): boolean {
