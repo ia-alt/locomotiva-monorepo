@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Box, Typography, Grid, Card, CardContent,
   Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Avatar, CircularProgress, Alert, IconButton,
+  TableHead, TableRow, Paper, Avatar, CircularProgress, Alert, IconButton, Button,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -19,6 +19,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ptBR } from 'date-fns/locale';
 import { addMonths, subMonths } from 'date-fns';
 import { useMonthReport } from '../hooks/useMonthReport';
+import { useGenerateMonthReportPdf } from '../hooks/useGenerateMonthReportPdf';
 import { StatCard } from '../components/dashboard/StatCard';
 
 const DAY_PT: Record<number, string> = { 0: 'Dom', 1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb' };
@@ -42,6 +43,9 @@ const ReportPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const dateStr = toDateStr(selectedDate);
   const { data, isLoading, isError, error } = useMonthReport(dateStr);
+  const { generate: generatePdf, isLoading: pdfLoading } = useGenerateMonthReportPdf();
+
+  const handleGerarPdf = () => generatePdf(dateStr);
 
   const perDayLabels = (data?.totalPeoplePerDay ?? []).map((d) => String(d.day));
   const perDayTotal = (data?.totalPeoplePerDay ?? []).map((d) => d.coworking + d.booking);
@@ -81,6 +85,9 @@ const ReportPage: React.FC = () => {
             <IconButton onClick={() => setSelectedDate(d => addMonths(d, 1))}>
               <ChevronRightIcon />
             </IconButton>
+            <Button variant="outlined" size="small" onClick={handleGerarPdf} disabled={pdfLoading}>
+              {pdfLoading ? 'Gerando...' : 'Gerar PDF'}
+            </Button>
           </Box>
         </Box>
 
@@ -272,12 +279,15 @@ const ReportPage: React.FC = () => {
                     <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>DATA</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>MEMBRO</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>EMPRESA / INSTITUIÇÃO</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>ENTRADA</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>SAÍDA</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }} align="right">DURAÇÃO</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {(data?.coworkingLogs ?? []).length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                      <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                         Nenhum acesso ao coworking neste mês.
                       </TableCell>
                     </TableRow>
@@ -293,7 +303,7 @@ const ReportPage: React.FC = () => {
                     return Object.entries(groups).map(([dateLabel, items]) => (
                       <React.Fragment key={dateLabel}>
                         <TableRow>
-                          <TableCell colSpan={3} sx={{ bgcolor: 'action.selected', py: 1, px: 2 }}>
+                          <TableCell colSpan={6} sx={{ bgcolor: 'action.selected', py: 1, px: 2 }}>
                             <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.7rem' }}>
                               {dateLabel}
                             </Typography>
@@ -318,6 +328,15 @@ const ReportPage: React.FC = () => {
                               {item.user.jobTitle && (
                                 <Typography variant="caption" color="text.secondary">{item.user.jobTitle}</Typography>
                               )}
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">{new Date(item.accessLog.entryTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">{item.accessLog.exitTime ? new Date(item.accessLog.exitTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}</Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body2">{item.durationMinutes != null ? `${item.durationMinutes} min` : '—'}</Typography>
                             </TableCell>
                           </TableRow>
                         ))}
