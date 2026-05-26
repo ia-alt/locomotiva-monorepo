@@ -1,5 +1,5 @@
 import { BookingRepository, RoomRepository } from "@booking/domain/repositories";
-import { DatePeriod, OnlyDate } from "@core/value-objects";
+import { DatePeriod, OnlyDate, OnlyTime } from "@core/value-objects";
 import { UniqueId } from "@core/base-classes";
 import { SpaceOperatingHoursService } from "@operating-hours/domain/services";
 import { Booking } from "../entities";
@@ -7,6 +7,7 @@ import { RoomUnavailableError, BookingInPastError, RoomCapacityExceededError, In
 import { User } from "src/modules/identity/domain/entities";
 import { UserRepository } from "src/modules/identity/domain/repositories";
 import { BookingWithUser } from "../value-objects/booking-with-user";
+import { TimeInterval } from "src/modules/operating-hours/domain/value-objects";
 
 class BookingService {
     constructor(
@@ -21,11 +22,14 @@ class BookingService {
             throw new BookingInPastError();
         }
 
-        const isAvailable = await this.checkAvailability(params.roomId, params.period);
+        //TODO: mudar depois
+        const day = OnlyDate.fromDate(params.period.value.from);
+        const timeInterval = new TimeInterval({
+            start: OnlyTime.fromDate(params.period.value.from),
+            end: OnlyTime.fromDate(params.period.value.to),
+        });
 
-        if (!isAvailable) {
-            throw new RoomUnavailableError();
-        }
+        await this.checkAvailability(params.roomId, day, timeInterval);
 
         if (!user.isAdmin()) {
             if (user.company === null || user.jobTitle === null) {
@@ -44,16 +48,30 @@ class BookingService {
     }
 
 
-    async checkAvailability(roomId: UniqueId, period: DatePeriod): Promise<boolean> {
-        const day = OnlyDate.fromDate(period.value.from);
+    async checkAvailability(roomId: UniqueId, day: OnlyDate, timeInterval: TimeInterval): Promise<void> {
+        const dailyAvailability = await this.spaceOperatingHoursService.getAvailabilityForDay(roomId, day);
+
+        if (!dailyAvailability) {
+            throw new RoomUnavailableError(`O espaço não possui horário de funcionamento para o dia ${day.value}`);
+        }
+
+        if (!dailyAvailability.contains(timeInterval)) {
+            throw new RoomUnavailableError(`O horário solicitado (${timeInterval}) está fora do horário de funcionamento do espaço (${dailyAvailability})`);
+        }
+
         const bookings = await this.bookingRepository.findByDay({
             day,
             roomId,
             status: Booking.ActiveStatus,
         });
-        const usedSlots = bookings.map(x => x.period);
-        const overlapsSome = usedSlots.some(x => x.overlaps(period));
-        return !overlapsSome;
+
+        const usedSlots = bookings.map(x => x.timeInterval);
+
+        const overlapsSome = usedSlots.some(x => x.overlaps(timeInterval));
+
+        if (overlapsSome) {
+            throw new RoomUnavailableError(`O horário solicitado (${timeInterval}) está ocupado`);
+        }
     }
 
     async findAllByMonthWithUsers(year: number, month: number): Promise<BookingWithUser[]> {

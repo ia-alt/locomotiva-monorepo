@@ -27,6 +27,10 @@ class DailyAvailability extends ValueObject<DailyAvailability.Value> {
     return true;
   }
 
+  contains(timeInterval: TimeInterval): boolean {
+    return this.value.intervals.some(interval => interval.contains(timeInterval));
+  }
+
   toJSON(): DailyAvailability.Json {
     return {
       intervals: this.value.intervals.map((x) => x.toJSON()),
@@ -45,6 +49,10 @@ class DailyAvailability extends ValueObject<DailyAvailability.Value> {
       from: it.value.start.aplayInDate(_day),
       to: it.value.end.aplayInDate(_day),
     }))
+  }
+
+  toString(): string {
+    return this.value.intervals.map(it => it.toString()).join(', ');
   }
 }
 

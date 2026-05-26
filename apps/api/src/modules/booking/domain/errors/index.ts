@@ -18,8 +18,8 @@ export class BookingLeadTimeViolationError extends DomainError {
 }
 
 export class RoomUnavailableError extends DomainError {
-    constructor() {
-        super(`ROOM_UNAVAILABLE`, `Sala não está disponível para o período selecionado.`, ErrorType.BAD_REQUEST);
+    constructor(reason: string) {
+        super(`ROOM_UNAVAILABLE`, `Sala não está disponível para o período selecionado. ${reason}`, ErrorType.BAD_REQUEST);
     }
 }
 

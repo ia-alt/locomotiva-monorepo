@@ -11,6 +11,54 @@ class TimeInterval extends ValueObject<TimeInterval.Value> {
     }
   }
 
+  contains(other: TimeInterval) {
+    /*
+    const s1 = this.value.start.toString();
+    const e1 = this.value.end.toString();
+    const s2 = other.value.start.toString();
+    const e2 = other.value.end.toString();
+
+    console.log('\n[TimeInterval.contains DEBUG]');
+
+    const ts = this.value.start.valueOf();
+    const te = this.value.end.valueOf();
+    const os = other.value.start.valueOf();
+    const oe = other.value.end.valueOf();
+
+    const points = Array.from(new Set([ts, te, os, oe])).sort((a, b) => a - b);
+    const getPos = (val: number) => points.indexOf(val) * 22;
+
+    const drawLine = (sVal: number, eVal: number, sStr: string, eStr: string) => {
+      const startPos = getPos(sVal);
+      const endPos = getPos(eVal);
+      const prefix = " ".repeat(startPos);
+      const content = `[${sStr}`.padEnd(endPos - startPos, "=") + ` ${eStr}]`;
+      return prefix + content;
+    };
+
+    console.log(`THIS  INTERVAL: ${drawLine(ts, te, s1, e1)}`);
+    console.log(`OTHER INTERVAL: ${drawLine(os, oe, s2, e2)}`);
+    */
+    const containsStart = this.value.start <= other.value.start;
+    const containsEnd = this.value.end >= other.value.end;
+
+    /*
+    console.log(`- Start is within bounds (this.start <= other.start): ${containsStart}`);
+    console.log(`- End is within bounds (this.end >= other.end): ${containsEnd}`);
+    */
+    return containsStart && containsEnd;
+  }
+
+  overlaps(other: TimeInterval): boolean {
+    if (this.value.end === other.value.start || this.value.start === other.value.end) {
+      return false;
+    }
+    if (this.value.start === other.value.start || this.value.end === other.value.end) {
+      return true;
+    }
+    return this.value.start < other.value.end && this.value.end > other.value.start;
+  }
+
   toJSON(): TimeInterval.Json {
     return {
       start: this.value.start.toJSON(),
@@ -23,6 +71,10 @@ class TimeInterval extends ValueObject<TimeInterval.Value> {
       start: OnlyTime.fromJSON(json.start),
       end: OnlyTime.fromJSON(json.end),
     });
+  }
+
+  toString(): string {
+    return `${this.value.start} -> ${this.value.end}`;
   }
 }
 

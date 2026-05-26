@@ -27,12 +27,11 @@ export class JwtAuthTokenService implements AuthTokenService {
             const user = await this.userRepository.findById(userId);
 
             if (!user) {
-                console.log('[JwtAuthTokenService] User not found for ID:', decoded.sub);
+                return null;
             }
 
             return user;
-        } catch (error) {
-            console.error('[JwtAuthTokenService] Token verification failed:', error);
+        } catch {
             return null;
         }
     }
