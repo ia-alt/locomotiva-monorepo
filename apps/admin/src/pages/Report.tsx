@@ -21,6 +21,7 @@ import { addMonths, subMonths } from 'date-fns';
 import { useMonthReport } from '../hooks/useMonthReport';
 import { useGenerateMonthReportPdf } from '../hooks/useGenerateMonthReportPdf';
 import { StatCard } from '../components/dashboard/StatCard';
+import { onlyDateStrToBrDate, onlyDateStrToShortBrDate, onlyTimeObjToTimeStr } from '../utils/datetime-formatters';
 
 const DAY_PT: Record<number, string> = { 0: 'Dom', 1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb' };
 
@@ -224,7 +225,7 @@ const ReportPage: React.FC = () => {
                       <TableRow key={i} hover>
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
-                            {new Date(item.booking.period.from).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {onlyDateStrToBrDate(item.booking.day)}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -294,7 +295,7 @@ const ReportPage: React.FC = () => {
                   ) : (() => {
                     const logs = data?.coworkingLogs ?? [];
                     const groups = logs.reduce<Record<string, typeof logs>>((acc, item) => {
-                      const dateKey = new Date(item.accessLog.entryTime).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+                      const dateKey = onlyDateStrToShortBrDate(item.accessLog.day);
                       if (!acc[dateKey]) acc[dateKey] = [];
                       acc[dateKey].push(item);
                       return acc;
@@ -330,10 +331,10 @@ const ReportPage: React.FC = () => {
                               )}
                             </TableCell>
                             <TableCell>
-                              <Typography variant="body2">{new Date(item.accessLog.entryTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</Typography>
+                              <Typography variant="body2">{onlyTimeObjToTimeStr(item.accessLog.entryTimeOnly)}</Typography>
                             </TableCell>
                             <TableCell>
-                              <Typography variant="body2">{item.accessLog.exitTime ? new Date(item.accessLog.exitTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}</Typography>
+                              <Typography variant="body2">{item.accessLog.exitTimeOnly ? onlyTimeObjToTimeStr(item.accessLog.exitTimeOnly) : '—'}</Typography>
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="body2">{item.durationMinutes != null ? `${item.durationMinutes} min` : '—'}</Typography>

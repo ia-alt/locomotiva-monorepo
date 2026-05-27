@@ -8,6 +8,11 @@ export type BookingAdminItem = {
   user: { id: string; name: string; email: string };
   room: { id: string; name: string; capacity: number };
   period: { from: string; to: string };
+  day: string;
+  timeInterval: {
+    start: { hour: number; minute: number; second: number };
+    end: { hour: number; minute: number; second: number };
+  };
   status: string;
   title: string;
   description?: string;

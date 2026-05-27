@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
 import type { BookingAdminItem } from '../../hooks/useBookingsAdmin';
+import { onlyDateStrToBrDate, onlyTimeObjToTimeStr } from '../../utils/datetime-formatters';
 
 interface ProcessBookingDialogProps {
   open: boolean;
@@ -79,12 +80,12 @@ export const ProcessBookingDialog: React.FC<ProcessBookingDialogProps> = ({ open
             <Box sx={{ flex: 1, bgcolor: 'grey.50', borderRadius: 1, p: 2 }}>
               <Typography variant="body2" color="text.secondary">Data e Horário</Typography>
               <Typography variant="body1" fontWeight={500}>
-                {new Date(booking.period.from).toLocaleDateString('pt-BR')}
+                {onlyDateStrToBrDate(booking.day)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {new Date(booking.period.from).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                {onlyTimeObjToTimeStr(booking.timeInterval.start)}
                 {' – '}
-                {new Date(booking.period.to).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                {onlyTimeObjToTimeStr(booking.timeInterval.end)}
               </Typography>
             </Box>
           </Box>

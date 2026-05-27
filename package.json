@@ -27,5 +27,20 @@
   },
   "engines": {
     "node": "24.x"
-  }
+  },
+  "version": "1.0.0",
+  "description": "- email: admin@test.com - password: Abc123456789@",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ia-alt/locomotiva-monorepo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ia-alt/locomotiva-monorepo/issues"
+  },
+  "homepage": "https://github.com/ia-alt/locomotiva-monorepo#readme"
 }
