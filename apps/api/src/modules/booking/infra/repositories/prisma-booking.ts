@@ -2,7 +2,8 @@ import { BookingRepository } from "@booking/domain/repositories";
 import { Booking as BookingDb, Prisma, PrismaClient } from "@core/infra/database/prisma";
 import { UniqueId, DomainEvents } from "@core/base-classes";
 import { Booking } from "@booking/domain/entities";
-import { DatePeriod, PaginatedResult } from "@core/value-objects";
+import { DatePeriod, OnlyDate, OnlyTime, PaginatedResult } from "@core/value-objects";
+import { TimeInterval } from "src/modules/operating-hours/domain/value-objects";
 import { endOfDay } from "date-fns";
 
 export class PrismaBookingRepository implements BookingRepository {
@@ -182,6 +183,11 @@ export class PrismaBookingRepository implements BookingRepository {
             user: { id: b.userId, name: userMap.get(b.userId)?.name ?? "Usuário desconhecido", email: userMap.get(b.userId)?.email ?? "", company: userMap.get(b.userId)?.company ?? null, jobTitle: userMap.get(b.userId)?.jobTitle ?? null },
             room: { id: b.roomId, name: roomMap.get(b.roomId)?.name ?? "Sala desconhecida", capacity: roomMap.get(b.roomId)?.capacity ?? 0 },
             period: { from: b.startTime.toISOString(), to: b.endTime.toISOString() },
+            day: OnlyDate.fromDate(b.startTime).toJSON(),
+            timeInterval: new TimeInterval({
+                start: OnlyTime.fromDate(b.startTime),
+                end: OnlyTime.fromDate(b.endTime),
+            }).toJSON(),
             status: b.status,
             title: b.title,
             description: b.description ?? undefined,

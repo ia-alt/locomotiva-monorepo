@@ -15,6 +15,9 @@ import {
   Alert,
 } from '@mui/material';
 import { useAccessLogsByDay } from '../hooks/useAccessLogsByDay';
+import { onlyTimeObjToTimeStr, onlyDateStrToLongBrDate } from '../utils/datetime-formatters';
+
+type OnlyTime = { hour: number; minute: number; second: number };
 
 function todayString(): string {
   const now = new Date();
@@ -24,9 +27,9 @@ function todayString(): string {
   return `${y}-${m}-${d}`;
 }
 
-function formatTime(iso: string | null): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+function formatTime(time: OnlyTime | null): string {
+  if (!time) return '—';
+  return onlyTimeObjToTimeStr(time);
 }
 
 function formatDuration(entryTime: string, exitTime: string | null): string {
@@ -43,11 +46,6 @@ const AccessHistoryPage: React.FC = () => {
 
   const { items, isLoading, isError, error } = useAccessLogsByDay(day);
 
-  const formattedDate = new Date(day + 'T12:00:00').toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
 
   return (
     <Box sx={{ p: 3 }}>
@@ -83,7 +81,7 @@ const AccessHistoryPage: React.FC = () => {
       ) : (
         <>
           <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
-            {items.length} registro{items.length !== 1 ? 's' : ''} em {formattedDate}
+            {items.length} registro{items.length !== 1 ? 's' : ''} em {onlyDateStrToLongBrDate(day)}
           </Typography>
 
           <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
@@ -140,11 +138,11 @@ const AccessHistoryPage: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">{formatTime(accessLog.entryTime)}</Typography>
+                          <Typography variant="body2">{formatTime(accessLog.entryTimeOnly)}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color={accessLog.exitTime ? 'text.primary' : 'warning.main'}>
-                            {accessLog.exitTime ? formatTime(accessLog.exitTime) : 'Ativo'}
+                            {accessLog.exitTimeOnly ? formatTime(accessLog.exitTimeOnly) : 'Ativo'}
                           </Typography>
                         </TableCell>
                         <TableCell>
