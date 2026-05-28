@@ -5,9 +5,8 @@ import { Text, Surface } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useORPC } from '../locomotiva-api/context';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { ORPCOutputs } from '../locomotiva-api/types';
+import { onlyDateStrToBrDate, onlyTimeObjToTimeStr } from '../utils/datetime-formaters';
 
 type Booking = ORPCOutputs["booking"]["findMyBookings"]["items"][0];
 
@@ -34,11 +33,8 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
         orpc.booking.getRoomById.queryOptions({ input: { id: booking.roomId } })
     );
 
-    const fromDate = new Date(booking.period.from);
-    const toDate = new Date(booking.period.to);
-
-    const dateFormatted = format(fromDate, "dd MMM", { locale: ptBR });
-    const timeFormatted = `${format(fromDate, "HH:mm")} - ${format(toDate, "HH:mm")}`;
+    const dateFormatted = onlyDateStrToBrDate(booking.day);
+    const timeFormatted = `${onlyTimeObjToTimeStr(booking.timeInterval.start)} - ${onlyTimeObjToTimeStr(booking.timeInterval.end)}`;
 
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
 
