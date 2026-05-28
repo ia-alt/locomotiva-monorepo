@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react
 import { Text } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
+import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
 
 type DetalhesReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'DetalhesReserva'>;

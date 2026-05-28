@@ -3,10 +3,10 @@ import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
-import AvailabilityTimeline from '../../components/AvailabilityTimeline';
-import DateSelector from '../../components/DateSelector';
-import TimeSelector from '../../components/TimeSelector';
+import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
+import AvailabilityTimeline from '../../../components/AvailabilityTimeline';
+import DateSelector from '../../../components/DateSelector';
+import TimeSelector from '../../../components/TimeSelector';
 import { addDays, startOfDay, addHours } from 'date-fns';
 import { Feather } from '@expo/vector-icons';
 

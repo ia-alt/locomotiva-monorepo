@@ -3,8 +3,8 @@ import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
-import RoomSelector from '../../components/RoomSelector';
+import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
+import RoomSelector from '../../../components/RoomSelector';
 import { Feather } from '@expo/vector-icons';
 
 type CriarReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'CriarReserva'>;

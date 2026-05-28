@@ -3,12 +3,12 @@ import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
+import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useORPC } from '../../locomotiva-api/context';
+import { useORPC } from '../../../locomotiva-api/context';
 
 type ConfirmarReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'ConfirmarReserva'>;
 type ConfirmarReservaRouteProp = RouteProp<PrivateStackParamList, 'ConfirmarReserva'>;

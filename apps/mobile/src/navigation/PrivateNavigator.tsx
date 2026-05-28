@@ -6,15 +6,15 @@ import InicioScreen from '../screens/private/InicioScreen';
 import ReservasScreen from '../screens/private/ReservasScreen';
 import PerfilScreen from '../screens/private/PerfilScreen';
 
-import CriarReservaScreen from '../screens/private/CriarReservaScreen';
-import DisponibilidadeReservaScreen from '../screens/private/DisponibilidadeReservaScreen';
-import DetalhesReservaScreen from '../screens/private/DetalhesReservaScreen';
-import ConfirmarReservaScreen from '../screens/private/ConfirmarReservaScreen';
-import ReservaSucessoScreen from '../screens/private/ReservaSucessoScreen';
+import PerfilIncompletoScreen from '../screens/private/booking-flow/0-PerfilIncompletoScreen';
+import CriarReservaScreen from '../screens/private/booking-flow/1-CriarReservaScreen';
+import DisponibilidadeReservaScreen from '../screens/private/booking-flow/2-DisponibilidadeReservaScreen';
+import DetalhesReservaScreen from '../screens/private/booking-flow/3-DetalhesReservaScreen';
+import ConfirmarReservaScreen from '../screens/private/booking-flow/4-ConfirmarReservaScreen';
+import ReservaSucessoScreen from '../screens/private/booking-flow/5-ReservaSucessoScreen';
 import DetalhesMinhaReservaScreen from '../screens/private/DetalhesMinhaReservaScreen';
 import EditarPerfilScreen from '../screens/private/EditarPerfilScreen';
 import AlterarSenhaScreen from '../screens/private/AlterarSenhaScreen';
-import PerfilIncompletoScreen from '../screens/private/PerfilIncompletoScreen';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 

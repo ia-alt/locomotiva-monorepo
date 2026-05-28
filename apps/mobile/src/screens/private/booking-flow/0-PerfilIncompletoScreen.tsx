@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, TextInput, Button } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
-import { useAuth } from '../../contexts/auth-context';
-import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { useAuth } from '../../../contexts/auth-context';
+import { usePrivateStackNavigation } from '../../../navigation/PrivateNavigator';
 
 export default function PerfilIncompletoScreen() {
     const { authUser, updateMe } = useAuth();
