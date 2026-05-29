@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
+import { usePrivateStackNavigation } from '../../../navigation/PrivateNavigator';
 import RoomSelector from '../../../components/RoomSelector';
 import { Feather } from '@expo/vector-icons';
+import { ORPCOutputs } from '../../../locomotiva-api/types';
 
-type CriarReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'CriarReserva'>;
+type RoomFromList = ORPCOutputs["booking"]["listRooms"][0]
 
 export default function CriarReservaScreen() {
-    const navigation = useNavigation<CriarReservaNavigationProp>();
-    const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-    const [selectedRoomCapacity, setSelectedRoomCapacity] = useState<number>(0);
-
+    const navigation = usePrivateStackNavigation();
+    
+    const [selectedRoom, setSelectedRoom] = useState<RoomFromList | null>(null)
+    
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
             <View style={styles.stepIndicator}>
@@ -27,19 +26,16 @@ export default function CriarReservaScreen() {
             <Text style={styles.stepLabel}>Selecione a sala desejada para a reserva.</Text>
 
             <RoomSelector
-                selectedRoomId={selectedRoomId}
-                setSelectedRoomId={(id, capacity) => {
-                    setSelectedRoomId(id);
-                    setSelectedRoomCapacity(capacity);
-                }}
+                selectedRoom={selectedRoom}
+                setSelectedRoom={setSelectedRoom}
             />
 
             <TouchableOpacity
-                style={[styles.nextButton, !selectedRoomId && styles.nextButtonDisabled]}
-                disabled={!selectedRoomId}
+                style={[styles.nextButton, !selectedRoom && styles.nextButtonDisabled]}
+                disabled={!selectedRoom}
                 onPress={() => {
-                    if (selectedRoomId) {
-                        navigation.navigate('DisponibilidadeReserva', { roomId: selectedRoomId, roomCapacity: selectedRoomCapacity });
+                    if (selectedRoom) {
+                        navigation.navigate('DisponibilidadeReserva', { room: selectedRoom });
                     }
                 }}
                 activeOpacity={0.7}

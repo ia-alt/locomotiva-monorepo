@@ -29,7 +29,6 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
 
     // Fetch room data
     const { data: room, isLoading: isLoadingRoom } = useQuery(
-        //@ts-ignore getRoomById queryOptions
         orpc.booking.getRoomById.queryOptions({ input: { id: booking.roomId } })
     );
 
@@ -43,6 +42,7 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
 
     return (
         <Surface style={styles.card} elevation={0}>
+            
             <TouchableOpacity onPress={onPressDetails} activeOpacity={0.7}>
                 <View style={styles.header}>
                     <Animated.Image

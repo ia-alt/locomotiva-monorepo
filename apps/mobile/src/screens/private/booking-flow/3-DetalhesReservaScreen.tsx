@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Text } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
+import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
-
-type DetalhesReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'DetalhesReserva'>;
-type DetalhesReservaRouteProp = RouteProp<PrivateStackParamList, 'DetalhesReserva'>;
-
 
 const TITLE_MIN = 3;
 const TITLE_MAX = 50;
@@ -16,9 +10,9 @@ const DESC_MIN = 10;
 const DESC_MAX = 200;
 
 export default function DetalhesReservaScreen() {
-    const navigation = useNavigation<DetalhesReservaNavigationProp>();
-    const route = useRoute<DetalhesReservaRouteProp>();
-    const { roomId, roomCapacity, date, startTime, endTime } = route.params;
+    const navigation = usePrivateStackNavigation();
+    const route = usePrivateStackRoute<"DetalhesReserva">();
+    const { room, day, startTime, endTime } = route.params;
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -37,8 +31,8 @@ export default function DetalhesReservaScreen() {
 
     const handleConfirm = () => {
         navigation.navigate('ConfirmarReserva', {
-            roomId,
-            date,
+            room,
+            day,
             startTime,
             endTime,
             title,
@@ -120,7 +114,7 @@ export default function DetalhesReservaScreen() {
             </View>
 
             <View style={styles.formGroup}>
-                <Text style={styles.label}>Quantidade de Pessoas <Text style={{ color: '#9CA3AF', fontWeight: '400' }}>(máx. {roomCapacity})</Text></Text>
+                <Text style={styles.label}>Quantidade de Pessoas <Text style={{ color: '#9CA3AF', fontWeight: '400' }}>(máx. {room.capacity})</Text></Text>
                 <View style={styles.spinnerRow}>
                     <TouchableOpacity
                         style={[styles.spinnerButton, numberOfPeople <= 0 && styles.spinnerButtonDisabled]}
@@ -142,26 +136,26 @@ export default function DetalhesReservaScreen() {
                             if (isNaN(n) || t === '') {
                                 setNumberOfPeople(0);
                             } else {
-                                setNumberOfPeople(Math.min(n, roomCapacity));
+                                setNumberOfPeople(Math.min(n, room.capacity));
                             }
                         }}
                         textAlign="center"
                     />
 
                     <TouchableOpacity
-                        style={[styles.spinnerButton, numberOfPeople >= roomCapacity && styles.spinnerButtonDisabled]}
-                        onPress={() => setNumberOfPeople((n) => Math.min(roomCapacity, n + 1))}
-                        disabled={numberOfPeople >= roomCapacity}
+                        style={[styles.spinnerButton, numberOfPeople >= room.capacity && styles.spinnerButtonDisabled]}
+                        onPress={() => setNumberOfPeople((n) => Math.min(room.capacity, n + 1))}
+                        disabled={numberOfPeople >= room.capacity}
                         activeOpacity={0.7}
                     >
-                        <Feather name="plus" size={20} color={numberOfPeople >= roomCapacity ? '#D1D5DB' : '#1E88E5'} />
+                        <Feather name="plus" size={20} color={numberOfPeople >= room.capacity ? '#D1D5DB' : '#1E88E5'} />
                     </TouchableOpacity>
                 </View>
                 {numberOfPeople === 0 && (
                     <Text style={styles.spinnerHint}>Informe quantas pessoas participarão.</Text>
                 )}
-                {numberOfPeople >= roomCapacity && (
-                    <Text style={[styles.spinnerHint, { color: '#F59E0B' }]}>Limite máximo da sala atingido ({roomCapacity} pessoas).</Text>
+                {numberOfPeople >= room.capacity && (
+                    <Text style={[styles.spinnerHint, { color: '#F59E0B' }]}>Limite máximo da sala atingido ({room.capacity} pessoas).</Text>
                 )}
             </View>
 

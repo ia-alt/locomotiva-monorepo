@@ -1,26 +1,21 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Surface } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
+import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useORPC } from '../../../locomotiva-api/context';
+import { onlyDateStrToLongBrDate, onlyTimeObjToTimeStr } from '../../../utils/datetime-formaters';
 
-type ConfirmarReservaNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'ConfirmarReserva'>;
-type ConfirmarReservaRouteProp = RouteProp<PrivateStackParamList, 'ConfirmarReserva'>;
 
 export default function ConfirmarReservaScreen() {
-    const navigation = useNavigation<ConfirmarReservaNavigationProp>();
-    const route = useRoute<ConfirmarReservaRouteProp>();
+    const navigation = usePrivateStackNavigation();
+    const route = usePrivateStackRoute<"ConfirmarReserva">();
     const orpc = useORPC();
 
     const {
-        roomId,
-        date,
+        room,
+        day,
         startTime,
         endTime,
         title,
@@ -28,7 +23,6 @@ export default function ConfirmarReservaScreen() {
         numberOfPeople,
     } = route.params;
 
-    const { data: room } = useQuery(orpc.booking.getRoomById.queryOptions({ input: { id: roomId } }))
     const { mutateAsync: requestBooking } = useMutation(orpc.booking.requestBooking.mutationOptions());
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,8 +32,8 @@ export default function ConfirmarReservaScreen() {
         try {
             // Here you'll call the actual API
             console.log("Saving reservation", {
-                roomId,
-                date,
+                room,
+                day,
                 startTime,
                 endTime,
                 title,
@@ -47,10 +41,11 @@ export default function ConfirmarReservaScreen() {
             });
 
             await requestBooking({
-                roomId,
-                period: {
-                    from: startTime,
-                    to: endTime,
+                roomId: room.id,
+                day,
+                timeInterval: {
+                    start: startTime,
+                    end: endTime,
                 },
                 title,
                 description,
@@ -65,10 +60,6 @@ export default function ConfirmarReservaScreen() {
             setIsSubmitting(false);
         }
     };
-
-    const parsedDate = date ? new Date(date) : new Date();
-    const parsedStart = startTime ? new Date(startTime) : new Date();
-    const parsedEnd = endTime ? new Date(endTime) : new Date();
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
@@ -105,18 +96,18 @@ export default function ConfirmarReservaScreen() {
                 <View style={styles.row}>
                     <Text style={styles.label}>Data:</Text>
                     <Text style={styles.value}>
-                        {format(parsedDate, "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                        {onlyDateStrToLongBrDate(day)}
                     </Text>
                 </View>
 
                 <View style={styles.row}>
                     <Text style={styles.label}>Início:</Text>
-                    <Text style={styles.value}>{format(parsedStart, 'HH:mm')}</Text>
+                    <Text style={styles.value}>{onlyTimeObjToTimeStr(startTime)}</Text>
                 </View>
 
                 <View style={[styles.row, { borderBottomWidth: 0, paddingBottom: 0 }]}>
                     <Text style={styles.label}>Fim:</Text>
-                    <Text style={styles.value}>{format(parsedEnd, 'HH:mm')}</Text>
+                    <Text style={styles.value}>{onlyTimeObjToTimeStr(endTime)}</Text>
                 </View>
             </Surface>
 

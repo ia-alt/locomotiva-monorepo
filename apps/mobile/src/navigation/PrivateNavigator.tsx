@@ -16,27 +16,28 @@ import DetalhesMinhaReservaScreen from '../screens/private/DetalhesMinhaReservaS
 import EditarPerfilScreen from '../screens/private/EditarPerfilScreen';
 import AlterarSenhaScreen from '../screens/private/AlterarSenhaScreen';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { ORPCOutputs } from '../locomotiva-api/types';
+
+type RoomFromList = ORPCOutputs["booking"]["listRooms"][0]
 
 export type PrivateStackParamList = {
     Drawer: undefined;
     CriarReserva: undefined;
     DisponibilidadeReserva: {
-        roomId: string;
-        roomCapacity: number;
+        room: RoomFromList
     };
     DetalhesReserva: {
-        roomId: string;
-        roomCapacity: number;
-        date: string;
-        startTime: string;
-        endTime: string;
+        room: RoomFromList;
+        day: string;
+        startTime: {hour: number, minute: number, second: number};
+        endTime: {hour: number, minute: number, second: number};
     };
     ConfirmarReserva: {
-        roomId: string;
-        date: string;
-        startTime: string;
-        endTime: string;
+        room: RoomFromList;
+        day: string;
+        startTime: {hour: number, minute: number, second: number};
+        endTime: {hour: number, minute: number, second: number};
         title: string;
         description: string;
         numberOfPeople: number;
@@ -164,4 +165,10 @@ export default function PrivateNavigator() {
 
 export function usePrivateStackNavigation() {
     return useNavigation<StackNavigationProp<PrivateStackParamList>>();
+}
+
+export function usePrivateStackRoute<T extends keyof PrivateStackParamList>() {
+    type ScreenRouteProp = RouteProp<PrivateStackParamList, T>;
+    const route = useRoute<ScreenRouteProp>();
+    return route;
 }
