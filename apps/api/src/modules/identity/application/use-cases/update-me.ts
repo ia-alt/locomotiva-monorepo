@@ -38,7 +38,7 @@ namespace UpdateMeUseCase {
         birthDate: BirthDate.JsonSchema,
         company: z.string().nullable().optional(),
         jobTitle: z.string().nullable().optional(),
-        phone: z.string().nullable().optional(),
+        phone: z.string(),
     });
     export const OutputSchema = User.JsonSchema;
 

@@ -59,7 +59,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: (input: { name: string; email: string; cpf: string; birthDate: string; password: string; phone?: string; company?: string; jobTitle?: string }) =>
+    mutationFn: (input: { name: string; email: string; cpf: string; birthDate: string; password: string; phone: string; company?: string; jobTitle?: string }) =>
       orpc.identy.registerUser(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -98,7 +98,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
       email,
       cpf,
       birthDate,
-      phone: phone || undefined,
+      phone: phone,
       company: company || undefined,
       jobTitle: jobTitle || undefined,
       password,

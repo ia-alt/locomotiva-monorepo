@@ -143,9 +143,10 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
             />
 
             <TextField
-              label="Telefone (opcional)"
+              label="Telefone"
               fullWidth
               value={phone}
+              required
               onChange={(e) => setPhone(formatPhone(e.target.value))}
               placeholder="(00) 00000-0000"
               slotProps={{ htmlInput: { maxLength: 15 } }}

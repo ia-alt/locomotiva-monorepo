@@ -57,7 +57,7 @@ class User extends AggregateRoot {
             null,
             props.company ?? null,
             props.jobTitle ?? null,
-            props.phone ?? null,
+            props.phone,
         );
         user.addDomainEvent(new UserRegisteredEvent(user));
         return user;
@@ -73,16 +73,16 @@ class User extends AggregateRoot {
         this._userType = data.userType;
         this._company = data.company ?? null;
         this._jobTitle = data.jobTitle ?? null;
-        this._phone = data.phone ?? null;
+        this._phone = data.phone;
     }
 
-    updateSelf(data: { name: string; email: EmailAddress; birthDate: BirthDate; company?: string | null; jobTitle?: string | null; phone?: string | null }): void {
+    updateSelf(data: { name: string; email: EmailAddress; birthDate: BirthDate; company?: string | null; jobTitle?: string | null; phone: string  }): void {
         this._name = data.name;
         this.email = data.email;
         this.birthDate = data.birthDate;
         this._company = data.company ?? null;
         this._jobTitle = data.jobTitle ?? null;
-        this._phone = data.phone ?? null;
+        this._phone = data.phone ;
     }
 
     getPasswordHash() {
@@ -163,7 +163,7 @@ namespace User {
         passwordHash: string;
         company?: string | null;
         jobTitle?: string | null;
-        phone?: string | null;
+        phone: string;
     };
     export type CreateSystemParams = {
         name: string;
@@ -179,7 +179,7 @@ namespace User {
         userType: z.enum(UserType),
         company: z.string().nullable().optional(),
         jobTitle: z.string().nullable().optional(),
-        phone: z.string().nullable().optional(),
+        phone: z.string(),
     });
     export type UpdateParams = z.infer<typeof UpdateSchema>;
     export const JsonSchema = z.object({
@@ -191,7 +191,7 @@ namespace User {
         userType: z.enum(UserType),
         company: z.string().nullable().optional(),
         jobTitle: z.string().nullable().optional(),
-        phone: z.string().nullable().optional(),
+        phone: z.string().nullable(),
         passwordResetCode: z.string().nullable().optional(),
         passwordResetCodeExpiry: z.date().nullable().optional(),
     });

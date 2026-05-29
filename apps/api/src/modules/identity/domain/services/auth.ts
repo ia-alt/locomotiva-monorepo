@@ -70,7 +70,7 @@ namespace AuthService {
         password: Password;
         company?: string | null;
         jobTitle?: string | null;
-        phone?: string | null;
+        phone: string ;
     };
 }
 
