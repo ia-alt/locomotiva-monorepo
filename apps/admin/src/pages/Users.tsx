@@ -13,19 +13,18 @@ import {
   Avatar,
   Chip,
   IconButton,
-  Menu,
-  MenuItem,
   TextField,
   InputAdornment,
   CircularProgress,
   Alert,
   Pagination,
 } from '@mui/material';
-import { Add as AddIcon, Search as SearchIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
+import { Add as AddIcon, Search as SearchIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import { useUsers, type UserItem } from '../hooks/useUsers';
 import { CreateUserDialog } from '../components/users/CreateUserDialog';
 import { EditUserDialog } from '../components/users/EditUserDialog';
 import { DeleteUserDialog } from '../components/users/DeleteUserDialog';
+import { UserDetailsDialog } from '../components/users/UserDetailsDialog';
 
 const PAGE_SIZE = 10;
 
@@ -37,10 +36,10 @@ const USER_TYPE_LABEL: Record<string, string> = {
 const UsersPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [menuAnchor, setMenuAnchor] = useState<{ el: HTMLElement; userId: string } | null>(null);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -51,18 +50,24 @@ const UsersPage: React.FC = () => {
     setPage(1);
   };
 
-  const handleOpenEdit = (userId: string) => {
-    const user = users.find((u: UserItem) => u.id === userId) ?? null;
+  const handleOpenDetails = (user: UserItem) => {
     setSelectedUser(user);
-    setMenuAnchor(null);
+    setIsDetailsOpen(true);
+  };
+
+  const handleOpenEdit = () => {
+    setIsDetailsOpen(false);
     setIsEditOpen(true);
   };
 
-  const handleOpenDelete = (userId: string) => {
-    const user = users.find((u: UserItem) => u.id === userId) ?? null;
-    setSelectedUser(user);
-    setMenuAnchor(null);
+  const handleOpenDelete = () => {
+    setIsDetailsOpen(false);
     setIsDeleteOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsOpen(false);
+    setSelectedUser(null);
   };
 
   return (
@@ -189,9 +194,10 @@ const UsersPage: React.FC = () => {
                       <TableCell align="right">
                         <IconButton
                           size="small"
-                          onClick={(e) => setMenuAnchor({ el: e.currentTarget, userId: user.id })}
+                          onClick={() => handleOpenDetails(user)}
+                          title="Ver detalhes"
                         >
-                          <MoreVertIcon fontSize="small" />
+                          <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -222,24 +228,18 @@ const UsersPage: React.FC = () => {
         </Paper>
       )}
 
-      {/* Actions Menu */}
-      <Menu
-        anchorEl={menuAnchor?.el}
-        open={!!menuAnchor}
-        onClose={() => setMenuAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <MenuItem onClick={() => menuAnchor && handleOpenEdit(menuAnchor.userId)}>Editar</MenuItem>
-        <MenuItem onClick={() => menuAnchor && handleOpenDelete(menuAnchor.userId)} sx={{ color: 'error.main' }}>
-          Excluir
-        </MenuItem>
-      </Menu>
-
       {/* Dialogs */}
       <CreateUserDialog
         open={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
+      />
+
+      <UserDetailsDialog
+        open={isDetailsOpen}
+        onClose={handleCloseDetails}
+        user={selectedUser}
+        onEdit={handleOpenEdit}
+        onDelete={handleOpenDelete}
       />
 
       <EditUserDialog

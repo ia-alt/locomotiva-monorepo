@@ -1,7 +1,8 @@
 import { BookingService } from "@booking/domain/services";
 import { UniqueId, UseCase } from "@core/base-classes";
-import { DatePeriod, OnlyDate } from "@core/value-objects";
+import { OnlyDate } from "@core/value-objects";
 import { AuthUserService } from "src/modules/identity/domain/services";
+import { TimeInterval } from "src/modules/operating-hours/domain/value-objects/time-interval";
 import z from "zod";
 
 class ListAvailableSlotsByDayUseCase extends UseCase<ListAvailableSlotsByDayUseCase.Input, ListAvailableSlotsByDayUseCase.Output> {
@@ -17,7 +18,7 @@ class ListAvailableSlotsByDayUseCase extends UseCase<ListAvailableSlotsByDayUseC
         const roomId = UniqueId.fromString(params.roomId);
         const day = new OnlyDate(params.day);
 
-        const slots = await this.bookingService.getAvailableSlotsByRoom(roomId, day);
+        const slots = await this.bookingService.getAvailableDailySlotsByRoom(roomId, day);
         return { slots: slots.map(x => x.toJSON()) };
     }
 
@@ -30,7 +31,7 @@ namespace ListAvailableSlotsByDayUseCase {
     });
 
     export const OutputSchema = z.object({
-        slots: z.array(DatePeriod.ValueSchema),
+        slots: z.array(TimeInterval.JsonSchema),
     });
 
     export type Input = z.infer<typeof InputSchema>;

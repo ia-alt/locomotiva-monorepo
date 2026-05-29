@@ -21,6 +21,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
 import type { ORPCOutputs } from '../../services/types';
+import { onlyTimeObjToTimeStr, onlyDateStrToLongBrDate } from '../../utils/datetime-formatters';
 
 type Booking = ORPCOutputs['booking']['getBookingById'];
 
@@ -119,8 +120,6 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
       </Box>
     );
   } else if (booking) {
-    const fromDate = new Date(booking.period.from);
-    const toDate = new Date(booking.period.to);
     const isPending = booking.status === 'pending';
     const isConfirmed = booking.status === 'confirmed';
 
@@ -208,7 +207,7 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CalendarTodayOutlined sx={{ fontSize: 16, color: '#6366f1' }} />
               <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#334155', lineHeight: 1.3 }}>
-                {fromDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                {onlyDateStrToLongBrDate(booking.day)}
               </Typography>
             </Box>
           </Box>
@@ -219,9 +218,9 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <AccessTimeOutlined sx={{ fontSize: 16, color: '#6366f1' }} />
               <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>
-                {fromDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                {onlyTimeObjToTimeStr(booking.timeInterval.start)}
                 {' – '}
-                {toDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                {onlyTimeObjToTimeStr(booking.timeInterval.end)}
               </Typography>
             </Box>
           </Box>

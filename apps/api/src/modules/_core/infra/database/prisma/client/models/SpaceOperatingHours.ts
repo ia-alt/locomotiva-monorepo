@@ -136,7 +136,7 @@ export type SpaceOperatingHoursGroupByOutputType = {
   _max: SpaceOperatingHoursMaxAggregateOutputType | null
 }
 
-type GetSpaceOperatingHoursGroupByPayload<T extends SpaceOperatingHoursGroupByArgs> = Prisma.PrismaPromise<
+export type GetSpaceOperatingHoursGroupByPayload<T extends SpaceOperatingHoursGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<SpaceOperatingHoursGroupByOutputType, T['by']> &
       {

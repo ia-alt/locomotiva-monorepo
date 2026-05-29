@@ -23,6 +23,7 @@ class UpdateMeUseCase extends UseCase<UpdateMeUseCase.Input, UpdateMeUseCase.Out
             birthDate: BirthDate.fromJSON(input.birthDate),
             company: input.company,
             jobTitle: input.jobTitle,
+            phone: input.phone,
         });
 
         await this.userRepository.save(user);
@@ -37,6 +38,7 @@ namespace UpdateMeUseCase {
         birthDate: BirthDate.JsonSchema,
         company: z.string().nullable().optional(),
         jobTitle: z.string().nullable().optional(),
+        phone: z.string(),
     });
     export const OutputSchema = User.JsonSchema;
 

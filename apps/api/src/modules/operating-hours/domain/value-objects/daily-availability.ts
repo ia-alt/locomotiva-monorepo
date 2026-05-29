@@ -4,6 +4,11 @@ import { TimeInterval } from "./time-interval";
 import { DatePeriod, OnlyDate } from "@core/value-objects";
 
 class DailyAvailability extends ValueObject<DailyAvailability.Value> {
+
+  get intervals() {
+    return this.value.intervals;
+  }
+
   constructor(value: DailyAvailability.Value) {
     super(value);
   }
@@ -50,6 +55,8 @@ class DailyAvailability extends ValueObject<DailyAvailability.Value> {
       to: it.value.end.aplayInDate(_day),
     }))
   }
+
+  
 
   toString(): string {
     return this.value.intervals.map(it => it.toString()).join(', ');

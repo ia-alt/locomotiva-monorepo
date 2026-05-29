@@ -9,14 +9,15 @@ import { useAuth } from '../../contexts/auth-context';
 
 const cadastroSchema = z.object({
     name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
-    email: z.email('Digite um e-mail válido.'),
     cpf: z.string().min(11, 'O CPF deve ter no mínimo 11 dígitos.'),
     birthDate: z.string().min(8, 'Data inválida.'),
+    email: z.email('Digite um e-mail válido.'),
+    phone: z.string().min(10, 'Digite um telefone válido.'),
     company: z.string().optional(),
     jobTitle: z.string().optional(),
     password: z.string()
         .min(8, 'Sua senha deve ter pelo menos 8 caracteres.')
-        .regex(/[A-Z]/, 'A senha deve conter pelo menos  uma letra maiúscula.')
+        .regex(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula.')
         .regex(/[0-9]/, 'A senha deve conter pelo menos um número.')
         .regex(/[^A-Za-z0-9]/, 'A senha deve conter pelo menos um símbolo.'),
     confirmPassword: z.string().min(1, 'A confirmação de senha é obrigatória.')
@@ -37,11 +38,23 @@ const formatBirthDate = (text: string) => {
 
 const formatCPF = (text: string) => {
     return text
-        .replace(/\D/g, '') // Remove tudo o que não é dígito
-        .replace(/(\d{3})(\d)/, '$1.$2') // Coloca um ponto entre o terceiro e o quarto dígitos
-        .replace(/(\d{3})(\d)/, '$1.$2') // Coloca um ponto entre o sexto e o sétimo dígitos
-        .replace(/(\d{3})(\d{1,2})/, '$1-$2') // Coloca um hífen entre o nono e o décimo dígitos
-        .replace(/(-\d{2})\d+?$/, '$1'); // Trava no último dígito
+        .replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+        .replace(/(-\d{2})\d+?$/, '$1');
+};
+
+const formatPhone = (text: string) => {
+    const digits = text.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 10) {
+        return digits
+            .replace(/(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{4})(\d{1,4})$/, '$1-$2');
+    }
+    return digits
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
 };
 
 export default function CadastroScreen() {
@@ -60,9 +73,10 @@ export default function CadastroScreen() {
         resolver: zodResolver(cadastroSchema),
         defaultValues: {
             name: '',
-            email: '',
             cpf: '',
             birthDate: '',
+            email: '',
+            phone: '',
             company: '',
             jobTitle: '',
             password: '',
@@ -71,10 +85,11 @@ export default function CadastroScreen() {
     });
 
     const onSubmit = async (data: CadastroFormValues) => {
-        data.birthDate = data.birthDate.split('/').reverse().join('-');
+        const { confirmPassword, ...rest } = data;
+        rest.birthDate = rest.birthDate.split('/').reverse().join('-');
         try {
             setLoading(true);
-            await register(data);
+            await register(rest);
         } catch (error) {
             console.error(error);
         } finally {
@@ -148,41 +163,6 @@ export default function CadastroScreen() {
                     />
                 </View>
 
-                {/* Email Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>E-mail</Text>
-                    <Controller
-                        control={control}
-                        name="email"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="exemplo@email.com"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    error={!!errors.email}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                    right={<TextInput.Icon icon="email" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.email && (
-                                    <HelperText type="error" visible={!!errors.email} style={styles.errorText}>
-                                        {errors.email.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
-
                 {/* CPF Input */}
                 <View style={styles.inputContainer}>
                     <Text variant="labelMedium" style={styles.inputLabel}>CPF</Text>
@@ -246,6 +226,76 @@ export default function CadastroScreen() {
                                 {errors.birthDate && (
                                     <HelperText type="error" visible={!!errors.birthDate} style={styles.errorText}>
                                         {errors.birthDate.message}
+                                    </HelperText>
+                                )}
+                            </>
+                        )}
+                    />
+                </View>
+
+                {/* Email Input */}
+                <View style={styles.inputContainer}>
+                    <Text variant="labelMedium" style={styles.inputLabel}>E-mail</Text>
+                    <Controller
+                        control={control}
+                        name="email"
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <>
+                                <TextInput
+                                    mode="outlined"
+                                    placeholder="exemplo@email.com"
+                                    value={value}
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    error={!!errors.email}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    right={<TextInput.Icon icon="email" color={theme.colors.onSurfaceVariant} />}
+                                    outlineColor={theme.colors.outline}
+                                    activeOutlineColor={theme.colors.primary}
+                                    style={styles.input}
+                                    outlineStyle={styles.inputOutline}
+                                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                                    textColor={theme.colors.onSurface}
+                                />
+                                {errors.email && (
+                                    <HelperText type="error" visible={!!errors.email} style={styles.errorText}>
+                                        {errors.email.message}
+                                    </HelperText>
+                                )}
+                            </>
+                        )}
+                    />
+                </View>
+
+                {/* Phone Input */}
+                <View style={styles.inputContainer}>
+                    <Text variant="labelMedium" style={styles.inputLabel}>Telefone</Text>
+                    <Controller
+                        control={control}
+                        name="phone"
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <>
+                                <TextInput
+                                    mode="outlined"
+                                    placeholder="(00) 00000-0000"
+                                    value={value}
+                                    onBlur={onBlur}
+                                    onChangeText={(text) => onChange(formatPhone(text))}
+                                    error={!!errors.phone}
+                                    maxLength={15}
+                                    keyboardType="phone-pad"
+                                    right={<TextInput.Icon icon="phone" color={theme.colors.onSurfaceVariant} />}
+                                    outlineColor={theme.colors.outline}
+                                    activeOutlineColor={theme.colors.primary}
+                                    style={styles.input}
+                                    outlineStyle={styles.inputOutline}
+                                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                                    textColor={theme.colors.onSurface}
+                                />
+                                {errors.phone && (
+                                    <HelperText type="error" visible={!!errors.phone} style={styles.errorText}>
+                                        {errors.phone.message}
                                     </HelperText>
                                 )}
                             </>

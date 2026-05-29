@@ -10,6 +10,7 @@ import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
 import { AvailabilityTimeline } from './AvailabilityTimeline';
 import type { ORPCInputs } from 'src/services/types';
+import { toTimeStringInTZ } from '../../utils/timezone';
 
 
 interface CreateBookingDialogProps {
@@ -83,14 +84,18 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
     e.preventDefault();
     if (!selectedUser || !roomId || !date || !startTime || !endTime) return;
 
-    const from = new Date(`${date}T${startTime}:00`).toISOString();
-    const to = new Date(`${date}T${endTime}:00`).toISOString();
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
 
     mutation.mutate({
       userId: selectedUser.id,
       roomId,
       title,
-      period: { from, to },
+      day: date,
+      timeInterval: {
+        start: { hour: startHour, minute: startMinute, second: 0 },
+        end: { hour: endHour, minute: endMinute, second: 0 },
+      },
       description: description.trim(),
       numberOfPeople,
     });
@@ -163,17 +168,11 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
               roomId={roomId}
               date={date}
               onSelectBlock={(from, to) => {
-                const formatTime = (d: Date) => `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-                setStartTime(formatTime(from));
+                setStartTime(toTimeStringInTZ(from));
 
-                const calculatedEndTime = new Date(from);
-                calculatedEndTime.setHours(calculatedEndTime.getHours() + 4);
-
-                if (calculatedEndTime > to) {
-                  setEndTime(formatTime(to));
-                } else {
-                  setEndTime(formatTime(calculatedEndTime));
-                }
+                const calculatedEndTime = new Date(from.getTime() + 4 * 60 * 60_000);
+                const end = calculatedEndTime > to ? to : calculatedEndTime;
+                setEndTime(toTimeStringInTZ(end));
               }}
             />
 

@@ -1,6 +1,6 @@
 {
   "name": "@locomotiva/api",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Project for secti-locomotiva",
   "main": "index.js",
   "type": "module",
@@ -42,12 +42,12 @@
     "typescript-eslint": "^8.18.1"
   },
   "dependencies": {
-    "@orpc/client": "^1.13.13",
-    "@orpc/experimental-publisher": "^1.13.13",
-    "@orpc/json-schema": "^1.13.13",
-    "@orpc/openapi": "^1.13.13",
-    "@orpc/server": "^1.13.13",
-    "@orpc/zod": "^1.13.13",
+    "@orpc/client": "^1.14.3",
+    "@orpc/experimental-publisher": "^1.14.3",
+    "@orpc/json-schema": "^1.14.3",
+    "@orpc/openapi": "^1.14.3",
+    "@orpc/server": "^1.14.3",
+    "@orpc/zod": "^1.14.3",
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",
     "@react-pdf/renderer": "^4.5.1",

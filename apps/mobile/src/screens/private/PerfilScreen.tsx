@@ -62,12 +62,6 @@ export default function PerfilScreen() {
                 </Text>
 
                 <List.Item
-                    title="E-mail"
-                    description={authUser?.email ?? '-'}
-                    left={(props) => <List.Icon {...props} icon="email-outline" />}
-                />
-                <Divider />
-                <List.Item
                     title="CPF"
                     description={formatCpf(authUser?.cpf)}
                     left={(props) => <List.Icon {...props} icon="card-account-details-outline" />}
@@ -77,6 +71,18 @@ export default function PerfilScreen() {
                     title="Data de nascimento"
                     description={formatDate(authUser?.birthDate)}
                     left={(props) => <List.Icon {...props} icon="calendar-outline" />}
+                />
+                <Divider />
+                <List.Item
+                    title="E-mail"
+                    description={authUser?.email ?? '-'}
+                    left={(props) => <List.Icon {...props} icon="email-outline" />}
+                />
+                <Divider />
+                <List.Item
+                    title="Telefone"
+                    description={(authUser as any)?.phone ?? 'Não informado'}
+                    left={(props) => <List.Icon {...props} icon="phone-outline" />}
                 />
                 {(authUser as any)?.company ? (
                     <>

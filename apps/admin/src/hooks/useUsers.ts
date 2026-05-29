@@ -12,6 +12,7 @@ export type UserItem = {
   userType: 'user' | 'admin' | 'system';
   company?: string | null;
   jobTitle?: string | null;
+  phone?: string | null;
 };
 
 export const useUsers = (pageNumber: number, pageSize: number, search: string) => {

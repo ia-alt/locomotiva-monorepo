@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { orpc } from '../services/api';
 import { useBookingsAdmin } from '../hooks/useBookingsAdmin';
+import { onlyTimeObjToTimeStr, onlyDateStrToShortBrDate } from '../utils/datetime-formatters';
 import { BookingStatusChip } from '../components/bookings/BookingStatusChip';
 import { BookingViewModal } from '../components/bookings/BookingViewModal';
 import { CreateBookingDialog } from '../components/bookings/CreateBookingDialog';
@@ -32,15 +33,6 @@ const STATUS_FILTER_OPTIONS = [
   { value: 'rejected', label: 'Rejeitado' },
   { value: 'no_show', label: 'Não compareceu' },
 ];
-
-function formatDateRange(from: string, to: string) {
-  const f = new Date(from);
-  const t = new Date(to);
-  return {
-    date: f.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }),
-    time: `${f.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} – ${t.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
-  };
-}
 
 const BookingsPage: React.FC = () => {
   const [tab, setTab] = useState(0);
@@ -278,7 +270,6 @@ const BookingsPage: React.FC = () => {
                         </TableRow>
                       ) : (
                         bookings.map((booking) => {
-                          const { date, time } = formatDateRange(booking.period.from, booking.period.to);
                           return (
                             <TableRow key={booking.id} hover>
                               <TableCell>
@@ -305,8 +296,10 @@ const BookingsPage: React.FC = () => {
                               </TableCell>
 
                               <TableCell>
-                                <Typography variant="body2" fontWeight={500}>{date}</Typography>
-                                <Typography variant="caption" color="text.secondary">{time}</Typography>
+                                <Typography variant="body2" fontWeight={500}>{onlyDateStrToShortBrDate(booking.day)}</Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {onlyTimeObjToTimeStr(booking.timeInterval.start)} – {onlyTimeObjToTimeStr(booking.timeInterval.end)}
+                                </Typography>
                               </TableCell>
 
                               <TableCell>

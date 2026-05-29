@@ -3,6 +3,7 @@ import { InvalidDatePeriodError } from "../error";
 import { ValueObject } from "../base-classes";
 import { OnlyDate } from "./only-date";
 import { endOfDay, startOfDay } from "date-fns";
+import { TimeInterval } from "src/modules/operating-hours/domain/value-objects";
 
 class DatePeriod extends ValueObject<DatePeriod.Value> {
   constructor(value: DatePeriod.Value) {

@@ -105,11 +105,19 @@ function fmtTime(iso: string): string {
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+const MONTHS_ABBR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+
 function fmtDate(iso: string): string {
     const d = new Date(iso);
     const day = String(d.getDate()).padStart(2, "0");
-    const month = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"][d.getMonth()];
+    const month = MONTHS_ABBR[d.getMonth()];
     return `${day} ${month}. ${d.getFullYear()}`;
+}
+
+// Formata o `day` da reserva (YYYY-MM-DD) sem Date, evitando deslize de fuso.
+function fmtOnlyDate(onlyDateStr: string): string {
+    const [year, month, day] = onlyDateStr.split("-").map(Number);
+    return `${String(day).padStart(2, "0")} ${MONTHS_ABBR[month - 1]}. ${year}`;
 }
 
 const MonthReportDocument = ({ report, lineChartImg, barChartImg }: { report: MonthReport; lineChartImg: string; barChartImg: string }) => {
@@ -183,7 +191,7 @@ const MonthReportDocument = ({ report, lineChartImg, barChartImg }: { report: Mo
                     ) : (
                         json.bookings.map((item, i) => (
                             <View key={i} style={s.tableRow}>
-                                <Text style={[s.colDate, s.cell]}>{fmtDate(item.booking.period.from)}</Text>
+                                <Text style={[s.colDate, s.cell]}>{fmtOnlyDate(item.booking.day)}</Text>
                                 <Text style={[s.colEvent, s.cell]}>{item.booking.title}</Text>
                                 <View style={s.colResponsible}>
                                     <Text style={s.cell}>{item.user.name}</Text>

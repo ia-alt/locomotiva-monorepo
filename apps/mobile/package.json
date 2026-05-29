@@ -1,6 +1,6 @@
 {
   "name": "@locomotiva/mobile",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -8,15 +8,16 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "dev": "expo start --web",
-    "build": "expo export --platform web"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "npm run typecheck && expo export --platform web"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.6",
     "@expo/vector-icons": "^15.0.2",
     "@hookform/resolvers": "^5.2.2",
     "@locomotiva/api": "*",
-    "@orpc/client": "^1.13.6",
-    "@orpc/react-query": "^1.13.6",
+    "@orpc/client": "^1.14.3",
+    "@orpc/react-query": "^1.14.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-navigation/bottom-tabs": "^7.15.5",
