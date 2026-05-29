@@ -53,6 +53,7 @@ class AuthService {
             passwordHash,
             company: params.company,
             jobTitle: params.jobTitle,
+            phone: params.phone,
         });
 
         await this.userRepository.save(user);
@@ -69,6 +70,7 @@ namespace AuthService {
         password: Password;
         company?: string | null;
         jobTitle?: string | null;
+        phone?: string | null;
     };
 }
 

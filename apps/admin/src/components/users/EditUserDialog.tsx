@@ -25,6 +25,18 @@ const formatCpf = (value: string) => {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 };
 
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 10) {
+    return digits
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4})(\d{1,4})$/, '$1-$2');
+  }
+  return digits
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+};
+
 interface EditUserDialogProps {
   open: boolean;
   onClose: () => void;
@@ -38,6 +50,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
   const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [phone, setPhone] = useState('');
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [userType, setUserType] = useState<'user' | 'admin'>('user');
@@ -48,14 +61,15 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
       setEmail(user.email);
       setCpf(formatCpf(user.cpf));
       setBirthDate(user.birthDate);
-      setCompany((user as any).company ?? '');
-      setJobTitle((user as any).jobTitle ?? '');
+      setPhone(formatPhone(user.phone ?? ''));
+      setCompany(user.company ?? '');
+      setJobTitle(user.jobTitle ?? '');
       setUserType(user.userType === 'system' ? 'admin' : user.userType);
     }
   }, [user]);
 
   const mutation = useMutation({
-    mutationFn: (input: { userId: string; data: { name: string; email: string; cpf: string; birthDate: string; userType: 'user' | 'admin'; company?: string | null; jobTitle?: string | null } }) =>
+    mutationFn: (input: { userId: string; data: { name: string; email: string; cpf: string; birthDate: string; userType: 'user' | 'admin'; company?: string | null; jobTitle?: string | null; phone?: string | null } }) =>
       orpc.identy.updateUser(input as Parameters<typeof orpc.identy.updateUser>[0]),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -69,7 +83,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
-    mutation.mutate({ userId: user.id, data: { name, email, cpf, birthDate, userType, company: company || null, jobTitle: jobTitle || null } });
+    mutation.mutate({ userId: user.id, data: { name, email, cpf, birthDate, userType, company: company || null, jobTitle: jobTitle || null, phone: phone || null } });
   };
 
   const error = mutation.error instanceof Error ? mutation.error.message : null;
@@ -100,15 +114,6 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
             />
 
             <TextField
-              label="E-mail"
-              type="email"
-              fullWidth
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <TextField
               label="CPF"
               fullWidth
               required
@@ -126,6 +131,24 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, u
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
+            />
+
+            <TextField
+              label="E-mail"
+              type="email"
+              fullWidth
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <TextField
+              label="Telefone (opcional)"
+              fullWidth
+              value={phone}
+              onChange={(e) => setPhone(formatPhone(e.target.value))}
+              placeholder="(00) 00000-0000"
+              slotProps={{ htmlInput: { maxLength: 15 } }}
             />
 
             <TextField

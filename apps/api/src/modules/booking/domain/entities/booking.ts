@@ -1,5 +1,5 @@
 import { AggregateRoot, UniqueId } from "@core/base-classes";
-import { DatePeriod, OnlyTime } from "@core/value-objects";
+import { DatePeriod, OnlyDate, OnlyTime } from "@core/value-objects";
 import { BookingCreatedEvent } from "../events/booking-created";
 import { BookingConfirmedEvent } from "../events/booking-confirmed";
 import { BookingRejectedEvent } from "../events/booking-rejected";
@@ -136,13 +136,21 @@ export class Booking extends AggregateRoot {
     }
 
     toJSON(): Booking.JsonSchema {
+        const day = OnlyDate.fromDate(this._period.value.from);
+        const timeInterval = new TimeInterval({
+            start: OnlyTime.fromDate(this._period.value.from),
+            end: OnlyTime.fromDate(this._period.value.to)
+        })
         return {
             id: this.id.value,
             roomId: this.roomId.value,
             userId: this.userId.value,
             title: this.title,
             description: this.description,
+            // TODO: remover period depois
             period: this._period.toJSON(),
+            day: day.toJSON(),
+            timeInterval: timeInterval.toJSON(),
             status: this.status,
             rejectionCancelReason: this.rejectionCancelReason,
             createdAt: this.createdAt.toISOString(),
@@ -182,7 +190,10 @@ export namespace Booking {
         userId: z.string(),
         title: z.string(),
         description: z.string(),
+        // TODO: remover period depois
         period: DatePeriod.ValueSchema,
+        day: OnlyDate.JsonSchema,
+        timeInterval: TimeInterval.JsonSchema,
         status: z.enum(Status),
         rejectionCancelReason: z.string().optional(),
         createdAt: z.string(),

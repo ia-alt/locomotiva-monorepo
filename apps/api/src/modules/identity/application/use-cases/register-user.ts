@@ -26,6 +26,7 @@ class RegisterUserUseCase implements UseCase<RegisterUserUseCase.Input, Register
             password,
             company: input.company,
             jobTitle: input.jobTitle,
+            phone: input.phone,
         });
 
         return user.toJSON();
@@ -41,6 +42,7 @@ namespace RegisterUserUseCase {
         password: Password.JsonSchema,
         company: z.string().nullable().optional(),
         jobTitle: z.string().nullable().optional(),
+        phone: z.string().nullable().optional(),
     });
 
     export const OutputSchema = User.JsonSchema;

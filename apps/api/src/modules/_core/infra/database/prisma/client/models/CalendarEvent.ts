@@ -151,7 +151,7 @@ export type CalendarEventGroupByOutputType = {
   _max: CalendarEventMaxAggregateOutputType | null
 }
 
-type GetCalendarEventGroupByPayload<T extends CalendarEventGroupByArgs> = Prisma.PrismaPromise<
+export type GetCalendarEventGroupByPayload<T extends CalendarEventGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CalendarEventGroupByOutputType, T['by']> &
       {

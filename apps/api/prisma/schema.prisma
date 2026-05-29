@@ -27,6 +27,7 @@ model User {
   userType                String
   company                 String?
   jobTitle                String?
+  phone                   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

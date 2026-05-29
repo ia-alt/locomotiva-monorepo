@@ -158,7 +158,7 @@ export type AccessLogGroupByOutputType = {
   _max: AccessLogMaxAggregateOutputType | null
 }
 
-type GetAccessLogGroupByPayload<T extends AccessLogGroupByArgs> = Prisma.PrismaPromise<
+export type GetAccessLogGroupByPayload<T extends AccessLogGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<AccessLogGroupByOutputType, T['by']> &
       {

@@ -171,7 +171,7 @@ export type CoworkingSettingsGroupByOutputType = {
   _max: CoworkingSettingsMaxAggregateOutputType | null
 }
 
-type GetCoworkingSettingsGroupByPayload<T extends CoworkingSettingsGroupByArgs> = Prisma.PrismaPromise<
+export type GetCoworkingSettingsGroupByPayload<T extends CoworkingSettingsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CoworkingSettingsGroupByOutputType, T['by']> &
       {

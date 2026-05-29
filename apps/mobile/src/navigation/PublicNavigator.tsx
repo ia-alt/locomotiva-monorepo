@@ -1,6 +1,7 @@
 import React from 'react';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
+import EntradaScreen from '../screens/public/EntradaScreen';
 import LoginScreen from '../screens/public/LoginScreen';
 import CadastroScreen from '../screens/public/CadastroScreen';
 import EsqueciSenhaScreen from '../screens/public/EsqueciSenhaScreen';
@@ -10,6 +11,7 @@ import TermosDeServicoScreen from '../screens/public/TermosDeServicoScreen';
 import PoliticaDePrivacidadeScreen from '../screens/public/PoliticaDePrivacidadeScreen';
 
 export type PublicStackParamList = {
+    Entrada: undefined;
     Login: undefined;
     Cadastro: undefined;
     EsqueciSenha: { identifier?: string };
@@ -24,7 +26,7 @@ const Stack = createStackNavigator<PublicStackParamList>();
 export default function PublicNavigator() {
     return (
         <Stack.Navigator
-            initialRouteName="Login"
+            initialRouteName="Entrada"
             screenOptions={{
                 headerShown: false,
                 animation: 'slide_from_right',
@@ -32,6 +34,7 @@ export default function PublicNavigator() {
             }}
             id='public-stack'
         >
+            <Stack.Screen name="Entrada" component={EntradaScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Cadastro" component={CadastroScreen} />
             <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />

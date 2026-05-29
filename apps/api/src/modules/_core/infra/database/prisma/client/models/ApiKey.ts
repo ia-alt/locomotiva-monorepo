@@ -165,7 +165,7 @@ export type ApiKeyGroupByOutputType = {
   _max: ApiKeyMaxAggregateOutputType | null
 }
 
-type GetApiKeyGroupByPayload<T extends ApiKeyGroupByArgs> = Prisma.PrismaPromise<
+export type GetApiKeyGroupByPayload<T extends ApiKeyGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ApiKeyGroupByOutputType, T['by']> &
       {

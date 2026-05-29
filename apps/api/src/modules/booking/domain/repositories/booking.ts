@@ -1,6 +1,7 @@
 import { Booking } from "@booking/domain/entities";
 import { UniqueId } from "@core/base-classes";
 import { DatePeriod, OnlyDate, PaginatedQuery, PaginatedResult } from "@core/value-objects";
+import { TimeInterval } from "src/modules/operating-hours/domain/value-objects";
 import z from "zod";
 
 interface BookingRepository {
@@ -39,6 +40,8 @@ namespace BookingRepository {
         user: z.object({ id: z.string(), name: z.string(), email: z.string(), company: z.string().nullable().optional(), jobTitle: z.string().nullable().optional() }),
         room: z.object({ id: z.string(), name: z.string(), capacity: z.number() }),
         period: z.object({ from: z.string(), to: z.string() }),
+        day: OnlyDate.JsonSchema,
+        timeInterval: TimeInterval.JsonSchema,
         status: z.string(),
         title: z.string(),
         description: z.string().optional(),
