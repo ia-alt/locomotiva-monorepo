@@ -1,6 +1,6 @@
 import { ValueObject } from "@core/base-classes";
 import { DomainError, ErrorType } from "@core/error";
-import { OnlyTime } from "@core/value-objects";
+import { DatePeriod, OnlyTime } from "@core/value-objects";
 import z from "zod";
 
 class TimeInterval extends ValueObject<TimeInterval.Value> {
@@ -49,6 +49,12 @@ class TimeInterval extends ValueObject<TimeInterval.Value> {
     return containsStart && containsEnd;
   }
 
+  toDatePeriod(date: Date): DatePeriod {
+    const from = this.value.start.aplayInDate(date);
+    const to = this.value.end.aplayInDate(date);
+    return new DatePeriod({ from, to });
+  }
+
   overlaps(other: TimeInterval): boolean {
     if (this.value.end === other.value.start || this.value.start === other.value.end) {
       return false;
@@ -57,6 +63,48 @@ class TimeInterval extends ValueObject<TimeInterval.Value> {
       return true;
     }
     return this.value.start < other.value.end && this.value.end > other.value.start;
+  }
+
+  subtract(other: TimeInterval): TimeInterval[] {
+    if (other.value.end < this.value.start || other.value.start > this.value.end) {
+      return [this];
+    }
+
+    if (other.value.start < this.value.start && other.value.end > this.value.end) {
+      return [];
+    }
+
+    const intervals: TimeInterval[] = [];
+
+    if (other.value.start > this.value.start) {
+      intervals.push(new TimeInterval({
+        start: this.value.start,
+        end: other.value.start,
+      }));
+    }
+
+    if (other.value.end < this.value.end) {
+      intervals.push(new TimeInterval({
+        start: other.value.end,
+        end: this.value.end,
+      }));
+    }
+
+    return intervals;
+  }
+
+  subtractAll(others: TimeInterval[]): TimeInterval[] {
+    let intervals: TimeInterval[] = [this];
+
+    for (const other of others) {
+      const newPeriods: TimeInterval[] = [];
+      for (const interval of intervals) {
+        newPeriods.push(...interval.subtract(other));
+      }
+      intervals = newPeriods;
+    }
+
+    return intervals;
   }
 
   toJSON(): TimeInterval.Json {

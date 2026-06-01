@@ -2,23 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { format, setHours, setMinutes, startOfDay } from 'date-fns';
+import { onlyTimeObjToTimeStr } from '../utils/datetime-formaters';
+
+export type TimePickerModalTimeValue = {hour: number, minute: number, second: number};
 
 interface TimePickerModalProps {
     visible: boolean;
     onClose: () => void;
-    baseDate: Date; // Keep the same date, just change hours/mins
-    initialTime: Date | null;
-    onConfirm: (date: Date) => void;
+    initialTime: TimePickerModalTimeValue | null;
+    onConfirm: (time: TimePickerModalTimeValue) => void;
     title: string;
-    minTime?: Date;
-    maxTime?: Date;
+    minTime?: TimePickerModalTimeValue;
+    maxTime?: TimePickerModalTimeValue;
 }
 
 const START_HOUR = 8;
-const END_HOUR = 18;
+const END_HOUR = 17;
 
-export default function TimePickerModal({ visible, onClose, baseDate, initialTime, onConfirm, title, minTime, maxTime }: TimePickerModalProps) {
-    const [selectedTime, setSelectedTime] = useState<Date | null>(initialTime);
+export default function TimePickerModal({ visible, onClose, initialTime, onConfirm, title, minTime, maxTime }: TimePickerModalProps) {
+    const [selectedTime, setSelectedTime] = useState<TimePickerModalTimeValue | null>(initialTime);
 
     useEffect(() => {
         if (visible) {
@@ -28,11 +30,10 @@ export default function TimePickerModal({ visible, onClose, baseDate, initialTim
 
     // Generate timeslots every 30 mins
     const timeSlots = [];
-    const base = startOfDay(baseDate);
     for (let h = START_HOUR; h <= END_HOUR; h++) {
-        timeSlots.push(setMinutes(setHours(base, h), 0));
+        timeSlots.push({ hour: h, minute: 0, second: 0 });
         if (h < END_HOUR) {
-            timeSlots.push(setMinutes(setHours(base, h), 30));
+            timeSlots.push({ hour: h, minute: 30, second: 0 });
         }
     }
 
@@ -53,13 +54,13 @@ export default function TimePickerModal({ visible, onClose, baseDate, initialTim
                             {timeSlots.map((time, idx) => {
                                 // check if same time (hour & min)
                                 const isSelected = selectedTime && 
-                                    time.getHours() === selectedTime.getHours() && 
-                                    time.getMinutes() === selectedTime.getMinutes();
+                                    time.hour === selectedTime.hour && 
+                                    time.minute === selectedTime.minute;
 
                                 // check if is disabled
                                 let isDisabled = false;
-                                if (minTime && time < minTime) isDisabled = true;
-                                if (maxTime && time > maxTime) isDisabled = true;
+                                if (minTime && TimeToSeconds(time) < TimeToSeconds(minTime)) isDisabled = true;
+                                if (maxTime && TimeToSeconds(time) > TimeToSeconds(maxTime)) isDisabled = true;
 
                                 return (
                                     <TouchableOpacity
@@ -77,7 +78,7 @@ export default function TimePickerModal({ visible, onClose, baseDate, initialTim
                                             isSelected && styles.timeTextSelected,
                                             isDisabled && styles.timeTextDisabled
                                         ]}>
-                                            {format(time, 'HH:mm')}
+                                            {onlyTimeObjToTimeStr(time)}
                                         </Text>
                                     </TouchableOpacity>
                                 );
@@ -101,6 +102,10 @@ export default function TimePickerModal({ visible, onClose, baseDate, initialTim
             </View>
         </Modal>
     );
+}
+
+export function TimeToSeconds(time: TimePickerModalTimeValue) {
+    return time.hour * 3600 + time.minute * 60 + time.second;
 }
 
 const styles = StyleSheet.create({

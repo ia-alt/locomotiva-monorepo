@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
+import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
 
 type ReservaSucessoNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'ReservaSucesso'>;

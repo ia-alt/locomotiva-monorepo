@@ -1,30 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
-import AvailabilityTimeline from '../../components/AvailabilityTimeline';
-import DateSelector from '../../components/DateSelector';
-import TimeSelector from '../../components/TimeSelector';
-import { addDays, startOfDay, addHours } from 'date-fns';
+import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
+import AvailabilityTimeline, { AvailabilityTimelineSlot } from '../../../components/AvailabilityTimeline';
+import DateSelector from '../../../components/DateSelector';
+import TimeSelector from '../../../components/TimeSelector';
+import { addDays, startOfDay, format } from 'date-fns';
 import { Feather } from '@expo/vector-icons';
-
-type DisponibilidadeNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'DisponibilidadeReserva'>;
-type DisponibilidadeRouteProp = RouteProp<PrivateStackParamList, 'DisponibilidadeReserva'>;
+import { useORPC } from '../../../locomotiva-api/context';
+import { useQuery } from '@tanstack/react-query';
+import { TimePickerModalTimeValue, TimeToSeconds } from '../../../components/TimePickerModal';
 
 export default function DisponibilidadeReservaScreen() {
-    const navigation = useNavigation<DisponibilidadeNavigationProp>();
-    const route = useRoute<DisponibilidadeRouteProp>();
-    const { roomId, roomCapacity } = route.params;
+    const navigation = usePrivateStackNavigation();
+    const route = usePrivateStackRoute<"DisponibilidadeReserva">();
+    const { room } = route.params;
 
     const [selectedDate, setSelectedDate] = useState(() => startOfDay(addDays(new Date(), 1)));
-    const [startTime, setStartTime] = useState<Date | null>(null);
-    const [endTime, setEndTime] = useState<Date | null>(null);
-    const [blockStart, setBlockStart] = useState<Date | null>(null);
-    const [blockEnd, setBlockEnd] = useState<Date | null>(null);
+    const [selectedSlot, setSelectedSlot] = useState<AvailabilityTimelineSlot | null>(null);
+    const [startTime, setStartTime] = useState<TimePickerModalTimeValue | null>(null);
+    const [endTime, setEndTime] = useState<TimePickerModalTimeValue | null>(null);
 
-    const isFormValid = !!(startTime && endTime && startTime < endTime);
+    useEffect(() => {
+        setSelectedSlot(null);
+        setStartTime(null);
+        setEndTime(null);
+    }, [selectedDate]);
+
+    const orpc = useORPC();
+    const formattedDay = format(selectedDate, 'yyyy-MM-dd');
+
+    // API request only triggers when roomId is valid
+    const { data: availableSlots, isLoading: isLoadingSlots } = useQuery({
+        ...orpc.booking.listAvailableSlotsByDay.queryOptions({
+            input: { roomId: room.id, day: formattedDay }
+        }),
+    });
+
+    const isFormValid = !!(startTime && endTime &&  TimeToSeconds(startTime) < TimeToSeconds(endTime));
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -46,27 +59,20 @@ export default function DisponibilidadeReservaScreen() {
             />
 
             <AvailabilityTimeline
-                roomId={roomId}
-                date={selectedDate}
-                onSelectBlock={(from, to) => {
-                    setBlockStart(from);
-                    setBlockEnd(to);
-                    setStartTime(from);
-                    const calculatedEndTime = addHours(from, 4);
-                    if (calculatedEndTime > to) {
-                        setEndTime(to);
-                    } else {
-                        setEndTime(calculatedEndTime);
-                    }
+                isLoadingSlots={isLoadingSlots}
+                availableSlots={availableSlots?.slots}
+                selectedSlot={selectedSlot}
+                setSelectedSlot={(slot) => {
+                    setSelectedSlot(slot);
                 }}
             />
 
             <TimeSelector
+                isLoading={isLoadingSlots}
+                timeSlot={selectedSlot}
                 startTime={startTime}
                 endTime={endTime}
                 baseDate={selectedDate}
-                blockStart={blockStart}
-                blockEnd={blockEnd}
                 onChangeStart={setStartTime}
                 onChangeEnd={setEndTime}
             />
@@ -77,11 +83,10 @@ export default function DisponibilidadeReservaScreen() {
                 onPress={() => {
                     if (startTime && endTime) {
                         navigation.navigate('DetalhesReserva', {
-                            roomId,
-                            roomCapacity,
-                            date: selectedDate.toISOString(),
-                            startTime: startTime.toISOString(),
-                            endTime: endTime.toISOString(),
+                            room,
+                            day: format(selectedDate, 'yyyy-MM-dd'),
+                            startTime: startTime,
+                            endTime: endTime,
                         });
                     }
                 }}

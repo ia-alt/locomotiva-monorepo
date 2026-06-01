@@ -103,19 +103,19 @@ class BookingService {
         return items;
     }
 
-    async getAvailableSlotsByRoom(roomId: UniqueId, day: OnlyDate): Promise<DatePeriod[]> {
+    async getAvailableDailySlotsByRoom(roomId: UniqueId, day: OnlyDate): Promise<TimeInterval[]> {
         const dailyAvailability = await this.spaceOperatingHoursService.getAvailabilityForDay(roomId, day);
         if (!dailyAvailability) {
             return [];
         }
-        const roomOperatingHours = dailyAvailability.toDatePeriod(day);
+        const roomOperatingHours = dailyAvailability.intervals;
 
         const bookings = await this.bookingRepository.findByDay({
             day,
             roomId,
             status: Booking.ActiveStatus,
         });
-        const freeSlots = roomOperatingHours.flatMap(x => x.subtractAll(bookings.map(x => x.period)));
+        const freeSlots = roomOperatingHours.flatMap(x => x.subtractAll(bookings.map(x => x.timeInterval)));
         return freeSlots;
     }
 }

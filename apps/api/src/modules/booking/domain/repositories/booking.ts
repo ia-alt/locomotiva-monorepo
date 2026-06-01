@@ -51,7 +51,7 @@ namespace BookingRepository {
     });
 
     export class AdminBookingItem {
-        constructor(private readonly data: z.infer<typeof AdminBookingItemSchema>) {}
+        constructor(private readonly data: z.infer<typeof AdminBookingItemSchema>) { }
         toJSON() { return this.data; }
     }
 

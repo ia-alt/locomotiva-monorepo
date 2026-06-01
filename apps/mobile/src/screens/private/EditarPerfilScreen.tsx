@@ -53,16 +53,15 @@ export default function EditarPerfilScreen() {
     const [name, setName] = useState(authUser?.name ?? '');
     const [birthDate, setBirthDate] = useState(toDisplayDate(authUser?.birthDate));
     const [email, setEmail] = useState(authUser?.email ?? '');
-    const [phone, setPhone] = useState(applyPhoneMask((authUser as any)?.phone ?? ''));
-    const [company, setCompany] = useState((authUser as any)?.company ?? '');
-    const [jobTitle, setJobTitle] = useState((authUser as any)?.jobTitle ?? '');
+    const [phone, setPhone] = useState(applyPhoneMask(authUser?.phone ?? ''));
+    const [company, setCompany] = useState(authUser?.company ?? '');
+    const [jobTitle, setJobTitle] = useState(authUser?.jobTitle ?? '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const nameError = name.trim().length === 0 ? 'Nome é obrigatório' : null;
     const emailError = !email.includes('@') ? 'E-mail inválido' : null;
     const birthDateError = birthDate && !isValidDisplayDate(birthDate) ? 'Data inválida' : null;
-
     const phoneError = phone.replace(/\D/g, '').length < 10 ? 'Telefone é obrigatório' : null;
 
     const canSubmit = !nameError && !emailError && !birthDateError && !phoneError && !loading;
@@ -72,7 +71,14 @@ export default function EditarPerfilScreen() {
         setError(null);
         setLoading(true);
         try {
-            await updateMe({ name: name.trim(), email, birthDate: toApiDate(birthDate), phone: phone || null, company: company || null, jobTitle: jobTitle || null });
+            await updateMe({
+                name: name.trim(),
+                email,
+                birthDate: toApiDate(birthDate),
+                phone,
+                company: company || null,
+                jobTitle: jobTitle || null
+            });
             navigation.goBack();
         } catch (e: any) {
             setError(e?.message ?? 'Erro ao salvar. Tente novamente.');

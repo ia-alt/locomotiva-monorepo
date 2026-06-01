@@ -67,7 +67,7 @@ export class PrismaBookingRepository implements BookingRepository {
         const bookingsDb = await this.prisma.booking.findMany({
             where,
             orderBy: {
-                startTime: 'asc',
+                startTime: 'desc',
             },
             take,
             skip,
