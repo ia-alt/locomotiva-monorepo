@@ -78,7 +78,7 @@ function ReservasList() {
                 color="#FFFFFF"
                 style={styles.fab}
                 onPress={() => {
-                    const profileComplete = !!(authUser as any)?.company && !!(authUser as any)?.jobTitle;
+                    const profileComplete = !!(authUser as any)?.company && !!(authUser as any)?.jobTitle && !!(authUser as any)?.phone;
                     navigation.navigate(profileComplete ? 'CriarReserva' : 'PerfilIncompleto');
                 }}
                 label='Nova Reserva'
