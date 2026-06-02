@@ -34,30 +34,51 @@ function applyDateMask(raw: string): string {
     return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
 }
 
+function applyPhoneMask(raw: string): string {
+    const digits = raw.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 10) {
+        return digits
+            .replace(/(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{4})(\d{1,4})$/, '$1-$2');
+    }
+    return digits
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+}
+
 export default function EditarPerfilScreen() {
     const { authUser, updateMe } = useAuth();
     const navigation = usePrivateStackNavigation();
 
     const [name, setName] = useState(authUser?.name ?? '');
-    const [email, setEmail] = useState(authUser?.email ?? '');
     const [birthDate, setBirthDate] = useState(toDisplayDate(authUser?.birthDate));
-    const [company, setCompany] = useState((authUser as any)?.company ?? '');
-    const [jobTitle, setJobTitle] = useState((authUser as any)?.jobTitle ?? '');
+    const [email, setEmail] = useState(authUser?.email ?? '');
+    const [phone, setPhone] = useState(applyPhoneMask(authUser?.phone ?? ''));
+    const [company, setCompany] = useState(authUser?.company ?? '');
+    const [jobTitle, setJobTitle] = useState(authUser?.jobTitle ?? '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const nameError = name.trim().length === 0 ? 'Nome é obrigatório' : null;
     const emailError = !email.includes('@') ? 'E-mail inválido' : null;
     const birthDateError = birthDate && !isValidDisplayDate(birthDate) ? 'Data inválida' : null;
+    const phoneError = phone.replace(/\D/g, '').length < 10 ? 'Telefone é obrigatório' : null;
 
-    const canSubmit = !nameError && !emailError && !birthDateError && !loading;
+    const canSubmit = !nameError && !emailError && !birthDateError && !phoneError && !loading;
 
     async function handleSave() {
         if (!canSubmit) return;
         setError(null);
         setLoading(true);
         try {
-            await updateMe({ name: name.trim(), email, birthDate: toApiDate(birthDate), company: company || null, jobTitle: jobTitle || null });
+            await updateMe({
+                name: name.trim(),
+                email,
+                birthDate: toApiDate(birthDate),
+                phone,
+                company: company || null,
+                jobTitle: jobTitle || null
+            });
             navigation.goBack();
         } catch (e: any) {
             setError(e?.message ?? 'Erro ao salvar. Tente novamente.');
@@ -83,6 +104,18 @@ export default function EditarPerfilScreen() {
             {nameError && <HelperText type="error">{nameError}</HelperText>}
 
             <TextInput
+                label="Data de nascimento"
+                value={birthDate}
+                onChangeText={(v) => setBirthDate(applyDateMask(v))}
+                mode="outlined"
+                placeholder="DD/MM/AAAA"
+                keyboardType="numeric"
+                error={!!birthDateError}
+                style={styles.input}
+            />
+            {birthDateError && <HelperText type="error">{birthDateError}</HelperText>}
+
+            <TextInput
                 label="E-mail"
                 value={email}
                 onChangeText={setEmail}
@@ -95,16 +128,17 @@ export default function EditarPerfilScreen() {
             {emailError && <HelperText type="error">{emailError}</HelperText>}
 
             <TextInput
-                label="Data de nascimento"
-                value={birthDate}
-                onChangeText={(v) => setBirthDate(applyDateMask(v))}
+                label="Telefone"
+                value={phone}
+                onChangeText={(v) => setPhone(applyPhoneMask(v))}
                 mode="outlined"
-                placeholder="DD/MM/AAAA"
-                keyboardType="numeric"
-                error={!!birthDateError}
+                placeholder="(00) 00000-0000"
+                keyboardType="phone-pad"
+                maxLength={15}
+                error={!!phoneError}
                 style={styles.input}
             />
-            {birthDateError && <HelperText type="error">{birthDateError}</HelperText>}
+            {phoneError && <HelperText type="error">{phoneError}</HelperText>}
 
             <TextInput
                 label="Empresa/Instituição (opcional)"

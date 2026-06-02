@@ -1,7 +1,9 @@
 import { Booking } from "@booking/domain/entities";
 import { BookingService } from "@booking/domain/services";
 import { UniqueId, UseCase } from "@core/base-classes";
-import { DatePeriod } from "@core/value-objects";
+import { DatePeriod, OnlyDate } from "@core/value-objects";
+import { TimeInterval } from "@operating-hours/domain/value-objects";
+import { dayAndIntervalToPeriod } from "../helpers/day-interval-to-period";
 import { AuthUserService } from "src/modules/identity/domain/services";
 import z from "zod";
 
@@ -19,7 +21,12 @@ class AdminCreateBookingUseCase extends UseCase<AdminCreateBookingUseCase.Input,
 
         const userId = UniqueId.fromString(params.userId);
         const roomId = UniqueId.fromString(params.roomId);
-        const period = DatePeriod.fromPrimitive(params.period);
+        const period = params.day && params.timeInterval
+            ? dayAndIntervalToPeriod(
+                OnlyDate.fromJSON(params.day),
+                TimeInterval.fromJSON(params.timeInterval),
+            )
+            : DatePeriod.fromPrimitive(params.period!);
 
         const booking = await this.bookingService.createBookingRequest({
             userId,
@@ -39,10 +46,16 @@ namespace AdminCreateBookingUseCase {
         userId: z.string(),
         roomId: z.string(),
         title: z.string(),
-        period: DatePeriod.ValueSchema,
+        // TODO: remover period depois que mobile/tablet migrarem para day + timeInterval
+        period: DatePeriod.ValueSchema.optional(),
+        day: OnlyDate.JsonSchema.optional(),
+        timeInterval: TimeInterval.JsonSchema.optional(),
         description: z.string().optional(),
         numberOfPeople: z.number(),
-    });
+    }).refine(
+        (v) => (v.day && v.timeInterval) || v.period,
+        { message: "Informe day + timeInterval ou period" },
+    );
 
     export const OutputSchema = Booking.JsonSchema;
 

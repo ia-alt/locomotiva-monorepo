@@ -7,10 +7,9 @@ import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
 import { Feather, Ionicons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
+import { onlyDateStrToLongBrDate, onlyTimeObjToTimeStr } from '../../utils/datetime-formaters';
 
 type Props = RouteProp<PrivateStackParamList, 'DetalhesMinhaReserva'>;
 
@@ -107,8 +106,6 @@ export default function DetalhesMinhaReservaScreen() {
         );
     }
 
-    const fromDate = new Date(booking.period.from);
-    const toDate = new Date(booking.period.to);
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
 
     return (
@@ -168,11 +165,11 @@ export default function DetalhesMinhaReservaScreen() {
                 <Text style={styles.sectionTitle}>Data e Horário</Text>
                 <View style={styles.infoRow}>
                     <Feather name="calendar" size={16} color="#6B7280" />
-                    <Text style={styles.infoText}>{format(fromDate, "dd 'de' MMMM, yyyy", { locale: ptBR })}</Text>
+                    <Text style={styles.infoText}>{onlyDateStrToLongBrDate(booking.day)}</Text>
                 </View>
                 <View style={styles.infoRow}>
                     <Feather name="clock" size={16} color="#6B7280" />
-                    <Text style={styles.infoText}>{format(fromDate, "HH:mm")} - {format(toDate, "HH:mm")}</Text>
+                    <Text style={styles.infoText}>{onlyTimeObjToTimeStr(booking.timeInterval.start)} - {onlyTimeObjToTimeStr(booking.timeInterval.end)}</Text>
                 </View>
 
                 <View style={styles.divider} />

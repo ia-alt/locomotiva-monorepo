@@ -25,6 +25,7 @@ export const CheckinQrcode: FC = () => {
     }
 
     const value = process.env.EXPO_PUBLIC_MOBILE_APP_URL + "/checkin?code=" + accessCode;
+    console.log("QR Code value:", value);
 
     return <QRCode value={value} size={200} />
 

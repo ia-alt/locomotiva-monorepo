@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
 import type { BookingAdminItem } from '../../hooks/useBookingsAdmin';
+import { onlyDateStrToBrDate } from '../../utils/datetime-formatters';
 
 interface AdminCancelBookingDialogProps {
   open: boolean;
@@ -62,7 +63,7 @@ export const AdminCancelBookingDialog: React.FC<AdminCancelBookingDialogProps> =
             <Typography variant="body2" color="text.secondary">
               Você está cancelando a reserva de <strong>{booking.user.name}</strong> para{' '}
               <strong>{booking.room.name}</strong> em{' '}
-              <strong>{new Date(booking.period.from).toLocaleDateString('pt-BR')}</strong>.
+              <strong>{onlyDateStrToBrDate(booking.day)}</strong>.
             </Typography>
 
             <TextField

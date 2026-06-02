@@ -18,6 +18,7 @@ import { Logout as CheckoutIcon, History as HistoryIcon } from '@mui/icons-mater
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { orpc } from '../services/api';
+import { toTimeStringInTZ } from '../utils/timezone';
 import { useActiveAccessLogs, ACTIVE_ACCESS_LOGS_QUERY_KEY } from '../hooks/useActiveAccessLogs';
 import { QuickCheckinPanel } from '../components/access-control/QuickCheckinPanel';
 
@@ -30,12 +31,6 @@ function formatElapsedTime(entryTime: string): string {
   return `${hours}h ${minutes}min`;
 }
 
-function formatEntryTime(entryTime: string): string {
-  return new Date(entryTime).toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 const ForceCheckoutButton: React.FC<{ userId: string; userName: string }> = ({ userId, userName }) => {
   const queryClient = useQueryClient();
@@ -187,7 +182,7 @@ const AccessControlPage: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {formatEntryTime(session.entryTime)}
+                            {toTimeStringInTZ(session.entryTime)}
                           </Typography>
                         </TableCell>
                         <TableCell>

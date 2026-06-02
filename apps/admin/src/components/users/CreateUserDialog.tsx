@@ -25,6 +25,18 @@ const formatCpf = (value: string) => {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 };
 
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 10) {
+    return digits
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4})(\d{1,4})$/, '$1-$2');
+  }
+  return digits
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+};
+
 interface CreateUserDialogProps {
   open: boolean;
   onClose: () => void;
@@ -34,9 +46,10 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
   const queryClient = useQueryClient();
 
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [password, setPassword] = useState('');
@@ -46,7 +59,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: (input: { name: string; email: string; cpf: string; birthDate: string; password: string; company?: string; jobTitle?: string }) =>
+    mutationFn: (input: { name: string; email: string; cpf: string; birthDate: string; password: string; phone: string; company?: string; jobTitle?: string }) =>
       orpc.identy.registerUser(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -59,9 +72,10 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
 
   const handleClose = () => {
     setName('');
-    setEmail('');
     setCpf('');
     setBirthDate('');
+    setEmail('');
+    setPhone('');
     setCompany('');
     setJobTitle('');
     setPassword('');
@@ -79,7 +93,16 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
       return;
     }
     setConfirmPasswordError('');
-    mutation.mutate({ name, email, cpf, birthDate, company: company || undefined, jobTitle: jobTitle || undefined, password });
+    mutation.mutate({
+      name,
+      email,
+      cpf,
+      birthDate,
+      phone: phone,
+      company: company || undefined,
+      jobTitle: jobTitle || undefined,
+      password,
+    });
   };
 
   const error = mutation.error instanceof Error ? mutation.error.message : null;
@@ -110,15 +133,6 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
             />
 
             <TextField
-              label="E-mail"
-              type="email"
-              fullWidth
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <TextField
               label="CPF"
               fullWidth
               required
@@ -136,6 +150,25 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
+            />
+
+            <TextField
+              label="E-mail"
+              type="email"
+              fullWidth
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <TextField
+              label="Telefone"
+              fullWidth
+              required
+              value={phone}
+              onChange={(e) => setPhone(formatPhone(e.target.value))}
+              placeholder="(00) 00000-0000"
+              slotProps={{ htmlInput: { maxLength: 15 } }}
             />
 
             <TextField

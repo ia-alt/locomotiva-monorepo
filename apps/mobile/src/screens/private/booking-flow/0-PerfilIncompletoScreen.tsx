@@ -2,27 +2,31 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, TextInput, Button } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
-import { useAuth } from '../../contexts/auth-context';
-import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { useAuth } from '../../../contexts/auth-context';
+import { usePrivateStackNavigation } from '../../../navigation/PrivateNavigator';
 
 export default function PerfilIncompletoScreen() {
     const { authUser, updateMe } = useAuth();
     const navigation = usePrivateStackNavigation();
 
-    const existingCompany = (authUser as any)?.company as string | null | undefined;
-    const existingJobTitle = (authUser as any)?.jobTitle as string | null | undefined;
+    const existingCompany = authUser?.company;
+    const existingJobTitle = authUser?.jobTitle;
+    const existingPhone = authUser?.phone;
 
     const needsCompany = !existingCompany;
     const needsJobTitle = !existingJobTitle;
+    const needsPhone = !existingPhone;
 
     const [company, setCompany] = useState(existingCompany ?? '');
     const [jobTitle, setJobTitle] = useState(existingJobTitle ?? '');
+    const [phone, setPhone] = useState(existingPhone ?? '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const canProceed =
         (!needsCompany || company.trim().length > 0) &&
-        (!needsJobTitle || jobTitle.trim().length > 0);
+        (!needsJobTitle || jobTitle.trim().length > 0) &&
+        (!needsPhone || phone.trim().length > 0);
 
     async function handleProceed() {
         if (!canProceed) return;
@@ -35,6 +39,7 @@ export default function PerfilIncompletoScreen() {
                 birthDate: (authUser as any)?.birthDate ?? '',
                 company: company.trim(),
                 jobTitle: jobTitle.trim(),
+                phone: phone.trim(),
             });
             navigation.replace('CriarReserva');
         } catch (e: any) {
@@ -86,6 +91,27 @@ export default function PerfilIncompletoScreen() {
                                 style={styles.input}
                                 outlineStyle={styles.inputOutline}
                                 right={<TextInput.Icon icon="briefcase-outline" color="#9CA3AF" />}
+                            />
+                        </View>
+                    )}
+                    {needsPhone && (
+                        <View style={styles.fieldGroup}>
+                            <Text style={styles.fieldLabel}>Telefone</Text>
+                            <TextInput
+                                value={phone}
+                                onChangeText={(v) => {
+                                const digits = v.replace(/\D/g, '').slice(0, 11);
+                                let masked = digits;
+                                if (digits.length > 2) masked = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+                                if (digits.length > 7) masked = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+                                setPhone(masked);
+                            }}
+                                keyboardType="phone-pad"
+                                mode="outlined"
+                                placeholder="Seu telefone"
+                                style={styles.input}
+                                outlineStyle={styles.inputOutline}
+                                right={<TextInput.Icon icon="phone-outline" color="#9CA3AF" />}
                             />
                         </View>
                     )}

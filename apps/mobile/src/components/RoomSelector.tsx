@@ -1,20 +1,25 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator, StatusBar, Dimensions, useWindowDimensions } from 'react-native';
 import { Text, Surface, Divider } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useORPC } from '../locomotiva-api/context';
 import { useQuery } from '@tanstack/react-query';
+import { ORPCOutputs } from '../locomotiva-api/types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+type RoomFromList = ORPCOutputs["booking"]["listRooms"][0]
 
 interface RoomSelectorProps {
-    selectedRoomId: string | null;
-    setSelectedRoomId: (id: string, capacity: number) => void;
+    selectedRoom: RoomFromList | null;
+    setSelectedRoom: (room: RoomFromList) => void;
 }
 
 const MAX_WIDTH = 800;
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
+const getRoomImage = (room?: RoomFromList | null) => room?.photoUrl || FALLBACK_IMAGE;
 
-export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: RoomSelectorProps) {
+
+export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSelectorProps) {
     const orpc = useORPC();
     const { data: rooms, isLoading } = useQuery(orpc.booking.listRooms.queryOptions({ input: {} }));
     const { width } = useWindowDimensions();
@@ -23,12 +28,10 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
     const [modalVisible, setModalVisible] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-    const selectedRoom = rooms?.find(r => r.id === selectedRoomId);
-
-    const availableRooms = rooms?.filter(r => r.enabled) || [];
-
-    const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
-    const getRoomImage = (room: typeof selectedRoom) => room?.photoUrl || FALLBACK_IMAGE;
+    const availableRooms = useMemo(
+        () => rooms?.filter(r => r.enabled) || [],
+        [rooms]
+    );
 
     return (
         <View style={styles.container}>
@@ -85,7 +88,7 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
                                     <TouchableOpacity
                                         style={styles.modalItem}
                                         onPress={() => {
-                                            setSelectedRoomId(item.id, item.capacity);
+                                            setSelectedRoom(item);
                                             setModalVisible(false);
                                         }}
                                     >
@@ -110,7 +113,7 @@ export default function RoomSelector({ selectedRoomId, setSelectedRoomId }: Room
                                             <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{item.name}</Text>
                                             <Text variant="bodyMedium" style={{ color: '#6B7280' }}>Capacidade: {item.capacity} pessoas</Text>
                                         </View>
-                                        {selectedRoomId === item.id && (
+                                        {selectedRoom === item && (
                                             <Ionicons name="checkmark-circle" size={24} color="#0D9488" />
                                         )}
                                     </TouchableOpacity>

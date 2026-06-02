@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Box, Typography, Paper, CircularProgress } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
+import { getTimePartsInTZ } from '../../utils/timezone';
 
 interface AvailabilityTimelineProps {
   roomId: string;
@@ -40,10 +41,12 @@ export const AvailabilityTimeline: React.FC<AvailabilityTimelineProps> = ({ room
     const freeSlots = routeData.slots.map((s: any) => {
       const startOrigin = new Date(s.from);
       const endOrigin = new Date(s.to);
-      let sMin = startOrigin.getHours() * 60 + startOrigin.getMinutes();
-      let eMin = endOrigin.getHours() * 60 + endOrigin.getMinutes();
+      const startParts = getTimePartsInTZ(startOrigin);
+      const endParts = getTimePartsInTZ(endOrigin);
+      let sMin = startParts.hour * 60 + startParts.minute;
+      let eMin = endParts.hour * 60 + endParts.minute;
 
-      if (eMin === 0 && startOrigin.getDay() !== endOrigin.getDay()) {
+      if (eMin === 0 && endOrigin.getTime() > startOrigin.getTime()) {
         eMin = 24 * 60;
       }
 

@@ -1,4 +1,5 @@
 import { AggregateRoot, UniqueId } from "@core/base-classes";
+import { OnlyDate, OnlyTime } from "@core/value-objects";
 import z from "zod";
 import { AccessLogAlreadyCheckedOutError } from "../errors";
 import { CheckinDoneEvent } from "../events/checkin-done";
@@ -34,11 +35,17 @@ class AccessLog extends AggregateRoot {
     }
 
     toJSON(): AccessLog.JsonSchema {
+        const day = OnlyDate.fromDate(this.entryTime);
+        const entryTimeOnly = OnlyTime.fromDate(this.entryTime);
+        const exitTimeOnly = this.exitTime ? OnlyTime.fromDate(this.exitTime) : null;
         return {
             id: this.id.value,
             userId: this.userId.value,
             entryTime: this.entryTime.toISOString(),
             exitTime: this.exitTime?.toISOString() ?? null,
+            day: day.toJSON(),
+            entryTimeOnly: entryTimeOnly.toJSON(),
+            exitTimeOnly: exitTimeOnly?.toJSON() ?? null,
             checkinTotemId: this.checkinTotemId?.value ?? null,
         };
     }
@@ -54,6 +61,9 @@ namespace AccessLog {
         userId: z.string(),
         entryTime: z.string(),
         exitTime: z.string().nullable(),
+        day: OnlyDate.JsonSchema,
+        entryTimeOnly: OnlyTime.JsonSchema,
+        exitTimeOnly: OnlyTime.JsonSchema.nullable(),
         checkinTotemId: z.string().nullable(),
     });
 

@@ -27,6 +27,7 @@ export class PrismaUserRepository implements UserRepository {
                 userType: json.userType,
                 company: json.company ?? null,
                 jobTitle: json.jobTitle ?? null,
+                phone: json.phone ?? null,
                 passwordHash: user.getPasswordHash(),
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
                 passwordResetCode: user.getPasswordResetCode(),
@@ -41,6 +42,7 @@ export class PrismaUserRepository implements UserRepository {
                 userType: json.userType,
                 company: json.company ?? null,
                 jobTitle: json.jobTitle ?? null,
+                phone: json.phone ?? null,
                 passwordHash: user.getPasswordHash(),
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
                 passwordResetCode: user.getPasswordResetCode(),
@@ -108,6 +110,7 @@ export class PrismaUserRepository implements UserRepository {
             user.passwordResetCodeExpiry,
             (user as any).company ?? null,
             (user as any).jobTitle ?? null,
+            (user as any).phone ?? null,
         );
     }
 }

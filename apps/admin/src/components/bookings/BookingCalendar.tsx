@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import type { BookingAdminItem } from '../../hooks/useBookingsAdmin';
+import { onlyTimeObjToTimeStr } from '../../utils/datetime-formatters';
 
 const ROOM_COLORS = ['#3b82f6', '#8b5cf6', '#f97316', '#22c55e', '#ef4444', '#06b6d4', '#eab308'];
 const WEEK_DAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
@@ -73,11 +74,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onViewBooking 
   const bookingsByDay = useMemo(() => {
     const map: Record<string, BookingAdminItem[]> = {};
     visibleBookings.forEach((b) => {
-      const key = toLocalDateStr(new Date(b.period.from));
-      (map[key] ??= []).push(b);
+      (map[b.day] ??= []).push(b);
     });
+    const startMinutes = (b: BookingAdminItem) =>
+      b.timeInterval.start.hour * 60 + b.timeInterval.start.minute;
     Object.values(map).forEach((list) =>
-      list.sort((a, b) => new Date(a.period.from).getTime() - new Date(b.period.from).getTime())
+      list.sort((a, b) => startMinutes(a) - startMinutes(b))
     );
     return map;
   }, [visibleBookings]);
@@ -248,9 +250,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onViewBooking 
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
                     {dayBookings.map((booking) => {
                       const color = roomColorMap[booking.room.id] ?? '#94a3b8';
-                      const hour = new Date(booking.period.from).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit', minute: '2-digit',
-                      });
+                      const hour = onlyTimeObjToTimeStr(booking.timeInterval.start);
                       return (
                         <Box
                           key={booking.id}

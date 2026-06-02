@@ -1,4 +1,3 @@
-import { id } from "zod/v4/locales";
 import { UniqueId } from "./modules/_core/base-classes";
 import { prisma } from "./modules/_core/infra/database/prisma/prisma-instance";
 import container from "./modules/_di_container/container";
@@ -49,6 +48,7 @@ class FeedDbDev {
                 password: "Abc123456789@",
                 cpf: "96641736067",
                 birthDate: "1990-01-01",
+                phone: "9898205288",
             })
 
             await prisma.user.update({
@@ -90,6 +90,8 @@ class FeedDbDev {
                 password: "Abc123456789@",
                 cpf: "75016674035",
                 birthDate: "1990-01-01",
+                phone: "9898205288",
+
             })
 
             user = (await this.getUserById(userId))!;
