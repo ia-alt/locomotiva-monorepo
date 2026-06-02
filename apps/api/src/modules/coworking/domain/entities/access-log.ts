@@ -35,9 +35,6 @@ class AccessLog extends AggregateRoot {
     }
 
     toJSON(): AccessLog.JsonSchema {
-        // day/entryTimeOnly/exitTimeOnly derivam via OnlyDate/OnlyTime.fromDate,
-        // consistente com Booking. Mesma pendência: fromDate usa o fuso do servidor;
-        // quando for ajustado para Fortaleza, corrige booking e coworking juntos.
         const day = OnlyDate.fromDate(this.entryTime);
         const entryTimeOnly = OnlyTime.fromDate(this.entryTime);
         const exitTimeOnly = this.exitTime ? OnlyTime.fromDate(this.exitTime) : null;

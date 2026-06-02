@@ -171,6 +171,7 @@ export const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({ open, 
             <IconLabel icon={<PersonOutlined sx={{ fontSize: 13 }} />}>Solicitante</IconLabel>
             <Typography sx={{ fontSize: 15, fontWeight: 600, color: '#1e293b' }}>{booking.user.name}</Typography>
             <Typography sx={{ fontSize: 13, color: '#64748b' }}>{booking.user.email}</Typography>
+            <Typography sx={{ fontSize: 13, color: '#64748b' }}>{booking.user.phone ?? 'Não Informado'}</Typography>
             <Typography sx={{ fontSize: 13, color: '#64748b', mt: 0.75 }}>
               <Box component="span" sx={{ fontWeight: 600 }}>Instituição: </Box>
               {booking.user.company || 'Não Informado'}
