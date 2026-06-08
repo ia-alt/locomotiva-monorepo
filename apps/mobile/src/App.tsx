@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import { PaperProvider, Snackbar, useTheme } from 'react-native-paper';
+import * as Font from 'expo-font';
 import { ORPCProvider } from './locomotiva-api/provider';
 import { QueryClientProvider, QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/auth-context';
@@ -80,6 +81,12 @@ const theme = {
 };
 
 export default function Main() {
+  const [fontsLoaded] = Font.useFonts({
+    'HankenGrotesk': require('../assets/fonts/HankenGrotesk-Variable.ttf'),
+  });
+
+  if (!fontsLoaded) return null;
+
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
