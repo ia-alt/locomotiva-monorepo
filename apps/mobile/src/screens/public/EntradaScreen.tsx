@@ -23,8 +23,7 @@ const FOOTER_INOVA_URL =
 const FOOTER_SECTI_URL =
     'https://static.wixstatic.com/media/f13483_b90e46d874184c38924124d72f588c5f~mv2.png/v1/crop/x_168,y_0,w_4467,h_1137/fill/w_264,h_67,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/logo%20secti%20com%20fundo%20branco-08.png';
 
-const SOBRE_IMAGE_URL =
-    'https://static.wixstatic.com/media/f13483_d37fdb4af5b344409c50f3f041300994~mv2.jpeg/v1/fill/w_908,h_556,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/f13483_d37fdb4af5b344409c50f3f041300994~mv2.jpeg';
+const SOBRE_IMAGE = require('../../../assets/foto_locomotiva.jpeg');
 
 const SPACES = [
     {
@@ -84,16 +83,16 @@ export default function EntradaScreen() {
         <View style={styles.root}>
             <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-            {/* Top Nav */}
-            <View style={styles.navbar}>
-                <Text style={styles.navBrand}>LOCOMOTIVA HUB</Text>
-            </View>
-
             <ScrollView
                 ref={scrollRef}
                 contentContainerStyle={styles.scroll}
                 showsVerticalScrollIndicator={false}
             >
+                {/* Top Nav 
+                <View style={styles.navbar}>
+                    <Text style={styles.navBrand}>LOCOMOTIVA HUB</Text>
+                </View>*/}
+
                 {/* Hero */}
                 <View style={styles.heroSection}>
                     <Image source={{ uri: LOGO_URL }} style={styles.logo} resizeMode="contain" />
@@ -145,7 +144,7 @@ export default function EntradaScreen() {
                     </View>
 
                     <Image
-                        source={{ uri: SOBRE_IMAGE_URL }}
+                        source={SOBRE_IMAGE}
                         style={styles.sobreImage}
                         resizeMode="cover"
                     />
@@ -241,7 +240,7 @@ export default function EntradaScreen() {
                     </View>
                     <View style={styles.contactRow}>
                         <Ionicons name="time-outline" size={20} color="#adc7ff" />
-                        <Text style={styles.contactText}>Segunda a sexta, das 8h às 18h</Text>
+                        <Text style={styles.contactText}>Segunda a sexta, das 8h às 17h</Text>
                     </View>
                 </View>
 
@@ -268,19 +267,12 @@ const styles = StyleSheet.create({
 
     // Navbar
     navbar: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
         height: 72,
-        zIndex: 100,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingTop: 24,
         backgroundColor: 'rgba(8, 24, 75, 0.92)',
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.1)',
     },
     navBrand: {
         color: '#dde1ff',
@@ -291,7 +283,6 @@ const styles = StyleSheet.create({
     },
 
     scroll: {
-        paddingTop: 72,
         paddingBottom: 32,
     },
 
