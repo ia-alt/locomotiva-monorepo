@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Text, TextInput, Button, HelperText } from 'react-native-paper';
 import { useAuth } from '../../contexts/auth-context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
@@ -88,7 +89,7 @@ export default function EditarPerfilScreen() {
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" enableOnAndroid={true} extraScrollHeight={20}>
             <Text variant="titleMedium" style={styles.sectionTitle}>
                 Dados pessoais
             </Text>
@@ -181,7 +182,7 @@ export default function EditarPerfilScreen() {
                     Salvar
                 </Button>
             </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 

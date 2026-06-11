@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Text } from 'react-native-paper';
 import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
@@ -42,7 +43,7 @@ export default function DetalhesReservaScreen() {
     };
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" enableOnAndroid={true} extraScrollHeight={20}>
             <View style={styles.stepIndicator}>
                 <View style={styles.stepDone}>
                     <Feather name="check" size={16} color="#FFFFFF" />
@@ -168,7 +169,7 @@ export default function DetalhesReservaScreen() {
                 <Text style={styles.nextButtonText}>Avançar</Text>
                 <Feather name="arrow-right" size={20} color="#FFFFFF" />
             </TouchableOpacity>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 

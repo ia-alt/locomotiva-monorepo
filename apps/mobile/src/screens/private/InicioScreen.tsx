@@ -40,7 +40,7 @@ export default function InicioScreen() {
                         Olá, {firstName}!
                     </Text>
                     <Text variant="bodyLarge" style={styles.subtitle}>
-                        Bem-vindo de volta ao seu espaço de inovação.
+                        Bem-vindo de volta ao seu espaço de inovação ffyugytfuyf.
                     </Text>
                 </View>
 

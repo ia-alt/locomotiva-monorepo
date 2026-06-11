@@ -1,15 +1,37 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
+import { CameraView as ExpoCameraView, useCameraPermissions } from 'expo-camera'
 
 type Props = {
     onScan: (code: string) => void
 }
 
-export function CameraView({ onScan: _ }: Props) {
+export function CameraView({ onScan }: Props) {
+    const [permission, requestPermission] = useCameraPermissions()
+
+    useEffect(() => {
+        if (permission && !permission.granted) {
+            requestPermission()
+        }
+    }, [permission])
+
+    if (!permission) return <View style={s.container} />
+
+    if (!permission.granted) {
+        return (
+            <View style={s.container}>
+                <Text style={s.text}>Permissão de câmera negada.</Text>
+            </View>
+        )
+    }
+
     return (
-        <View style={s.container}>
-            <Text style={s.text}>Leitor de QR Code não disponível nesta plataforma.</Text>
-        </View>
+        <ExpoCameraView
+            style={StyleSheet.absoluteFill}
+            facing="back"
+            onBarcodeScanned={({ data }) => onScan(data)}
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+        />
     )
 }
 

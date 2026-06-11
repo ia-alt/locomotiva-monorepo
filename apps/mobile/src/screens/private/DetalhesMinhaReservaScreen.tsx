@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useCallback, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Modal, StatusBar, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Modal, StatusBar, Dimensions, Image } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Animated from 'react-native-reanimated';
 import { Text, Surface, Dialog, Portal, Button, TextInput } from 'react-native-paper';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
@@ -109,7 +110,7 @@ export default function DetalhesMinhaReservaScreen() {
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
+        <KeyboardAwareScrollView style={styles.container} contentContainerStyle={styles.scroll} enableOnAndroid={true} extraScrollHeight={20}>
             <TouchableOpacity activeOpacity={0.85} onPress={() => setImagePreviewVisible(true)}>
                 <Animated.Image
                     source={{ uri: roomImageUrl }}
@@ -224,7 +225,7 @@ export default function DetalhesMinhaReservaScreen() {
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 

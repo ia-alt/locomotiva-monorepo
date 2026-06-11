@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Text, TextInput, Button, HelperText } from 'react-native-paper';
 import { useMutation } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
@@ -21,14 +22,22 @@ export default function AlterarSenhaScreen() {
         ? 'As senhas não coincidem'
         : null;
 
-    const newPasswordError = newPassword && newPassword.length < 8
-        ? 'Mínimo 8 caracteres'
+    const newPasswordError = newPassword
+        ? newPassword.length < 8
+            ? 'A senha deve ter pelo menos 8 caracteres.'
+            : !/[A-Z]/.test(newPassword)
+                ? 'A senha deve conter pelo menos uma letra maiúscula.'
+                : !/[0-9]/.test(newPassword)
+                    ? 'A senha deve conter pelo menos um número.'
+                    : !/[^A-Za-z0-9]/.test(newPassword)
+                        ? 'A senha deve conter pelo menos um símbolo.'
+                        : null
         : null;
 
     const canSubmit =
         currentPassword.length > 0 &&
-        newPassword.length >= 8 &&
         !newPasswordError &&
+        newPassword.length > 0 &&
         !confirmError &&
         confirmPassword === newPassword;
 
@@ -49,7 +58,7 @@ export default function AlterarSenhaScreen() {
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" enableOnAndroid={true} extraScrollHeight={20}>
             <Text variant="titleMedium" style={styles.sectionTitle}>
                 Alterar senha
             </Text>
@@ -84,7 +93,12 @@ export default function AlterarSenhaScreen() {
                 }
                 style={styles.input}
             />
-            {newPasswordError && <HelperText type="error">{newPasswordError}</HelperText>}
+            {newPasswordError
+                ? <HelperText type="error">{newPasswordError}</HelperText>
+                : <HelperText type="info" visible={true} style={styles.infoText}>
+                    Mínimo 8 caracteres, uma letra maiúscula, um número e um símbolo.
+                  </HelperText>
+            }
 
             <TextInput
                 label="Confirmar nova senha"
@@ -128,7 +142,7 @@ export default function AlterarSenhaScreen() {
                     Salvar
                 </Button>
             </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 
@@ -143,6 +157,12 @@ const styles = StyleSheet.create({
     },
     input: {
         marginBottom: 2,
+    },
+    infoText: {
+        paddingHorizontal: 0,
+        paddingTop: 4,
+        color: '#64748B',
+        fontSize: 12,
     },
     globalError: {
         marginTop: 8,

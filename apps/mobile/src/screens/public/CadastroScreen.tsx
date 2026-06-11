@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Text, TextInput, Button, IconButton, useTheme, HelperText, Icon } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -98,11 +99,13 @@ export default function CadastroScreen() {
     };
 
     return (
-        <View style={styles.container}>
-        <ScrollView
+        <KeyboardAwareScrollView
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
+            style={styles.container}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
         >
             {/* Header / App Bar Customizada */}
             <View style={styles.appBar}>
@@ -480,8 +483,7 @@ export default function CadastroScreen() {
                     </Text>
                 </Text>
             </View>
-        </ScrollView>
-        </View>
+        </KeyboardAwareScrollView>
     );
 }
 

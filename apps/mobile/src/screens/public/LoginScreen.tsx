@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Text, TextInput, Button, Surface, Icon, useTheme, HelperText } from 'react-native-paper';
 import { useAuth } from '../../contexts/auth-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -43,12 +44,13 @@ export default function LoginScreen() {
     };
 
     return (
-        <ScrollView
-            id='login-scroll'
+        <KeyboardAwareScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
             style={styles.container}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
         >
             {/* Logo Section */}
             <View style={styles.header}>
@@ -201,7 +203,7 @@ export default function LoginScreen() {
 
             {/* Footer */}
 
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 }
 

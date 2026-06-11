@@ -21,10 +21,24 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+
+      "predictiveBackGestureEnabled": false,
+      "package": "com.eixo_ia.locomotivamobileapp",
+      "permissions": ["android.permission.CAMERA"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b5279359-b327-42ff-b060-4ef6e11c4748"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b5279359-b327-42ff-b060-4ef6e11c4748"
     }
   }
 }
