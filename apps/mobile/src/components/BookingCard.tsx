@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useORPC } from '../locomotiva-api/context';
 import { ORPCOutputs } from '../locomotiva-api/types';
 import { onlyDateStrToBrDate, onlyTimeObjToTimeStr } from '../utils/datetime-formaters';
+import { colors, spacing, radius, typography } from '../design/tokens';
 
 type Booking = ORPCOutputs["booking"]["findMyBookings"]["items"][0];
 
@@ -16,12 +17,12 @@ interface BookingCardProps {
 }
 
 const statusConfig = {
-    pending: { label: 'Aguardando aprovação', color: '#D97706', bg: '#FEF3C7', dot: true },
-    confirmed: { label: 'Agendado', color: '#059669', bg: '#D1FAE5', dot: true, dotColor: '#10B981' },
-    attended: { label: 'Concluída', color: '#4B5563', bg: '#F3F4F6', dot: false },
-    cancelled: { label: 'Cancelada', color: '#a87373ff', bg: '#FEE2E2', dot: true },
-    rejected: { label: 'Rejeitada', color: '#DC2626', bg: '#FEE2E2', dot: true },
-    no_show: { label: 'Não compareceu', color: '#4B5563', bg: '#F3F4F6', dot: false }
+    pending: { label: 'Aguardando aprovação', color: colors.feedback.warning, bg: '#FEF3C7', dot: true },
+    confirmed: { label: 'Agendado', color: colors.feedback.success, bg: '#D1FAE5', dot: true },
+    attended: { label: 'Concluída', color: colors.text.secondary, bg: colors.surface.subtle, dot: false },
+    cancelled: { label: 'Cancelada', color: colors.feedback.error, bg: '#FEE2E2', dot: true },
+    rejected: { label: 'Rejeitada', color: colors.feedback.error, bg: '#FEE2E2', dot: true },
+    no_show: { label: 'Não compareceu', color: colors.text.secondary, bg: colors.surface.subtle, dot: false }
 };
 
 export default function BookingCard({ booking, onPressDetails }: BookingCardProps) {
@@ -42,7 +43,7 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
 
     return (
         <Surface style={styles.card} elevation={0}>
-            
+
             <TouchableOpacity onPress={onPressDetails} activeOpacity={0.7}>
                 <View style={styles.header}>
                     <Animated.Image
@@ -57,7 +58,7 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
                         </Text>
 
                         <View style={styles.locationRow}>
-                            <Feather name="map-pin" size={12} color="#6B7280" />
+                            <Feather name="map-pin" size={12} color={colors.text.secondary} />
                             <Text style={styles.locationText} numberOfLines={1}>
                                 {room?.name || (room?.capacity ? `Capacidade: ${room.capacity}` : 'Local indisponível')}
                             </Text>
@@ -68,13 +69,13 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
                         </Text>
                     </View>
 
-                    <Feather name="chevron-right" size={20} color="#9CA3AF" />
+                    <Feather name="chevron-right" size={20} color={colors.text.muted} />
                 </View>
 
                 <View style={styles.divider} />
 
                 <View style={styles.footer}>
-                    <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1 }]}>
+                    <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg }]}>
                         {config.dot && <View style={[styles.statusDot, { backgroundColor: config.color }]} />}
                         <Text style={[styles.statusText, { color: config.color }]}>{config.label}</Text>
                     </View>
@@ -86,53 +87,56 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
+        backgroundColor: colors.surface.card,
+        borderRadius: radius.lg,
+        padding: spacing.base,
+        marginBottom: spacing.base,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.border.subtle,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: 16,
+        marginBottom: spacing.base,
     },
     roomImage: {
         width: 60,
         height: 60,
-        borderRadius: 12,
-        marginRight: 12,
+        borderRadius: radius.md,
+        marginRight: spacing.md,
     },
     roomInfo: {
         flex: 1,
         justifyContent: 'center',
     },
     roomName: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#111827',
-        marginBottom: 4,
+        fontFamily: typography.family,
+        fontSize: typography.size.md,
+        fontWeight: typography.weight.bold,
+        color: colors.text.primary,
+        marginBottom: spacing.xs,
     },
     locationRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     locationText: {
-        fontSize: 13,
-        color: '#6B7280',
-        marginLeft: 4,
+        fontFamily: typography.family,
+        fontSize: typography.size.sm,
+        color: colors.text.secondary,
+        marginLeft: spacing.xs,
     },
     dateText: {
-        fontSize: 13,
-        color: '#4B5563',
+        fontFamily: typography.family,
+        fontSize: typography.size.sm,
+        color: colors.text.secondary,
     },
     divider: {
         height: 1,
-        backgroundColor: '#F3F4F6',
-        marginHorizontal: -16,
-        marginBottom: 16,
+        backgroundColor: colors.border.subtle,
+        marginHorizontal: -spacing.base,
+        marginBottom: spacing.base,
     },
     footer: {
         flexDirection: 'row',
@@ -142,18 +146,20 @@ const styles = StyleSheet.create({
     statusPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 16,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.xs,
+        borderRadius: radius.full,
+        borderWidth: 1,
     },
     statusDot: {
         width: 6,
         height: 6,
-        borderRadius: 3,
-        marginRight: 6,
+        borderRadius: radius.full,
+        marginRight: spacing.xs + 2,
     },
     statusText: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontFamily: typography.family,
+        fontSize: typography.size.xs,
+        fontWeight: typography.weight.semibold,
     }
 });

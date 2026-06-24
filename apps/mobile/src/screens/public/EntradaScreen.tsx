@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { usePublicStackNavigation } from '../../navigation/PublicNavigator';
+import { landing, spacing, radius, typography } from '../../design/tokens';
 
 const LOGO_URL =
     'https://static.wixstatic.com/media/f13483_e83b4980282f49f39edd6da27f2a6515~mv2.png/v1/crop/x_162,y_0,w_340,h_299/fill/w_286,h_252,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/f13483_e83b4980282f49f39edd6da27f2a6515~mv2.png';
@@ -29,7 +29,6 @@ const SPACES = [
     {
         title: 'Mesa Circle & Square',
         tag: 'COWORKING',
-        tagColor: '#00F2FF',
         description: 'Wifi e cadeiras. Ambiente dinâmico e colaborativo.',
         capacity: '10–12 Pessoas',
         image: 'https://static.wixstatic.com/media/f13483_036b7e7eee64477f8a83b1f54fbfbd42~mv2.jpg/v1/fill/w_506,h_222,al_c,q_80,usm_0.66_1.00_0.01/f13483_036b7e7eee64477f8a83b1f54fbfbd42~mv2.jpg'
@@ -37,7 +36,6 @@ const SPACES = [
     {
         title: 'Sala Multiuso',
         tag: 'REUNIÃO',
-        tagColor: '#8B5CF6',
         description: 'Wifi, TV com cabo HDMI, quadro branco, pufs e cadeiras de praia.',
         capacity: 'Até 20 Pessoas',
         image: 'https://static.wixstatic.com/media/f13483_ed840ba0d0ca4e4b9658860299d83f7d~mv2.jpg/v1/fill/w_506,h_203,al_c,q_80,usm_0.66_1.00_0.01/f13483_ed840ba0d0ca4e4b9658860299d83f7d~mv2.jpg'
@@ -45,7 +43,6 @@ const SPACES = [
     {
         title: 'Laboratório Maker',
         tag: 'MAKER',
-        tagColor: '#ddb7ff',
         description: 'Desenvolve protótipos, aulas técnicas de eletrônica e capacitação. Impressão 3D.',
         capacity: '',
         image: 'https://static.wixstatic.com/media/f13483_a5175ec1da794ef09d6ba3389e417d00~mv2.png/v1/crop/x_5,y_0,w_714,h_406/fill/w_598,h_340,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/image%20(7).png',
@@ -54,22 +51,19 @@ const SPACES = [
 
 const HOW_STEPS = [
     {
-        icon: <Ionicons name="person-add-outline" size={26} color="#adc7ff" />,
+        icon: 'account-plus-outline',
         title: 'Cadastro',
         description: 'Crie sua conta ou faça login no sistema.',
-        accentColor: '#adc7ff',
     },
     {
-        icon: <MaterialCommunityIcons name="calendar-check-outline" size={26} color="#00F2FF" />,
+        icon: 'calendar-check-outline',
         title: 'Escolha',
         description: 'Selecione o espaço, data e horário desejado.',
-        accentColor: '#00F2FF',
     },
     {
-        icon: <Ionicons name="checkmark-circle-outline" size={26} color="#8B5CF6" />,
+        icon: 'check-circle-outline',
         title: 'Confirmação',
         description: 'Aguarde a aprovação do seu agendamento.',
-        accentColor: '#8B5CF6',
     },
 ];
 
@@ -88,11 +82,6 @@ export default function EntradaScreen() {
                 contentContainerStyle={styles.scroll}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Top Nav 
-                <View style={styles.navbar}>
-                    <Text style={styles.navBrand}>LOCOMOTIVA HUB</Text>
-                </View>*/}
-
                 {/* Hero */}
                 <View style={styles.heroSection}>
                     <Image source={{ uri: LOGO_URL }} style={styles.logo} resizeMode="contain" />
@@ -107,16 +96,10 @@ export default function EntradaScreen() {
                     <TouchableOpacity
                         activeOpacity={0.85}
                         onPress={() => navigation.navigate('Login')}
-                        style={styles.gradientButtonWrapper}
+                        style={styles.primaryButton}
                     >
-                        <LinearGradient
-                            colors={['#1d67cd', '#8B5CF6']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            style={styles.gradientButton}
-                        >
-                            <Text style={styles.gradientButtonText}>Entrar no HUB →</Text>
-                        </LinearGradient>
+                        <Text style={styles.primaryButtonText}>Entrar no HUB</Text>
+                        <MaterialCommunityIcons name="arrow-right" size={18} color="#FFFFFF" />
                     </TouchableOpacity>
                 </View>
 
@@ -134,49 +117,43 @@ export default function EntradaScreen() {
 
                     <View style={styles.featureRow}>
                         <View style={styles.featureCard}>
-                            <MaterialCommunityIcons name="wifi" size={28} color="#00F2FF" style={styles.featureIconComponent} />
+                            <MaterialCommunityIcons name="wifi" size={26} color={landing.accent} style={styles.featureIcon} />
                             <Text style={styles.featureLabel}>Wi-Fi Rápido</Text>
                         </View>
                         <View style={styles.featureCard}>
-                            <MaterialCommunityIcons name="door-open" size={28} color="#8B5CF6" style={styles.featureIconComponent} />
+                            <MaterialCommunityIcons name="door-open" size={26} color={landing.accent} style={styles.featureIcon} />
                             <Text style={styles.featureLabel}>Espaços Diversos</Text>
                         </View>
                     </View>
 
-                    <Image
-                        source={SOBRE_IMAGE}
-                        style={styles.sobreImage}
-                        resizeMode="cover"
-                    />
+                    <Image source={SOBRE_IMAGE} style={styles.sobreImage} resizeMode="cover" />
                 </View>
 
                 {/* Espaços */}
                 <View style={styles.sectionDark}>
                     <Text style={[styles.sectionTitle, styles.centered]}>Conheça nossos espaços</Text>
                     <Text style={[styles.sectionSubtitle, styles.centered]}>
-                        Aqui você encontra o espaço ideal para reservas de reuniões, treinamentos,
-                        workshops, eventos, coworking e muito mais! Tudo isso gratuito para você.
+                        Aqui você encontra o espaço ideal para reuniões, treinamentos, workshops, eventos,
+                        coworking e muito mais! Tudo gratuito para você.
                     </Text>
 
                     {SPACES.map((space) => (
                         <View key={space.title} style={styles.spaceCard}>
                             <View style={styles.spaceImageContainer}>
-                                <Image
-                                    source={{ uri: space.image }}
-                                    style={styles.spaceImage}
-                                    resizeMode="cover"
-                                />
-                                <View style={[styles.spaceTag, { borderColor: space.tagColor }]}>
-                                    <Text style={[styles.spaceTagText, { color: space.tagColor }]}>
-                                        {space.tag}
-                                    </Text>
+                                <Image source={{ uri: space.image }} style={styles.spaceImage} resizeMode="cover" />
+                                <View style={styles.spaceTag}>
+                                    <Text style={styles.spaceTagText}>{space.tag}</Text>
                                 </View>
                             </View>
                             <View style={styles.spaceContent}>
                                 <Text style={styles.spaceTitle}>{space.title}</Text>
                                 <Text style={styles.spaceDescription}>{space.description}</Text>
-                                <Text style={styles.spaceCapacity}>{space.capacity}</Text>
-                                
+                                {space.capacity ? (
+                                    <View style={styles.capacityRow}>
+                                        <MaterialCommunityIcons name="account-group-outline" size={15} color={landing.accent} />
+                                        <Text style={styles.spaceCapacity}>{space.capacity}</Text>
+                                    </View>
+                                ) : null}
                             </View>
                         </View>
                     ))}
@@ -189,12 +166,13 @@ export default function EntradaScreen() {
                     <View style={[styles.stepsContainer, isWide && styles.stepsContainerWide]}>
                         {HOW_STEPS.map((step, index) => (
                             <View key={step.title} style={[styles.stepItem, isWide && styles.stepItemWide]}>
-                                <View style={[styles.stepCircle, { borderColor: step.accentColor, shadowColor: step.accentColor }]}>
-                                    {step.icon}
+                                <View style={styles.stepCircle}>
+                                    <MaterialCommunityIcons name={step.icon as any} size={26} color={landing.accent} />
+                                    <View style={styles.stepNumber}>
+                                        <Text style={styles.stepNumberText}>{index + 1}</Text>
+                                    </View>
                                 </View>
-                                <Text style={[styles.stepTitle, { color: step.accentColor }]}>
-                                    {index + 1}. {step.title}
-                                </Text>
+                                <Text style={styles.stepTitle}>{step.title}</Text>
                                 <Text style={styles.stepDescription}>{step.description}</Text>
                             </View>
                         ))}
@@ -203,16 +181,10 @@ export default function EntradaScreen() {
                     <TouchableOpacity
                         activeOpacity={0.85}
                         onPress={() => navigation.navigate('Login')}
-                        style={styles.gradientButtonWrapper}
+                        style={styles.primaryButton}
                     >
-                        <LinearGradient
-                            colors={['#1d67cd', '#8B5CF6']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            style={styles.gradientButton}
-                        >
-                            <Text style={styles.gradientButtonText}>Acessar Sistema</Text>
-                        </LinearGradient>
+                        <Text style={styles.primaryButtonText}>Acessar Sistema</Text>
+                        <MaterialCommunityIcons name="arrow-right" size={18} color="#FFFFFF" />
                     </TouchableOpacity>
                 </View>
 
@@ -224,22 +196,21 @@ export default function EntradaScreen() {
                         activeOpacity={0.7}
                         onPress={() => Linking.openURL('https://maps.app.goo.gl/3RjYze5Hfwst6g6a7')}
                     >
-                        <Ionicons name="location-outline" size={20} color="#adc7ff" />
+                        <Ionicons name="location-outline" size={20} color={landing.accent} />
                         <Text style={[styles.contactText, styles.contactLink]}>
                             Parque 15 de Novembro, 253 - Centro{'\n'}São Luís - MA, 65010-520
                         </Text>
                     </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.contactRow}
+                        activeOpacity={0.7}
+                        onPress={() => Linking.openURL('mailto:locomotivahub@gmail.com')}
+                    >
+                        <Ionicons name="mail-outline" size={20} color={landing.accent} />
+                        <Text style={[styles.contactText, styles.contactLink]}>locomotivahub@gmail.com</Text>
+                    </TouchableOpacity>
                     <View style={styles.contactRow}>
-                        <Ionicons name="mail-outline" size={20} color="#adc7ff" />
-                        <Text
-                            style={[styles.contactText, styles.contactLink]}
-                            onPress={() => Linking.openURL('mailto:locomotivahub@gmail.com')}
-                        >
-                            locomotivahub@gmail.com
-                        </Text>
-                    </View>
-                    <View style={styles.contactRow}>
-                        <Ionicons name="time-outline" size={20} color="#adc7ff" />
+                        <Ionicons name="time-outline" size={20} color={landing.accent} />
                         <Text style={styles.contactText}>Segunda a sexta, das 8h às 17h</Text>
                     </View>
                 </View>
@@ -262,30 +233,11 @@ export default function EntradaScreen() {
 const styles = StyleSheet.create({
     root: {
         flex: 1,
-        backgroundColor: '#08184B',
+        backgroundColor: landing.bg,
     },
-
-    // Navbar
-    navbar: {
-        height: 72,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 24,
-        backgroundColor: 'rgba(8, 24, 75, 0.92)',
-    },
-    navBrand: {
-        color: '#dde1ff',
-        fontSize: 40,
-        fontWeight: '800',
-        letterSpacing: -0.3,
-        fontFamily: 'HankenGrotesk',
-    },
-
     scroll: {
-        paddingBottom: 32,
+        paddingBottom: spacing.xl,
     },
-
     centered: {
         textAlign: 'center',
     },
@@ -293,134 +245,131 @@ const styles = StyleSheet.create({
     // Hero
     heroSection: {
         alignItems: 'center',
-        paddingHorizontal: 24,
-        paddingVertical: 48,
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.xxl,
+        paddingBottom: spacing.xl,
     },
     logo: {
-        width: 160,
-        height: 140,
-        marginBottom: 20,
+        width: 150,
+        height: 132,
+        marginBottom: spacing.lg,
     },
     heroTitle: {
-        color: '#dde1ff',
-        fontSize: 34,
-        fontWeight: '800',
-        fontFamily: 'HankenGrotesk',
+        color: landing.text,
+        fontSize: 32,
+        fontWeight: typography.weight.bold,
+        fontFamily: typography.family,
         textAlign: 'center',
-        lineHeight: 42,
-        marginBottom: 14,
+        lineHeight: 40,
+        marginBottom: spacing.md,
         letterSpacing: -0.5,
     },
     heroTitleAccent: {
-        color: '#00F2FF',
-        fontFamily: 'HankenGrotesk',
-        fontWeight: '800',
+        color: landing.accent,
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
     },
     heroSubtitle: {
-        color: 'rgba(193,198,213,0.9)',
-        fontSize: 16,
-        fontFamily: 'HankenGrotesk',
-        fontWeight: '400',
-        lineHeight: 26,
+        color: landing.textMuted,
+        fontSize: typography.size.md,
+        fontFamily: typography.family,
+        lineHeight: 24,
         textAlign: 'center',
-        marginBottom: 28,
+        marginBottom: spacing.lg,
     },
-    gradientButtonWrapper: {
-        width: '100%',
-        shadowColor: '#8B5CF6',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 12,
-        elevation: 6,
-    },
-    gradientButton: {
-        paddingVertical: 13,
-        paddingHorizontal: 28,
-        borderRadius: 10,
+
+    // Botão primário — sólido, sem neon
+    primaryButton: {
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        width: '100%',
+        backgroundColor: landing.accent,
+        paddingVertical: 15,
+        borderRadius: radius.md,
     },
-    gradientButtonText: {
-        color: '#ffffff',
-        fontSize: 15,
-        fontWeight: '700',
-        fontFamily: 'HankenGrotesk',
-        textAlign: 'center',
+    primaryButtonText: {
+        color: '#FFFFFF',
+        fontSize: typography.size.md,
+        fontWeight: typography.weight.bold,
+        fontFamily: typography.family,
     },
 
     // Sections
     section: {
-        paddingHorizontal: 24,
-        paddingVertical: 40,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.xl,
     },
     sectionDark: {
-        paddingHorizontal: 24,
-        paddingVertical: 40,
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.xl,
+        backgroundColor: 'rgba(0, 0, 0, 0.18)',
     },
     sectionTitle: {
-        color: '#dde1ff',
-        fontSize: 26,
-        fontWeight: '700',
-        fontFamily: 'HankenGrotesk',
-        marginBottom: 12,
+        color: landing.text,
+        fontSize: typography.size.xl,
+        fontWeight: typography.weight.bold,
+        fontFamily: typography.family,
+        marginBottom: spacing.md,
     },
     sectionSubtitle: {
-        color: 'rgba(193,198,213,0.85)',
-        fontSize: 14,
-        fontFamily: 'HankenGrotesk',
-        fontWeight: '400',
+        color: landing.textMuted,
+        fontSize: typography.size.base,
+        fontFamily: typography.family,
         lineHeight: 22,
-        marginBottom: 24,
+        marginBottom: spacing.lg,
     },
     sectionBody: {
-        color: 'rgba(193,198,213,0.85)',
-        fontSize: 14,
+        color: landing.textMuted,
+        fontSize: typography.size.base,
+        fontFamily: typography.family,
         lineHeight: 22,
-        marginBottom: 20,
+        marginBottom: spacing.lg,
     },
 
     // Features
     featureRow: {
         flexDirection: 'row',
-        gap: 12,
-        marginBottom: 20,
+        gap: spacing.md,
+        marginBottom: spacing.lg,
     },
     featureCard: {
         flex: 1,
-        backgroundColor: 'rgba(4, 13, 38, 0.8)',
+        backgroundColor: landing.surface,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 10,
-        padding: 14,
+        borderColor: landing.surfaceBorder,
+        borderRadius: radius.md,
+        padding: spacing.base,
         alignItems: 'flex-start',
     },
-    featureIconComponent: {
-        marginBottom: 8,
+    featureIcon: {
+        marginBottom: spacing.sm,
     },
     featureLabel: {
-        color: '#dde1ff',
-        fontSize: 13,
-        fontWeight: '600',
-        fontFamily: 'HankenGrotesk',
+        color: landing.text,
+        fontSize: typography.size.base,
+        fontWeight: typography.weight.semibold,
+        fontFamily: typography.family,
     },
 
     // Sobre image
     sobreImage: {
         width: '100%',
         height: 200,
-        borderRadius: 12,
+        borderRadius: radius.md,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: landing.surfaceBorder,
     },
 
-    // Space Cards
+    // Space cards
     spaceCard: {
-        backgroundColor: 'rgba(4, 13, 38, 0.9)',
-        borderRadius: 12,
+        backgroundColor: landing.surface,
+        borderRadius: radius.lg,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: landing.surfaceBorder,
         overflow: 'hidden',
-        marginBottom: 16,
+        marginBottom: spacing.base,
     },
     spaceImageContainer: {
         position: 'relative',
@@ -431,58 +380,54 @@ const styles = StyleSheet.create({
     },
     spaceTag: {
         position: 'absolute',
-        top: 12,
-        left: 12,
-        borderWidth: 1,
-        borderRadius: 4,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
-        backgroundColor: 'rgba(12, 27, 78, 0.8)',
+        top: spacing.md,
+        left: spacing.md,
+        borderRadius: radius.full,
+        paddingHorizontal: spacing.md,
+        paddingVertical: 5,
+        backgroundColor: landing.accent,
     },
     spaceTagText: {
-        fontSize: 11,
-        fontWeight: '600',
-        letterSpacing: 1,
+        color: '#FFFFFF',
+        fontSize: typography.size.xs,
+        fontWeight: typography.weight.bold,
+        fontFamily: typography.family,
+        letterSpacing: 0.8,
     },
     spaceContent: {
-        padding: 16,
+        padding: spacing.base,
     },
     spaceTitle: {
-        color: '#dde1ff',
-        fontSize: 17,
-        fontWeight: '700',
-        fontFamily: 'HankenGrotesk',
-        marginBottom: 6,
+        color: landing.text,
+        fontSize: typography.size.lg,
+        fontWeight: typography.weight.bold,
+        fontFamily: typography.family,
+        marginBottom: spacing.xs,
     },
     spaceDescription: {
-        color: 'rgba(193,198,213,0.85)',
-        fontSize: 13,
+        color: landing.textMuted,
+        fontSize: typography.size.base,
+        fontFamily: typography.family,
         lineHeight: 20,
-        marginBottom: 10,
+        marginBottom: spacing.md,
+    },
+    capacityRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
     },
     spaceCapacity: {
-        color: 'rgba(193,198,213,0.7)',
-        fontSize: 12,
-        marginBottom: 14,
-    },
-    spaceButton: {
-        paddingVertical: 10,
-        borderRadius: 6,
-        backgroundColor: 'rgba(24, 38, 89, 0.9)',
-        alignItems: 'center',
-    },
-    spaceButtonText: {
-        color: '#adc7ff',
-        fontSize: 13,
-        fontWeight: '600',
+        color: landing.textMuted,
+        fontSize: typography.size.sm,
+        fontFamily: typography.family,
     },
 
-    // Steps — coluna centralizada
+    // Steps
     stepsContainer: {
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 28,
-        marginBottom: 32,
+        gap: spacing.lg,
+        marginBottom: spacing.xl,
     },
     stepItem: {
         alignItems: 'center',
@@ -497,32 +442,45 @@ const styles = StyleSheet.create({
         width: undefined,
     },
     stepCircle: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        borderWidth: 2,
-        backgroundColor: 'rgba(4, 13, 38, 0.9)',
+        width: 60,
+        height: 60,
+        borderRadius: radius.full,
+        borderWidth: 1,
+        borderColor: landing.surfaceBorder,
+        backgroundColor: landing.surface,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 12,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.35,
-        shadowRadius: 10,
-        elevation: 5,
+        marginBottom: spacing.md,
     },
-    stepTextContainer: {
-        flex: 1,
+    stepNumber: {
+        position: 'absolute',
+        top: -6,
+        right: -6,
+        width: 22,
+        height: 22,
+        borderRadius: radius.full,
+        backgroundColor: landing.accent,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    stepNumberText: {
+        color: '#FFFFFF',
+        fontSize: 11,
+        fontWeight: typography.weight.bold,
+        fontFamily: typography.family,
     },
     stepTitle: {
-        fontSize: 17,
-        fontWeight: '700',
-        fontFamily: 'HankenGrotesk',
+        color: landing.text,
+        fontSize: typography.size.lg,
+        fontWeight: typography.weight.bold,
+        fontFamily: typography.family,
         textAlign: 'center',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     stepDescription: {
-        color: 'rgba(193,198,213,0.8)',
-        fontSize: 13,
+        color: landing.textMuted,
+        fontSize: typography.size.base,
+        fontFamily: typography.family,
         lineHeight: 18,
         textAlign: 'center',
     },
@@ -531,17 +489,18 @@ const styles = StyleSheet.create({
     contactRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        gap: 10,
-        marginBottom: 14,
+        gap: spacing.md,
+        marginBottom: spacing.base,
     },
     contactText: {
-        color: 'rgba(193,198,213,0.85)',
-        fontSize: 14,
+        color: landing.textMuted,
+        fontSize: typography.size.base,
+        fontFamily: typography.family,
         lineHeight: 22,
         flex: 1,
     },
     contactLink: {
-        color: '#00F2FF',
+        color: landing.accent,
     },
 
     // Footer
@@ -549,16 +508,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 16,
-        paddingVertical: 20,
-        marginHorizontal: 24,
+        gap: spacing.base,
+        paddingVertical: spacing.lg,
+        marginHorizontal: spacing.lg,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.15)',
+        borderTopColor: landing.divider,
     },
     footerDivider: {
         width: 1,
         height: 32,
-        backgroundColor: 'rgba(255,255,255,0.25)',
+        backgroundColor: landing.divider,
     },
     footerLogoInova: {
         width: 90,
@@ -569,10 +528,11 @@ const styles = StyleSheet.create({
         height: 33,
     },
     footerCopy: {
-        color: 'rgba(193,198,213,0.5)',
-        fontSize: 11,
+        color: landing.textFaint,
+        fontSize: typography.size.xs,
+        fontFamily: typography.family,
         textAlign: 'center',
-        paddingHorizontal: 24,
-        paddingBottom: 16,
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.base,
     },
 });

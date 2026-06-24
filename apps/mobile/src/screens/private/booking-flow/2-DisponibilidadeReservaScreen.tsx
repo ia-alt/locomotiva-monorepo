@@ -10,6 +10,7 @@ import { Feather } from '@expo/vector-icons';
 import { useORPC } from '../../../locomotiva-api/context';
 import { useQuery } from '@tanstack/react-query';
 import { TimePickerModalTimeValue, TimeToSeconds } from '../../../components/TimePickerModal';
+import { colors, spacing, radius, typography } from '../../../design/tokens';
 
 export default function DisponibilidadeReservaScreen() {
     const navigation = usePrivateStackNavigation();
@@ -43,7 +44,7 @@ export default function DisponibilidadeReservaScreen() {
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
             <View style={styles.stepIndicator}>
                 <View style={styles.stepDone}>
-                    <Feather name="check" size={16} color="#FFFFFF" />
+                    <Feather name="check" size={16} color={colors.text.onBrand} />
                 </View>
                 <View style={[styles.stepLine, styles.stepLineDone]} />
                 <View style={styles.stepActive}><Text style={styles.stepTextActive}>2</Text></View>
@@ -93,7 +94,7 @@ export default function DisponibilidadeReservaScreen() {
                 activeOpacity={0.7}
             >
                 <Text style={styles.nextButtonText}>Avançar</Text>
-                <Feather name="arrow-right" size={20} color="#FFFFFF" />
+                <Feather name="arrow-right" size={20} color={colors.text.onBrand} />
             </TouchableOpacity>
         </ScrollView>
     );
@@ -102,83 +103,89 @@ export default function DisponibilidadeReservaScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: colors.surface.background,
     },
     scrollContent: {
-        padding: 20,
-        paddingBottom: 40,
+        padding: spacing.lg,
+        paddingBottom: spacing.xl,
     },
     stepIndicator: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 20,
+        marginBottom: spacing.lg,
     },
     stepDone: {
         width: 32,
         height: 32,
-        borderRadius: 16,
-        backgroundColor: '#10B981',
+        borderRadius: radius.full,
+        backgroundColor: colors.feedback.success,
         alignItems: 'center',
         justifyContent: 'center',
     },
     stepActive: {
         width: 32,
         height: 32,
-        borderRadius: 16,
-        backgroundColor: '#1E88E5',
+        borderRadius: radius.full,
+        backgroundColor: colors.brand.navy,
         alignItems: 'center',
         justifyContent: 'center',
     },
     stepInactive: {
         width: 32,
         height: 32,
-        borderRadius: 16,
-        backgroundColor: '#E5E7EB',
+        borderRadius: radius.full,
+        backgroundColor: colors.surface.subtle,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
         alignItems: 'center',
         justifyContent: 'center',
     },
     stepLine: {
         flex: 1,
         height: 2,
-        backgroundColor: '#E5E7EB',
-        marginHorizontal: 6,
+        backgroundColor: colors.border.subtle,
+        marginHorizontal: spacing.xs,
     },
     stepLineDone: {
-        backgroundColor: '#10B981',
+        backgroundColor: colors.feedback.success,
     },
     stepTextActive: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-        fontSize: 14,
+        fontFamily: typography.family,
+        color: colors.text.onBrand,
+        fontWeight: typography.weight.bold,
+        fontSize: typography.size.base,
     },
     stepTextInactive: {
-        color: '#9CA3AF',
-        fontWeight: 'bold',
-        fontSize: 14,
+        fontFamily: typography.family,
+        color: colors.text.muted,
+        fontWeight: typography.weight.bold,
+        fontSize: typography.size.base,
     },
     stepLabel: {
-        fontSize: 14,
-        color: '#6B7280',
+        fontFamily: typography.family,
+        fontSize: typography.size.md,
+        color: colors.text.secondary,
         textAlign: 'center',
-        marginBottom: 24,
+        marginBottom: spacing.lg,
     },
     nextButton: {
-        backgroundColor: '#1E88E5',
-        borderRadius: 12,
+        backgroundColor: colors.brand.navy,
+        borderRadius: radius.md,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 8,
-        paddingVertical: 16,
-        marginTop: 16,
+        gap: spacing.sm,
+        paddingVertical: spacing.base,
+        marginTop: spacing.base,
     },
     nextButtonDisabled: {
-        backgroundColor: '#9CA3AF',
+        backgroundColor: colors.border.strong,
     },
     nextButtonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
+        fontFamily: typography.family,
+        fontSize: typography.size.md,
+        fontWeight: typography.weight.bold,
+        color: colors.text.onBrand,
     },
 });

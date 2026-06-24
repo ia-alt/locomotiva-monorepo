@@ -1,41 +1,41 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Text, TextInput, Button, Surface, useTheme, HelperText } from 'react-native-paper';
-import { useForm, Controller } from 'react-hook-form';
+import React from 'react';
+import { StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { usePublicStackNavigation } from '../../navigation/PublicNavigator';
 import { useORPC } from '../../locomotiva-api/context';
 import { useMutation } from '@tanstack/react-query';
-//import { masks } from '../../utils/masks'; // assuming they might have a mask utility
+import { AuthScaffold, FormField, PrimaryButton } from '../../design/components';
+import { colors, spacing, typography } from '../../design/tokens';
 
 const requestSchema = z.object({
-    cpf: z.string().min(11, 'O CPF é obrigatório.'), // validation logic can be enhanced
+    cpf: z.string().min(11, 'O CPF é obrigatório.'),
 });
 
 type RequestFormValues = z.infer<typeof requestSchema>;
 
+const formatCPF = (text: string) => {
+    const digits = text.replace(/[^\d]/g, '').slice(0, 11);
+    if (digits.length > 9) return digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6, 9) + '-' + digits.slice(9);
+    if (digits.length > 6) return digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6);
+    if (digits.length > 3) return digits.slice(0, 3) + '.' + digits.slice(3);
+    return digits;
+};
+
 export default function EsqueciSenhaScreen() {
     const navigation = usePublicStackNavigation();
-    const theme = useTheme();
-    const styles = makeStyles(theme);
     const orpc = useORPC();
-    
+
     const requestResetMutation = useMutation({
         ...orpc.identy.requestPasswordResetCode.mutationOptions()
     });
     const submitting = requestResetMutation.isPending;
 
-    const {
-        control,
-        handleSubmit,
-        formState: { errors }
-    } = useForm<RequestFormValues>({
+    const { control, handleSubmit } = useForm<RequestFormValues>({
         resolver: zodResolver(requestSchema),
-        defaultValues: {
-            cpf: ''
-        }
+        defaultValues: { cpf: '' }
     });
 
     const onSubmit = async (data: RequestFormValues) => {
@@ -49,141 +49,47 @@ export default function EsqueciSenhaScreen() {
     };
 
     return (
-        <KeyboardAwareScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            style={styles.container}
-            enableOnAndroid={true}
-            extraScrollHeight={20}
+        <AuthScaffold
+            icon="lock-reset"
+            title="Recuperar Senha"
+            subtitle="Digite seu CPF para receber um código de validação de 6 dígitos no seu e-mail cadastrado."
+            centerVertically
         >
-            <Surface style={styles.card} elevation={1}>
-                <View style={styles.titles}>
-                    <Text variant="headlineSmall" style={styles.welcomeText}>Recuperar Senha</Text>
-                    <Text variant="bodyMedium" style={styles.subtitleText}>
-                        Digite seu CPF abaixo para receber um código de validação de 6 dígitos no seu e-mail cadastrado.
-                    </Text>
-                </View>
+            <FormField
+                control={control}
+                name="cpf"
+                label="CPF"
+                placeholder="000.000.000-00"
+                leftIcon="account-details"
+                keyboardType="numeric"
+                maxLength={14}
+                format={formatCPF}
+            />
 
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>CPF</Text>
-                    <Controller
-                        control={control}
-                        name="cpf"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="Digite seu CPF"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={(text) => {
-                                        const digits = text.replace(/[^\d]/g, '').slice(0, 11);
-                                        let masked = digits;
-                                        if (digits.length > 9) masked = digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6, 9) + '-' + digits.slice(9);
-                                        else if (digits.length > 6) masked = digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6);
-                                        else if (digits.length > 3) masked = digits.slice(0, 3) + '.' + digits.slice(3);
-                                        onChange(masked);
-                                    }}
-                                    error={!!errors.cpf}
-                                    left={<TextInput.Icon icon="account-details" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    textColor={theme.colors.onSurface}
-                                    keyboardType="numeric"
-                                />
-                                {errors.cpf && (
-                                    <HelperText type="error" visible={!!errors.cpf} style={styles.errorText}>
-                                        {errors.cpf.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
+            <PrimaryButton onPress={handleSubmit(onSubmit)} loading={submitting} disabled={submitting}>
+                Enviar Código
+            </PrimaryButton>
 
-                <Button
-                    mode="contained"
-                    onPress={handleSubmit(onSubmit)}
-                    style={styles.actionButton}
-                    loading={submitting}
-                    disabled={submitting}
-                    buttonColor={theme.colors.primary}
-                    contentStyle={{ paddingVertical: 6 }}
-                    labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
-                >
-                    Enviar Código
-                </Button>
-
-                <Button
-                    mode="text"
-                    onPress={() => navigation.goBack()}
-                    disabled={submitting}
-                >
-                    Voltar para Login
-                </Button>
-            </Surface>
-        </KeyboardAwareScrollView>
+            <Button
+                mode="text"
+                onPress={() => navigation.goBack()}
+                disabled={submitting}
+                textColor={colors.brand.blue}
+                labelStyle={styles.backLabel}
+                style={styles.backButton}
+            >
+                Voltar para Login
+            </Button>
+        </AuthScaffold>
     );
 }
 
-const makeStyles = (theme: any) => StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: theme.colors.background,
+const styles = StyleSheet.create({
+    backButton: {
+        marginTop: spacing.xs,
     },
-    scrollContent: {
-        flexGrow: 1,
-        paddingHorizontal: 24,
-        paddingTop: 40,
-        paddingBottom: 40,
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-    },
-    card: {
-        width: '100%',
-        backgroundColor: theme.colors.surface,
-        borderRadius: 20,
-        padding: 24,
-    },
-    titles: {
-        alignItems: 'center',
-        marginBottom: 32,
-    },
-    welcomeText: {
-        fontWeight: 'bold',
-        color: theme.colors.onSurface,
-        fontSize: 24,
-        marginBottom: 8,
-    },
-    subtitleText: {
-        color: theme.colors.onSurfaceVariant,
-        fontSize: 14,
-        textAlign: 'center',
-    },
-    inputContainer: {
-        marginBottom: 20,
-    },
-    inputLabel: {
-        fontWeight: '600',
-        color: theme.colors.onSurface,
-        marginBottom: 4,
-    },
-    input: {
-        backgroundColor: theme.colors.surface,
-    },
-    inputOutline: {
-        borderRadius: 8,
-    },
-    errorText: {
-        paddingHorizontal: 0,
-        paddingTop: 4,
-    },
-    actionButton: {
-        borderRadius: 8,
-        marginTop: 8,
-        marginBottom: 16,
+    backLabel: {
+        fontFamily: typography.family,
+        fontWeight: typography.weight.semibold,
     },
 });

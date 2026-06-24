@@ -5,6 +5,7 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { CheckinCard } from '../../components/CheckinCard';
 import { CheckinProvider } from '../../contexts/checkin-context';
 import { useAuth } from '../../contexts/auth-context';
+import { colors, spacing, typography } from '../../design/tokens';
 
 type InicioScreenRouteProp = RouteProp<{ Início: { code?: string } }, 'Início'>;
 
@@ -29,18 +30,15 @@ export default function InicioScreen() {
         }
     }, [cleanCode]);
 
-    // Fallback to "Visitante" if name is not available, but user wants "Mariana" as example or the actual name from context
-    const firstName = authUser?.name ? authUser.name.split(' ')[0] : 'Mariana';
+    const firstName = authUser?.name ? authUser.name.split(' ')[0] : 'Visitante';
 
     return (
         <CheckinProvider>
             <View style={styles.container}>
                 <View style={styles.headerContainer}>
-                    <Text variant="headlineMedium" style={styles.title}>
-                        Olá, {firstName}!
-                    </Text>
-                    <Text variant="bodyLarge" style={styles.subtitle}>
-                        Bem-vindo de volta ao seu espaço de inovação ffyugytfuyf.
+                    <Text style={styles.greeting}>Olá, {firstName}! 👋</Text>
+                    <Text style={styles.subtitle}>
+                        Bem-vindo de volta ao seu espaço de inovação.
                     </Text>
                 </View>
 
@@ -54,19 +52,23 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        padding: 20,
+        padding: spacing.lg,
+        backgroundColor: colors.surface.background,
     },
     headerContainer: {
         width: '100%',
-        marginBottom: 24,
+        marginBottom: spacing.lg,
     },
-    title: {
-        fontWeight: 'bold',
-        color: '#0F172A',
-        marginBottom: 4,
+    greeting: {
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
+        color: colors.text.primary,
+        fontSize: typography.size.xxl,
+        marginBottom: spacing.xs,
     },
     subtitle: {
-        color: '#64748B',
-        fontSize: 16,
+        fontFamily: typography.family,
+        color: colors.text.secondary,
+        fontSize: typography.size.md,
     },
 });

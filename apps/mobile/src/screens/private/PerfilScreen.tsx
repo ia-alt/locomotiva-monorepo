@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Button, Avatar, Divider, List } from 'react-native-paper';
+import { Text, Button, Avatar, List } from 'react-native-paper';
 import { useAuth } from '../../contexts/auth-context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
 import { version } from '../../../package.json';
+import { PrimaryButton } from '../../design/components';
+import { colors, spacing, radius, typography } from '../../design/tokens';
 
 function getInitials(name: string | undefined): string {
     if (!name) return '?';
@@ -38,90 +40,57 @@ export default function PerfilScreen() {
     const { authUser, logout } = useAuth();
     const navigation = usePrivateStackNavigation();
 
+    const infoItems = [
+        { icon: 'card-account-details-outline', title: 'CPF', value: formatCpf(authUser?.cpf) },
+        { icon: 'calendar-outline', title: 'Data de nascimento', value: formatDate(authUser?.birthDate) },
+        { icon: 'email-outline', title: 'E-mail', value: authUser?.email ?? '-' },
+        { icon: 'phone-outline', title: 'Telefone', value: (authUser as any)?.phone ?? 'Não informado' },
+        ...((authUser as any)?.company ? [{ icon: 'domain', title: 'Empresa/Instituição', value: (authUser as any).company }] : []),
+        ...((authUser as any)?.jobTitle ? [{ icon: 'briefcase-outline', title: 'Cargo', value: (authUser as any).jobTitle }] : []),
+    ];
+
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+            {/* Cabeçalho do perfil */}
             <View style={styles.avatarSection}>
                 <Avatar.Text
-                    size={80}
+                    size={88}
                     label={getInitials(authUser?.name)}
                     style={styles.avatar}
+                    labelStyle={styles.avatarLabel}
                 />
-                <Text variant="titleLarge" style={styles.name}>
-                    {authUser?.name ?? 'Usuário'}
-                </Text>
-                <Text variant="bodyMedium" style={styles.email}>
-                    {authUser?.email ?? ''}
-                </Text>
+                <Text style={styles.name}>{authUser?.name ?? 'Usuário'}</Text>
+                <Text style={styles.email}>{authUser?.email ?? ''}</Text>
             </View>
 
-            <Divider style={styles.divider} />
-
-            <View style={styles.infoSection}>
-                <Text variant="labelLarge" style={styles.sectionTitle}>
-                    Informações
-                </Text>
-
-                <List.Item
-                    title="CPF"
-                    description={formatCpf(authUser?.cpf)}
-                    left={(props) => <List.Icon {...props} icon="card-account-details-outline" />}
-                />
-                <Divider />
-                <List.Item
-                    title="Data de nascimento"
-                    description={formatDate(authUser?.birthDate)}
-                    left={(props) => <List.Icon {...props} icon="calendar-outline" />}
-                />
-                <Divider />
-                <List.Item
-                    title="E-mail"
-                    description={authUser?.email ?? '-'}
-                    left={(props) => <List.Icon {...props} icon="email-outline" />}
-                />
-                <Divider />
-                <List.Item
-                    title="Telefone"
-                    description={(authUser as any)?.phone ?? 'Não informado'}
-                    left={(props) => <List.Icon {...props} icon="phone-outline" />}
-                />
-                {(authUser as any)?.company ? (
-                    <>
-                        <Divider />
-                        <List.Item
-                            title="Empresa/Instituição"
-                            description={(authUser as any).company}
-                            left={(props) => <List.Icon {...props} icon="domain" />}
-                        />
-                    </>
-                ) : null}
-                {(authUser as any)?.jobTitle ? (
-                    <>
-                        <Divider />
-                        <List.Item
-                            title="Cargo"
-                            description={(authUser as any).jobTitle}
-                            left={(props) => <List.Icon {...props} icon="briefcase-outline" />}
-                        />
-                    </>
-                ) : null}
+            {/* Informações em card */}
+            <Text style={styles.sectionTitle}>Informações</Text>
+            <View style={styles.card}>
+                {infoItems.map((item, index) => (
+                    <List.Item
+                        key={item.title}
+                        title={item.value}
+                        description={item.title}
+                        titleStyle={styles.itemValue}
+                        descriptionStyle={styles.itemLabel}
+                        left={(props) => <List.Icon {...props} icon={item.icon} color={colors.brand.blue} />}
+                        style={[styles.listItem, index < infoItems.length - 1 && styles.listItemBordered]}
+                    />
+                ))}
             </View>
 
-            <Divider style={styles.divider} />
-
+            {/* Ações */}
             <View style={styles.actionsSection}>
-                <Button
-                    mode="contained"
-                    icon="pencil-outline"
-                    onPress={() => navigation.navigate('EditarPerfil')}
-                    style={styles.editButton}
-                >
+                <PrimaryButton onPress={() => navigation.navigate('EditarPerfil')} icon="pencil-outline">
                     Editar perfil
-                </Button>
+                </PrimaryButton>
                 <Button
                     mode="outlined"
                     icon="lock-outline"
                     onPress={() => navigation.navigate('AlterarSenha')}
-                    style={styles.changePasswordButton}
+                    style={styles.outlineButton}
+                    textColor={colors.brand.navy}
+                    labelStyle={styles.outlineLabel}
                 >
                     Alterar senha
                 </Button>
@@ -130,7 +99,8 @@ export default function PerfilScreen() {
                     icon="logout"
                     onPress={() => logout()}
                     style={styles.logoutButton}
-                    textColor="#d32f2f"
+                    textColor={colors.feedback.error}
+                    labelStyle={styles.outlineLabel}
                 >
                     Sair da conta
                 </Button>
@@ -142,56 +112,100 @@ export default function PerfilScreen() {
 }
 
 const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: colors.surface.background,
+    },
     container: {
-        padding: 24,
+        padding: spacing.lg,
         flexGrow: 1,
     },
     avatarSection: {
         alignItems: 'center',
-        paddingVertical: 24,
-        gap: 8,
+        paddingVertical: spacing.lg,
+        gap: spacing.xs,
     },
     avatar: {
-        marginBottom: 4,
+        backgroundColor: colors.brand.navy,
+        marginBottom: spacing.xs,
+    },
+    avatarLabel: {
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
     },
     name: {
-        fontWeight: '600',
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
+        fontSize: typography.size.xl,
+        color: colors.text.primary,
     },
     email: {
-        opacity: 0.6,
-    },
-    divider: {
-        marginVertical: 8,
+        fontFamily: typography.family,
+        color: colors.text.secondary,
+        fontSize: typography.size.base,
     },
     sectionTitle: {
-        paddingHorizontal: 16,
-        paddingBottom: 4,
-        opacity: 0.5,
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
+        color: colors.brand.navy,
+        fontSize: typography.size.sm,
         textTransform: 'uppercase',
         letterSpacing: 0.8,
+        marginTop: spacing.base,
+        marginBottom: spacing.md,
     },
-    infoSection: {
-        gap: 0,
+    card: {
+        backgroundColor: colors.surface.card,
+        borderRadius: radius.lg,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+        overflow: 'hidden',
+    },
+    listItem: {
+        paddingVertical: spacing.xs,
+        paddingHorizontal: spacing.sm,
+    },
+    listItemBordered: {
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border.subtle,
+    },
+    itemValue: {
+        fontFamily: typography.family,
+        fontWeight: typography.weight.semibold,
+        color: colors.text.primary,
+        fontSize: typography.size.md,
+    },
+    itemLabel: {
+        fontFamily: typography.family,
+        color: colors.text.muted,
+        fontSize: typography.size.sm,
     },
     actionsSection: {
-        paddingTop: 16,
-        gap: 12,
+        paddingTop: spacing.xl,
+        gap: spacing.md,
     },
-    editButton: {
+    outlineButton: {
         width: '100%',
-    },
-    changePasswordButton: {
-        width: '100%',
+        borderRadius: radius.md,
+        borderColor: colors.border.strong,
     },
     logoutButton: {
-        borderColor: '#d32f2f',
         width: '100%',
+        borderRadius: radius.md,
+        borderColor: colors.feedback.error,
+    },
+    outlineLabel: {
+        fontFamily: typography.family,
+        fontSize: typography.size.base,
+        fontWeight: typography.weight.semibold,
+        paddingVertical: spacing.xs,
     },
     versionText: {
+        fontFamily: typography.family,
         textAlign: 'center',
-        fontSize: 11,
-        color: '#94A3B8',
-        marginTop: 24,
-        paddingBottom: 8,
+        fontSize: typography.size.xs,
+        color: colors.text.muted,
+        marginTop: spacing.lg,
+        paddingBottom: spacing.sm,
     },
 });

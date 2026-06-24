@@ -11,16 +11,18 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
 import { onlyDateStrToLongBrDate, onlyTimeObjToTimeStr } from '../../utils/datetime-formaters';
+import { colors, spacing, radius, typography } from '../../design/tokens';
+import { PrimaryButton } from '../../design/components';
 
 type Props = RouteProp<PrivateStackParamList, 'DetalhesMinhaReserva'>;
 
 const statusConfig = {
-    pending: { label: 'Aguardando aprovação', color: '#D97706', bg: '#FEF3C7', dot: true },
-    confirmed: { label: 'Agendada', color: '#059669', bg: '#D1FAE5', dot: true },
-    attended: { label: 'Concluída', color: '#4B5563', bg: '#F3F4F6', dot: false },
-    cancelled: { label: 'Cancelada', color: '#a87373ff', bg: '#FEE2E2', dot: true },
-    rejected: { label: 'Rejeitada', color: '#DC2626', bg: '#FEE2E2', dot: true },
-    no_show: { label: 'Não compareceu', color: '#4B5563', bg: '#F3F4F6', dot: false }
+    pending: { label: 'Aguardando aprovação', color: colors.feedback.warning, bg: colors.brand.light, dot: true },
+    confirmed: { label: 'Agendada', color: colors.feedback.success, bg: colors.brand.light, dot: true },
+    attended: { label: 'Concluída', color: colors.text.secondary, bg: colors.surface.subtle, dot: false },
+    cancelled: { label: 'Cancelada', color: colors.feedback.error, bg: colors.surface.subtle, dot: true },
+    rejected: { label: 'Rejeitada', color: colors.feedback.error, bg: colors.surface.subtle, dot: true },
+    no_show: { label: 'Não compareceu', color: colors.text.secondary, bg: colors.surface.subtle, dot: false }
 };
 
 export default function DetalhesMinhaReservaScreen() {
@@ -87,9 +89,9 @@ export default function DetalhesMinhaReservaScreen() {
                         style={{ marginRight: 8, padding: 8 }}
                     >
                         {isCanceling ? (
-                            <ActivityIndicator size="small" color="#DC2626" />
+                            <ActivityIndicator size="small" color={colors.feedback.error} />
                         ) : (
-                            <Text style={{ color: '#DC2626', fontWeight: 'bold' }}>Cancelar Reserva</Text>
+                            <Text style={{ color: colors.feedback.error, fontFamily: typography.family, fontWeight: typography.weight.bold }}>Cancelar Reserva</Text>
                         )}
                     </TouchableOpacity>
                 ),
@@ -102,7 +104,7 @@ export default function DetalhesMinhaReservaScreen() {
     if (isLoadingBooking || !booking) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color="#DC2626" />
+                <ActivityIndicator size="large" color={colors.brand.navy} />
             </View>
         );
     }
@@ -132,7 +134,7 @@ export default function DetalhesMinhaReservaScreen() {
                 </View>
             </Modal>
             <Surface style={styles.card} elevation={0}>
-                <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1, alignSelf: 'flex-start' }]}>
+                <View style={[styles.statusPill, { backgroundColor: config.bg }]}>
                     {config.dot && <View style={[styles.statusDot, { backgroundColor: config.color }]} />}
                     <Text style={[styles.statusText, { color: config.color }]}>{config.label}</Text>
                 </View>
@@ -143,7 +145,7 @@ export default function DetalhesMinhaReservaScreen() {
                 )}
 
                 <View style={styles.infoRow}>
-                    <Feather name="users" size={16} color="#6B7280" />
+                    <Feather name="users" size={16} color={colors.brand.blue} />
                     <Text style={styles.infoText}>
                         {booking.numberOfPeople
                             ? `Reserva para ${booking.numberOfPeople} ${booking.numberOfPeople === 1 ? 'pessoa' : 'pessoas'}`
@@ -153,48 +155,54 @@ export default function DetalhesMinhaReservaScreen() {
 
                 {(booking.status === 'cancelled' || booking.status === 'rejected') && !!booking.rejectionCancelReason && (
                     <View style={styles.reasonBox}>
-                        <Feather name="info" size={16} color="#DC2626" />
+                        <Feather name="info" size={16} color={colors.feedback.error} />
                         <View style={styles.reasonContent}>
                             <Text style={styles.reasonTitle}>Motivo do cancelamento/rejeição:</Text>
                             <Text style={styles.reasonText}>{booking.rejectionCancelReason}</Text>
                         </View>
                     </View>
                 )}
+            </Surface>
 
-                <View style={styles.divider} />
-
-                <Text style={styles.sectionTitle}>Data e Horário</Text>
+            <Text style={styles.cardSectionTitle}>Data e Horário</Text>
+            <Surface style={styles.card} elevation={0}>
                 <View style={styles.infoRow}>
-                    <Feather name="calendar" size={16} color="#6B7280" />
+                    <Feather name="calendar" size={16} color={colors.brand.blue} />
                     <Text style={styles.infoText}>{onlyDateStrToLongBrDate(booking.day)}</Text>
                 </View>
-                <View style={styles.infoRow}>
-                    <Feather name="clock" size={16} color="#6B7280" />
+                <View style={[styles.infoRow, styles.infoRowLast]}>
+                    <Feather name="clock" size={16} color={colors.brand.blue} />
                     <Text style={styles.infoText}>{onlyTimeObjToTimeStr(booking.timeInterval.start)} - {onlyTimeObjToTimeStr(booking.timeInterval.end)}</Text>
                 </View>
+            </Surface>
 
-                <View style={styles.divider} />
-
-                <Text style={styles.sectionTitle}>Local</Text>
-
+            <Text style={styles.cardSectionTitle}>Local</Text>
+            <Surface style={styles.card} elevation={0}>
                 {isLoadingRoom ? (
-                    <Text style={styles.infoText}>Carregando sala...</Text>
+                    <Text style={[styles.infoText, styles.infoTextStandalone]}>Carregando sala...</Text>
                 ) : (
                     <>
-                        <View style={styles.infoRow}>
-                            <Feather name="map-pin" size={16} color="#6B7280" />
+                        <View style={[styles.infoRow, !room?.capacity && styles.infoRowLast]}>
+                            <Feather name="map-pin" size={16} color={colors.brand.blue} />
                             <Text style={styles.infoText}>{room?.name || 'Sala não encontrada'}</Text>
                         </View>
                         {!!room?.capacity && (
-                            <View style={styles.infoRow}>
-                                <Feather name="users" size={16} color="#6B7280" />
+                            <View style={[styles.infoRow, styles.infoRowLast]}>
+                                <Feather name="users" size={16} color={colors.brand.blue} />
                                 <Text style={styles.infoText}>Capacidade: {room.capacity} pessoas</Text>
                             </View>
                         )}
                     </>
                 )}
-
             </Surface>
+
+            {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                <View style={styles.actionsSection}>
+                    <PrimaryButton onPress={handleCancel} loading={isCanceling} disabled={isCanceling} icon="close-circle-outline">
+                        Cancelar reserva
+                    </PrimaryButton>
+                </View>
+            )}
 
             <Portal>
                 <Dialog visible={isCancelDialogVisible} onDismiss={() => setIsCancelDialogVisible(false)}>
@@ -210,14 +218,14 @@ export default function DetalhesMinhaReservaScreen() {
                             mode="outlined"
                             multiline
                             numberOfLines={3}
-                            style={{ backgroundColor: '#F9FAFB' }}
+                            style={{ backgroundColor: colors.surface.card }}
                         />
                     </Dialog.Content>
                     <Dialog.Actions>
-                        <Button onPress={() => setIsCancelDialogVisible(false)}>Voltar</Button>
+                        <Button onPress={() => setIsCancelDialogVisible(false)} textColor={colors.brand.navy}>Voltar</Button>
                         <Button
                             onPress={confirmCancel}
-                            textColor="#DC2626"
+                            textColor={colors.feedback.error}
                             disabled={!cancelReason.trim()}
                         >
                             Sim, cancelar
@@ -232,107 +240,121 @@ export default function DetalhesMinhaReservaScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: colors.surface.background,
     },
     scroll: {
-        padding: 20,
+        padding: spacing.lg,
     },
     headerImage: {
         width: '100%',
         height: 200,
-        borderRadius: 16,
+        borderRadius: radius.lg,
         marginBottom: -30,
     },
     card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 20,
+        backgroundColor: colors.surface.card,
+        borderRadius: radius.lg,
+        padding: spacing.lg,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: colors.border.subtle,
     },
     statusPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 16,
-        marginBottom: 16,
+        alignSelf: 'flex-start',
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.xs,
+        borderRadius: radius.full,
+        marginBottom: spacing.base,
     },
     statusDot: {
         width: 6,
         height: 6,
-        borderRadius: 3,
-        marginRight: 6,
+        borderRadius: radius.full,
+        marginRight: spacing.xs,
     },
     statusText: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontFamily: typography.family,
+        fontSize: typography.size.xs,
+        fontWeight: typography.weight.semibold,
     },
     title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#111827',
-        marginBottom: 8,
+        fontFamily: typography.family,
+        fontSize: typography.size.xl,
+        fontWeight: typography.weight.bold,
+        color: colors.text.primary,
+        marginBottom: spacing.sm,
     },
     description: {
-        fontSize: 14,
-        color: '#4B5563',
-        marginBottom: 8,
+        fontFamily: typography.family,
+        fontSize: typography.size.base,
+        color: colors.text.secondary,
+        marginBottom: spacing.sm,
         lineHeight: 20,
     },
     reasonBox: {
         flexDirection: 'row',
-        backgroundColor: '#FEF2F2',
-        padding: 12,
-        borderRadius: 8,
-        marginTop: 12,
+        backgroundColor: colors.surface.subtle,
+        padding: spacing.md,
+        borderRadius: radius.sm,
+        marginTop: spacing.md,
         alignItems: 'flex-start',
     },
     reasonContent: {
-        marginLeft: 8,
+        marginLeft: spacing.sm,
         flex: 1,
     },
     reasonTitle: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#991B1B',
-        marginBottom: 2,
+        fontFamily: typography.family,
+        fontSize: typography.size.sm,
+        fontWeight: typography.weight.semibold,
+        color: colors.feedback.error,
+        marginBottom: spacing.xs / 2,
     },
     reasonText: {
-        fontSize: 13,
-        color: '#B91C1C',
+        fontFamily: typography.family,
+        fontSize: typography.size.sm,
+        color: colors.text.secondary,
         lineHeight: 18,
     },
-    divider: {
-        height: 1,
-        backgroundColor: '#F3F4F6',
-        marginVertical: 16,
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 12,
+    cardSectionTitle: {
+        fontFamily: typography.family,
+        fontSize: typography.size.sm,
+        fontWeight: typography.weight.bold,
+        color: colors.brand.navy,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.8,
+        marginTop: spacing.lg,
+        marginBottom: spacing.md,
     },
     infoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: spacing.md,
+    },
+    infoRowLast: {
+        marginBottom: 0,
     },
     infoText: {
-        fontSize: 16,
-        color: '#374151',
-        marginLeft: 8,
+        fontFamily: typography.family,
+        fontSize: typography.size.md,
+        color: colors.text.primary,
+        marginLeft: spacing.sm,
+        flex: 1,
+    },
+    infoTextStandalone: {
+        marginLeft: 0,
+    },
+    actionsSection: {
+        marginTop: spacing.lg,
     },
     expandBadge: {
         position: 'absolute',
         bottom: 36,
-        right: 12,
+        right: spacing.md,
         backgroundColor: 'rgba(0,0,0,0.55)',
-        borderRadius: 6,
-        padding: 6,
+        borderRadius: radius.sm,
+        padding: spacing.xs + 2,
     },
     fullscreenOverlay: {
         flex: 1,
@@ -343,7 +365,7 @@ const styles = StyleSheet.create({
     fullscreenClose: {
         position: 'absolute',
         top: 48,
-        right: 20,
+        right: spacing.lg,
         zIndex: 10,
     },
     fullscreenImage: {

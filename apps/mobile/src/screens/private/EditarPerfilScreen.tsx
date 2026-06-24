@@ -4,6 +4,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Text, TextInput, Button, HelperText } from 'react-native-paper';
 import { useAuth } from '../../contexts/auth-context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { PrimaryButton } from '../../design/components';
+import { colors, spacing, radius, typography } from '../../design/tokens';
 
 // Converte YYYY-MM-DD (API) → DD/MM/AAAA (exibição)
 function toDisplayDate(value: string | Date | undefined): string {
@@ -27,7 +29,6 @@ function isValidDisplayDate(value: string): boolean {
     return d.getFullYear() === yyyy && d.getMonth() === mm - 1 && d.getDate() === dd;
 }
 
-// Aplica máscara automática enquanto o usuário digita
 function applyDateMask(raw: string): string {
     const digits = raw.replace(/\D/g, '').slice(0, 8);
     if (digits.length <= 2) return digits;
@@ -38,13 +39,9 @@ function applyDateMask(raw: string): string {
 function applyPhoneMask(raw: string): string {
     const digits = raw.replace(/\D/g, '').slice(0, 11);
     if (digits.length <= 10) {
-        return digits
-            .replace(/(\d{2})(\d)/, '($1) $2')
-            .replace(/(\d{4})(\d{1,4})$/, '$1-$2');
+        return digits.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d{1,4})$/, '$1-$2');
     }
-    return digits
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+    return digits.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})$/, '$1-$2');
 }
 
 export default function EditarPerfilScreen() {
@@ -88,127 +85,143 @@ export default function EditarPerfilScreen() {
         }
     }
 
+    // Props comuns para todos os inputs — mesma cara do FormField das outras telas
+    const inputProps = {
+        mode: 'outlined' as const,
+        outlineColor: colors.border.subtle,
+        activeOutlineColor: colors.brand.blue,
+        textColor: colors.text.primary,
+        style: styles.input,
+        outlineStyle: styles.inputOutline,
+    };
+
     return (
-        <KeyboardAwareScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" enableOnAndroid={true} extraScrollHeight={20}>
-            <Text variant="titleMedium" style={styles.sectionTitle}>
-                Dados pessoais
-            </Text>
+        <KeyboardAwareScrollView
+            style={styles.screen}
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+            enableOnAndroid
+            extraScrollHeight={20}
+        >
+            <Text style={styles.sectionTitle}>Dados pessoais</Text>
 
-            <TextInput
-                label="Nome completo"
-                value={name}
-                onChangeText={setName}
-                mode="outlined"
-                error={!!nameError}
-                style={styles.input}
-            />
-            {nameError && <HelperText type="error">{nameError}</HelperText>}
+            <View style={styles.card}>
+                <TextInput label="Nome completo" value={name} onChangeText={setName} error={!!nameError} {...inputProps} />
+                {nameError && <HelperText type="error">{nameError}</HelperText>}
 
-            <TextInput
-                label="Data de nascimento"
-                value={birthDate}
-                onChangeText={(v) => setBirthDate(applyDateMask(v))}
-                mode="outlined"
-                placeholder="DD/MM/AAAA"
-                keyboardType="numeric"
-                error={!!birthDateError}
-                style={styles.input}
-            />
-            {birthDateError && <HelperText type="error">{birthDateError}</HelperText>}
+                <TextInput
+                    label="Data de nascimento"
+                    value={birthDate}
+                    onChangeText={(v) => setBirthDate(applyDateMask(v))}
+                    placeholder="DD/MM/AAAA"
+                    keyboardType="numeric"
+                    error={!!birthDateError}
+                    {...inputProps}
+                />
+                {birthDateError && <HelperText type="error">{birthDateError}</HelperText>}
 
-            <TextInput
-                label="E-mail"
-                value={email}
-                onChangeText={setEmail}
-                mode="outlined"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                error={!!emailError}
-                style={styles.input}
-            />
-            {emailError && <HelperText type="error">{emailError}</HelperText>}
+                <TextInput
+                    label="E-mail"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    error={!!emailError}
+                    {...inputProps}
+                />
+                {emailError && <HelperText type="error">{emailError}</HelperText>}
 
-            <TextInput
-                label="Telefone"
-                value={phone}
-                onChangeText={(v) => setPhone(applyPhoneMask(v))}
-                mode="outlined"
-                placeholder="(00) 00000-0000"
-                keyboardType="phone-pad"
-                maxLength={15}
-                error={!!phoneError}
-                style={styles.input}
-            />
-            {phoneError && <HelperText type="error">{phoneError}</HelperText>}
+                <TextInput
+                    label="Telefone"
+                    value={phone}
+                    onChangeText={(v) => setPhone(applyPhoneMask(v))}
+                    placeholder="(00) 00000-0000"
+                    keyboardType="phone-pad"
+                    maxLength={15}
+                    error={!!phoneError}
+                    {...inputProps}
+                />
+                {phoneError && <HelperText type="error">{phoneError}</HelperText>}
 
-            <TextInput
-                label="Empresa/Instituição (opcional)"
-                value={company}
-                onChangeText={setCompany}
-                mode="outlined"
-                style={styles.input}
-            />
+                <TextInput label="Empresa/Instituição (opcional)" value={company} onChangeText={setCompany} {...inputProps} />
+                <TextInput label="Cargo (opcional)" value={jobTitle} onChangeText={setJobTitle} {...inputProps} />
+            </View>
 
-            <TextInput
-                label="Cargo (opcional)"
-                value={jobTitle}
-                onChangeText={setJobTitle}
-                mode="outlined"
-                style={styles.input}
-            />
-
-            {error && (
-                <HelperText type="error" style={styles.globalError}>
-                    {error}
-                </HelperText>
-            )}
+            {error && <HelperText type="error" style={styles.globalError}>{error}</HelperText>}
 
             <View style={styles.actions}>
                 <Button
                     mode="outlined"
                     onPress={() => navigation.goBack()}
                     style={styles.cancelButton}
+                    labelStyle={styles.cancelLabel}
+                    textColor={colors.text.secondary}
                     disabled={loading}
                 >
                     Cancelar
                 </Button>
-                <Button
-                    mode="contained"
-                    onPress={handleSave}
-                    loading={loading}
-                    disabled={!canSubmit}
-                    style={styles.saveButton}
-                >
-                    Salvar
-                </Button>
+                <View style={styles.saveButton}>
+                    <PrimaryButton onPress={handleSave} loading={loading} disabled={!canSubmit}>
+                        Salvar
+                    </PrimaryButton>
+                </View>
             </View>
         </KeyboardAwareScrollView>
     );
 }
 
 const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: colors.surface.background,
+    },
     container: {
-        padding: 24,
-        gap: 4,
+        padding: spacing.lg,
     },
     sectionTitle: {
-        marginBottom: 12,
-        opacity: 0.7,
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
+        color: colors.brand.navy,
+        fontSize: typography.size.sm,
+        textTransform: 'uppercase',
+        letterSpacing: 0.8,
+        marginBottom: spacing.md,
+    },
+    card: {
+        backgroundColor: colors.surface.card,
+        borderRadius: radius.lg,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+        padding: spacing.base,
+        gap: spacing.xs,
     },
     input: {
-        marginBottom: 2,
+        backgroundColor: colors.surface.card,
+        marginBottom: spacing.xs,
+    },
+    inputOutline: {
+        borderRadius: radius.md,
     },
     globalError: {
-        marginTop: 8,
-        fontSize: 14,
+        marginTop: spacing.sm,
+        fontSize: typography.size.base,
     },
     actions: {
         flexDirection: 'row',
-        gap: 12,
-        marginTop: 24,
+        alignItems: 'center',
+        gap: spacing.md,
+        marginTop: spacing.lg,
     },
     cancelButton: {
         flex: 1,
+        borderRadius: radius.md,
+        borderColor: colors.border.strong,
+    },
+    cancelLabel: {
+        fontFamily: typography.family,
+        fontSize: typography.size.base,
+        fontWeight: typography.weight.semibold,
+        paddingVertical: spacing.xs,
     },
     saveButton: {
         flex: 1,

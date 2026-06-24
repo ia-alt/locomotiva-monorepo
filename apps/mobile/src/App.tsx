@@ -64,21 +64,8 @@ const queryClient = new QueryClient({
   }),
 });
 
-import { MD3LightTheme } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-const theme = {
-  ...MD3LightTheme,
-  colors: {
-    ...MD3LightTheme.colors,
-    primary: '#1A7BFF',
-    background: '#F3F6FA',
-    surface: '#FFFFFF',
-    onSurface: '#1E293B',
-    outline: '#CBD5E1',
-    onSurfaceVariant: '#94A3B8',
-  },
-};
+import { theme } from './design/theme';
 
 export default function Main() {
   const [fontsLoaded] = Font.useFonts({

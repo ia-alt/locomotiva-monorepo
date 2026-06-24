@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Text, TextInput, Button, IconButton, useTheme, HelperText, Icon } from 'react-native-paper';
-import { useForm, Controller } from 'react-hook-form';
+import { Text, IconButton, Icon } from 'react-native-paper';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { usePublicStackNavigation } from '../../navigation/PublicNavigator';
 import { useAuth } from '../../contexts/auth-context';
+import { FormField, PrimaryButton } from '../../design/components';
+import { colors, spacing, radius, typography } from '../../design/tokens';
 
 const cadastroSchema = z.object({
     name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
@@ -29,59 +31,43 @@ const cadastroSchema = z.object({
 
 type CadastroFormValues = z.infer<typeof cadastroSchema>;
 
-const formatBirthDate = (text: string) => {
-    return text
-        .replace(/\D/g, '') // Remove tudo o que não é dígito
-        .replace(/(\d{2})(\d)/, '$1/$2') // Coloca a primeira barra
-        .replace(/(\d{2})(\d)/, '$1/$2') // Coloca a segunda barra
-        .replace(/(\/\d{4})\d+?$/, '$1'); // Trava no último dígito do ano
-};
+const formatBirthDate = (text: string) =>
+    text
+        .replace(/\D/g, '')
+        .replace(/(\d{2})(\d)/, '$1/$2')
+        .replace(/(\d{2})(\d)/, '$1/$2')
+        .replace(/(\/\d{4})\d+?$/, '$1');
 
-const formatCPF = (text: string) => {
-    return text
+const formatCPF = (text: string) =>
+    text
         .replace(/\D/g, '')
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d{1,2})/, '$1-$2')
         .replace(/(-\d{2})\d+?$/, '$1');
-};
 
 const formatPhone = (text: string) => {
     const digits = text.replace(/\D/g, '').slice(0, 11);
     if (digits.length <= 10) {
-        return digits
-            .replace(/(\d{2})(\d)/, '($1) $2')
-            .replace(/(\d{4})(\d{1,4})$/, '$1-$2');
+        return digits.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d{1,4})$/, '$1-$2');
     }
-    return digits
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+    return digits.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})$/, '$1-$2');
 };
+
+/** Cabeçalho de seção — dá hierarquia ao formulário longo. */
+function SectionLabel({ children }: { children: string }) {
+    return <Text style={styles.sectionLabel}>{children}</Text>;
+}
 
 export default function CadastroScreen() {
     const navigation = usePublicStackNavigation();
-    const theme = useTheme();
-    const styles = makeStyles(theme);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
     const { register } = useAuth();
-    const {
-        control,
-        handleSubmit,
-        formState: { errors, isSubmitting }
-    } = useForm<CadastroFormValues>({
+
+    const { control, handleSubmit, formState: { isSubmitting } } = useForm<CadastroFormValues>({
         resolver: zodResolver(cadastroSchema),
         defaultValues: {
-            name: '',
-            cpf: '',
-            birthDate: '',
-            email: '',
-            phone: '',
-            company: '',
-            jobTitle: '',
-            password: '',
-            confirmPassword: ''
+            name: '', cpf: '', birthDate: '', email: '', phone: '',
+            company: '', jobTitle: '', password: '', confirmPassword: ''
         }
     });
 
@@ -89,12 +75,9 @@ export default function CadastroScreen() {
         const { confirmPassword, ...rest } = data;
         rest.birthDate = rest.birthDate.split('/').reverse().join('-');
         try {
-            setLoading(true);
             await register(rest);
         } catch (error) {
             console.error(error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -104,505 +87,194 @@ export default function CadastroScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
             style={styles.container}
-            enableOnAndroid={true}
+            enableOnAndroid
             extraScrollHeight={20}
         >
-            {/* Header / App Bar Customizada */}
+            {/* App bar */}
             <View style={styles.appBar}>
                 <IconButton
                     icon="chevron-left"
                     size={28}
-                    iconColor={theme.colors.onSurface}
-                    onPress={() => { navigation.pop() }}
+                    iconColor={colors.text.primary}
+                    onPress={() => navigation.pop()}
                     style={styles.backButton}
                 />
                 <View style={styles.logoContainer}>
-                    <Icon source={require('../../../assets/icon_locomotiva_2.png')} size={28} />
-                    <Text variant="titleMedium" style={styles.logoText}>LOCOMOTIVA HUB</Text>
+                    <Icon source={require('../../../assets/icon_locomotiva_2.png')} size={26} />
+                    <Text style={styles.logoText}>LOCOMOTIVA HUB</Text>
                 </View>
                 <View style={styles.placeholderRight} />
             </View>
 
-            {/* Titles */}
+            {/* Títulos */}
             <View style={styles.titles}>
-                <Text variant="headlineMedium" style={styles.titleText}>Criar Conta</Text>
-                <Text variant="bodyMedium" style={styles.subtitleText}>
-                    Junte-se ao hub de inovação e agende seu espaço.
-                </Text>
+                <Text style={styles.titleText}>Criar Conta</Text>
+                <Text style={styles.subtitleText}>Junte-se ao hub de inovação e agende seu espaço.</Text>
             </View>
 
-            {/* Forms */}
-            <View style={styles.formContainer}>
-                {/* Name Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Nome Completo</Text>
-                    <Controller
-                        control={control}
-                        name="name"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="Seu nome completo"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    error={!!errors.name}
-                                    right={<TextInput.Icon icon="account" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.name && (
-                                    <HelperText type="error" visible={!!errors.name} style={styles.errorText}>
-                                        {errors.name.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
+            {/* Card único com seções */}
+            <View style={styles.card}>
+                <SectionLabel>Dados pessoais</SectionLabel>
+                <FormField control={control} name="name" label="Nome Completo"
+                    placeholder="Seu nome completo" rightIcon="account" autoCapitalize="words" />
+                <FormField control={control} name="cpf" label="CPF"
+                    placeholder="000.000.000-00" rightIcon="card-account-details"
+                    keyboardType="numeric" maxLength={14} format={formatCPF} />
+                <FormField control={control} name="birthDate" label="Data de Nascimento"
+                    placeholder="DD/MM/AAAA" rightIcon="calendar-month"
+                    keyboardType="numeric" maxLength={10} format={formatBirthDate} />
 
-                {/* CPF Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>CPF</Text>
-                    <Controller
-                        control={control}
-                        name="cpf"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="000.000.000-00"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={(text) => onChange(formatCPF(text))}
-                                    error={!!errors.cpf}
-                                    maxLength={14}
-                                    keyboardType="numeric"
-                                    right={<TextInput.Icon icon="card-account-details" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.cpf && (
-                                    <HelperText type="error" visible={!!errors.cpf} style={styles.errorText}>
-                                        {errors.cpf.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
+                <View style={styles.divider} />
+                <SectionLabel>Contato</SectionLabel>
+                <FormField control={control} name="email" label="E-mail"
+                    placeholder="exemplo@email.com" rightIcon="email"
+                    keyboardType="email-address" autoCapitalize="none" />
+                <FormField control={control} name="phone" label="Telefone"
+                    placeholder="(00) 00000-0000" rightIcon="phone"
+                    keyboardType="phone-pad" maxLength={15} format={formatPhone} />
 
-                {/* Birth Date Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Data de Nascimento</Text>
-                    <Controller
-                        control={control}
-                        name="birthDate"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="DD/MM/AAAA"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={(text) => onChange(formatBirthDate(text))}
-                                    error={!!errors.birthDate}
-                                    maxLength={10}
-                                    keyboardType="numeric"
-                                    right={<TextInput.Icon icon="calendar-month" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.birthDate && (
-                                    <HelperText type="error" visible={!!errors.birthDate} style={styles.errorText}>
-                                        {errors.birthDate.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
+                <View style={styles.divider} />
+                <SectionLabel>Profissional</SectionLabel>
+                <FormField control={control} name="company" label="Empresa/Instituição"
+                    labelHint="(opcional)" placeholder="Nome da empresa ou instituição" rightIcon="domain" />
+                <FormField control={control} name="jobTitle" label="Cargo"
+                    labelHint="(opcional)" placeholder="Seu cargo ou função" rightIcon="briefcase" />
 
-                {/* Email Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>E-mail</Text>
-                    <Controller
-                        control={control}
-                        name="email"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="exemplo@email.com"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    error={!!errors.email}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                    right={<TextInput.Icon icon="email" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.email && (
-                                    <HelperText type="error" visible={!!errors.email} style={styles.errorText}>
-                                        {errors.email.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
-
-                {/* Phone Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Telefone</Text>
-                    <Controller
-                        control={control}
-                        name="phone"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="(00) 00000-0000"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={(text) => onChange(formatPhone(text))}
-                                    error={!!errors.phone}
-                                    maxLength={15}
-                                    keyboardType="phone-pad"
-                                    right={<TextInput.Icon icon="phone" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.phone && (
-                                    <HelperText type="error" visible={!!errors.phone} style={styles.errorText}>
-                                        {errors.phone.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
-
-                {/* Company Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Empresa/Instituição <Text style={{ fontWeight: 'normal', color: '#64748B' }}>(opcional)</Text></Text>
-                    <Controller
-                        control={control}
-                        name="company"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                mode="outlined"
-                                placeholder="Nome da empresa ou instituição"
-                                value={value}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                right={<TextInput.Icon icon="domain" color={theme.colors.onSurfaceVariant} />}
-                                outlineColor={theme.colors.outline}
-                                activeOutlineColor={theme.colors.primary}
-                                style={styles.input}
-                                outlineStyle={styles.inputOutline}
-                                placeholderTextColor={theme.colors.onSurfaceVariant}
-                                textColor={theme.colors.onSurface}
-                            />
-                        )}
-                    />
-                </View>
-
-                {/* Job Title Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Cargo <Text style={{ fontWeight: 'normal', color: '#64748B' }}>(opcional)</Text></Text>
-                    <Controller
-                        control={control}
-                        name="jobTitle"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                mode="outlined"
-                                placeholder="Seu cargo ou função"
-                                value={value}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                right={<TextInput.Icon icon="briefcase" color={theme.colors.onSurfaceVariant} />}
-                                outlineColor={theme.colors.outline}
-                                activeOutlineColor={theme.colors.primary}
-                                style={styles.input}
-                                outlineStyle={styles.inputOutline}
-                                placeholderTextColor={theme.colors.onSurfaceVariant}
-                                textColor={theme.colors.onSurface}
-                            />
-                        )}
-                    />
-                </View>
-
-                {/* Password Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Senha</Text>
-                    <Controller
-                        control={control}
-                        name="password"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="Crie uma senha segura"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    error={!!errors.password}
-                                    secureTextEntry={!showPassword}
-                                    right={
-                                        <TextInput.Icon
-                                            icon={showPassword ? "eye" : "eye-off"}
-                                            color={theme.colors.onSurfaceVariant}
-                                            onPress={() => setShowPassword(!showPassword)}
-                                        />
-                                    }
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.password ? (
-                                    <HelperText type="error" visible={!!errors.password} style={styles.errorText}>
-                                        {errors.password.message}
-                                    </HelperText>
-                                ) : (
-                                    <HelperText type="info" visible={true} style={styles.infoHelperText}>
-                                        Sua senha deve ter pelo menos 8 caracteres, conter pelo menos uma letra maiúscula, um número e um símbolo.
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
-
-                {/* Confirm Password Input */}
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Confirmar Senha</Text>
-                    <Controller
-                        control={control}
-                        name="confirmPassword"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="Repita sua senha"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    error={!!errors.confirmPassword}
-                                    secureTextEntry={!showConfirmPassword}
-                                    right={
-                                        <TextInput.Icon
-                                            icon={showConfirmPassword ? "eye" : "eye-off"}
-                                            color={theme.colors.onSurfaceVariant}
-                                            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        />
-                                    }
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                    placeholderTextColor={theme.colors.onSurfaceVariant}
-                                    textColor={theme.colors.onSurface}
-                                />
-                                {errors.confirmPassword && (
-                                    <HelperText type="error" visible={!!errors.confirmPassword} style={styles.errorText}>
-                                        {errors.confirmPassword.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
+                <View style={styles.divider} />
+                <SectionLabel>Acesso</SectionLabel>
+                <FormField control={control} name="password" label="Senha"
+                    placeholder="Crie uma senha segura" secure
+                    helperText="Mínimo de 8 caracteres, com uma maiúscula, um número e um símbolo." />
+                <FormField control={control} name="confirmPassword" label="Confirmar Senha"
+                    placeholder="Repita sua senha" secure />
             </View>
 
-            {/* Create Account Button */}
-            <Button
-                mode="contained"
-                onPress={(e) => {
-                    if (e && e.preventDefault) e.preventDefault();
-                    handleSubmit(onSubmit)();
-                }}
-                loading={isSubmitting}
-                disabled={isSubmitting}
-                icon="arrow-right"
-                contentStyle={styles.buttonContent}
-                style={styles.submitButton}
-                labelStyle={styles.buttonLabel}
-                buttonColor={theme.colors.primary}
-            >
+            <PrimaryButton onPress={handleSubmit(onSubmit)} loading={isSubmitting} disabled={isSubmitting} icon="arrow-right">
                 Criar Conta
-            </Button>
+            </PrimaryButton>
 
-            {/* Terms and Privacy Component */}
+            {/* Termos */}
             <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>Ao criar uma conta, você concorda com os nossos</Text>
                 <Text style={styles.termsText}>
-                    Ao criar uma conta, você concorda com os nossos
-                </Text>
-                <Text style={styles.termsTextRow}>
                     <Text style={styles.termsLink} onPress={() => navigation.navigate('TermosDeServico')}>Termos de Serviço</Text>
-                    <Text style={styles.termsText}> e </Text>
+                    {' e '}
                     <Text style={styles.termsLink} onPress={() => navigation.navigate('PoliticaDePrivacidade')}>Política de Privacidade</Text>.
                 </Text>
             </View>
 
-            {/* Login Link */}
+            {/* Link de login */}
             <View style={styles.footerContainer}>
                 <Text style={styles.footerText}>
                     Já tem uma conta?{' '}
-                    <Text
-                        style={styles.footerLink}
-                        onPress={() => { navigation.pop() }}
-                    >
-                        Entrar
-                    </Text>
+                    <Text style={styles.footerLink} onPress={() => navigation.pop()}>Entrar</Text>
                 </Text>
             </View>
         </KeyboardAwareScrollView>
     );
 }
 
-const makeStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: theme.colors.background,
+        backgroundColor: colors.surface.background,
     },
     scrollContent: {
         flexGrow: 1,
-        paddingHorizontal: 24,
-        paddingTop: 48,
-        paddingBottom: 40,
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.xl,
+        paddingBottom: spacing.xl,
     },
     appBar: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 24,
+        marginBottom: spacing.lg,
     },
     backButton: {
         margin: 0,
-        marginLeft: -12,
+        marginLeft: -spacing.md,
     },
     logoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: spacing.sm,
     },
     logoText: {
-        fontWeight: 'bold',
-        color: theme.colors.onSurface,
-        fontSize: 14,
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
+        color: colors.text.primary,
+        fontSize: typography.size.base,
         letterSpacing: 1,
     },
     placeholderRight: {
-        width: 48, // to balance the back button space
+        width: 48,
     },
     titles: {
-        marginBottom: 24,
+        marginBottom: spacing.lg,
     },
     titleText: {
-        fontWeight: 'bold',
-        color: '#111827',
-        fontSize: 28,
-        marginBottom: 8,
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
+        color: colors.text.primary,
+        fontSize: typography.size.xxl,
+        marginBottom: spacing.xs,
     },
     subtitleText: {
-        color: '#475569',
-        fontSize: 15,
+        fontFamily: typography.family,
+        color: colors.text.secondary,
+        fontSize: typography.size.md,
         lineHeight: 22,
     },
-    formContainer: {
-        marginBottom: 8,
+    card: {
+        backgroundColor: colors.surface.card,
+        borderRadius: radius.xl,
+        borderWidth: 1,
+        borderColor: colors.border.subtle,
+        padding: spacing.lg,
+        marginBottom: spacing.lg,
     },
-    inputContainer: {
-        marginBottom: 16,
+    sectionLabel: {
+        fontFamily: typography.family,
+        fontWeight: typography.weight.bold,
+        color: colors.brand.navy,
+        fontSize: typography.size.sm,
+        textTransform: 'uppercase',
+        letterSpacing: 0.8,
+        marginBottom: spacing.md,
     },
-    inputLabel: {
-        fontWeight: '600',
-        color: theme.colors.onSurface,
-        marginBottom: 4,
-    },
-    input: {
-        backgroundColor: theme.colors.surface,
-    },
-    inputOutline: {
-        borderRadius: 8,
-    },
-    errorText: {
-        paddingHorizontal: 0,
-        paddingTop: 4,
-    },
-    infoHelperText: {
-        paddingHorizontal: 0,
-        paddingTop: 4,
-        color: '#64748B',
-        fontSize: 12,
-    },
-    submitButton: {
-        borderRadius: 8,
-        marginTop: 8,
-        marginBottom: 24,
-    },
-    buttonContent: {
-        flexDirection: 'row-reverse',
-        paddingVertical: 6,
-    },
-    buttonLabel: {
-        fontSize: 16,
-        fontWeight: 'bold',
+    divider: {
+        height: 1,
+        backgroundColor: colors.border.subtle,
+        marginTop: spacing.xs,
+        marginBottom: spacing.lg,
     },
     termsContainer: {
         alignItems: 'center',
-        marginBottom: 32,
+        marginTop: spacing.base,
+        marginBottom: spacing.xl,
     },
     termsText: {
-        color: '#64748B',
-        fontSize: 12,
+        fontFamily: typography.family,
+        color: colors.text.muted,
+        fontSize: typography.size.xs,
         textAlign: 'center',
-    },
-    termsTextRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        lineHeight: 18,
     },
     termsLink: {
-        color: theme.colors.primary,
-        fontSize: 12,
-        fontWeight: '500',
+        color: colors.brand.blue,
+        fontWeight: typography.weight.semibold,
     },
     footerContainer: {
         alignItems: 'center',
     },
     footerText: {
-        color: theme.colors.onSurface,
-        fontSize: 14,
+        fontFamily: typography.family,
+        color: colors.text.secondary,
+        fontSize: typography.size.base,
     },
     footerLink: {
-        color: theme.colors.primary,
-        fontWeight: 'bold',
+        color: colors.brand.blue,
+        fontWeight: typography.weight.bold,
     },
 });

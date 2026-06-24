@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrivateStackParamList } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
+import { PrimaryButton } from '../../../design/components';
+import { colors, spacing, radius, typography } from '../../../design/tokens';
 
 type ReservaSucessoNavigationProp = NativeStackNavigationProp<PrivateStackParamList, 'ReservaSucesso'>;
 
@@ -36,20 +38,18 @@ export default function ReservaSucessoScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.content}>
-                <Feather name="check-circle" size={80} color="#10B981" />
+                <View style={styles.iconCircle}>
+                    <Feather name="check" size={56} color={colors.feedback.success} />
+                </View>
                 <Text style={styles.title}>Solicitação Recebida com Sucesso!</Text>
                 <Text style={styles.subtitle}>
                     Enviamos sua solicitação para nossa equipe. Você receberá uma confirmação em breve. Enquanto isso, acompanhe o status em 'Minhas Reservas'.
                 </Text>
             </View>
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleGoToReservations}
-                activeOpacity={0.7}
-            >
-                <Text style={styles.buttonText}>Ir para minhas reservas</Text>
-            </TouchableOpacity>
+            <PrimaryButton onPress={handleGoToReservations} icon="arrow-right">
+                Ir para minhas reservas
+            </PrimaryButton>
         </View>
     );
 }
@@ -57,8 +57,8 @@ export default function ReservaSucessoScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
-        padding: 24,
+        backgroundColor: colors.surface.background,
+        padding: spacing.lg,
         justifyContent: 'space-between',
     },
     content: {
@@ -66,32 +66,29 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    iconCircle: {
+        width: 120,
+        height: 120,
+        borderRadius: radius.full,
+        backgroundColor: colors.brand.light,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: spacing.lg,
+    },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#111827',
-        marginTop: 24,
-        marginBottom: 8,
+        fontFamily: typography.family,
+        fontSize: typography.size.xxl,
+        fontWeight: typography.weight.bold,
+        color: colors.text.primary,
+        marginBottom: spacing.sm,
         textAlign: 'center',
     },
     subtitle: {
-        fontSize: 16,
-        color: '#6B7280',
+        fontFamily: typography.family,
+        fontSize: typography.size.md,
+        color: colors.text.secondary,
         textAlign: 'center',
         lineHeight: 24,
-        paddingHorizontal: 16,
+        paddingHorizontal: spacing.base,
     },
-    button: {
-        backgroundColor: '#1E88E5',
-        borderRadius: 12,
-        paddingVertical: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 16,
-    },
-    buttonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-    }
 });
