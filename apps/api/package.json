@@ -51,6 +51,7 @@
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",
     "@react-pdf/renderer": "^4.5.1",
+    "@supabase/supabase-js": "^2.110.0",
     "bcrypt": "^6.0.0",
     "chart.js": "^4.5.1",
     "chartjs-node-canvas": "^5.0.0",

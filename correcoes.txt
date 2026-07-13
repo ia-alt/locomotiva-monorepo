@@ -1,0 +1,45 @@
+tira do schema .trim().min(2).max(40)
+dispara um erro de dominio
+
+material usar o id dele e nao string
+
+startproduction so pode entrar em producao se tiver alocado um impressora
+
+trocar no json optional() por nullable()
+
+quando mudar o filamento por id mudar o findbyname or find id ai nao vai precisar disso aqui
+const filament = await this.filamentRepository.findByName(params.material);
+        if (!filament) {
+            throw new MaterialNotAvailableError(params.material);
+        }
+
+o printfile deveria ta no storage (mudar o nome ja que vai ta no store)
+printfile vai ser uma entidade do storage 
+pode ser ser extendida filha np printing ai pode 
+a verificacao stlfile e gcodefile
+
+ export const EXTENSIONS: Record<Kind, string[]> = {
+    stl: [".stl"],
+    gcode: [".gcode", ".gco"],
+  };
+
+  export const LABELS: Record<Kind, string> = {
+    stl: "modelo 3D",
+    gcode: "modelo fatiado, pronto para impressão",
+  };
+  vao para o service
+  ai no createprintrequest vai ter a validacao
+  tipo 
+        //valida o arquivo de impressa
+        // const stlFile: FilePrinte = this.storageService.getFile(stlFileId);
+        stlfile.extension = "stl"
+        throw error( babla bla)
+
+fazer essas vrificacoes no service e so passar no caso de uso pra na duplicar codigo com um print-serviceif (printRequest.currentStatus === PrintRequest.Status.IN_PRODUCTION) {
+            const inProduction = await this.printRequestRepository.findInProductionByPrinter(printerId);
+            if (inProduction && !inProduction.id.equals(printRequest.id)) {
+                throw new PrinterBusyError();
+            }
+        }
+
+        checkisfree dar erro igual o checkisadmin nao precisa retornar

@@ -27,6 +27,8 @@ import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
   Assessment as AssessmentIcon,
+  Print as PrintIcon,
+  Layers as LayersIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
@@ -53,6 +55,13 @@ const menuGroups = [
     items: [
       { text: 'Reservas', icon: <CalendarMonthIcon />, path: '/reservations' },
       { text: 'Salas', icon: <MeetingRoomIcon />, path: '/rooms' },
+    ],
+  },
+  {
+    label: 'IMPRESSÃO 3D',
+    items: [
+      { text: 'Pedidos de Impressão', icon: <PrintIcon />, path: '/print-requests' },
+      { text: 'Impressoras', icon: <LayersIcon />, path: '/printers' },
     ],
   },
   {

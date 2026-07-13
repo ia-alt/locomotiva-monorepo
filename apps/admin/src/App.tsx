@@ -9,6 +9,8 @@ import AccessHistoryPage from './pages/AccessHistory';
 import BookingsPage from './pages/Bookings';
 import SettingsPage from './pages/Settings';
 import ReportPage from './pages/Report';
+import PrintRequestsPage from './pages/PrintRequests';
+import PrintersPage from './pages/Printers';
 import { AdminLayout } from './components/layout/AdminLayout';
 
 function App() {
@@ -28,6 +30,8 @@ function App() {
           <Route path="/reservations" element={<BookingsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/report" element={<ReportPage />} />
+          <Route path="/print-requests" element={<PrintRequestsPage />} />
+          <Route path="/printers" element={<PrintersPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

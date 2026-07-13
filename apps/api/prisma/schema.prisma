@@ -15,10 +15,10 @@ datasource db {
 
 // identity context
 model User {
-  id                      String   @id
+  id                      String    @id
   name                    String
-  email                   String   @unique
-  cpf                     String   @unique
+  email                   String    @unique
+  cpf                     String    @unique
   birthDate               DateTime
   passwordHash            String
   lastPasswordResetDate   DateTime
@@ -32,14 +32,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  files File[]
+
   @@map("users")
 }
 
 model ApiKey {
-  id        String   @id
-  name      String
-  keyHash   String
-  active    Boolean  @default(true)
+  id      String  @id
+  name    String
+  keyHash String
+  active  Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -82,9 +84,9 @@ model Booking {
 }
 
 model CalendarEvent {
-  id        String  @id
+  id        String @id
   eventId   String
-  bookingId String  @unique
+  bookingId String @unique
 
   createdAt DateTime @default(now())
 
@@ -102,10 +104,10 @@ model CoworkingSettings {
 }
 
 model AccessLog {
-  id        String    @id
-  userId    String
-  entryTime DateTime
-  exitTime  DateTime?
+  id             String    @id
+  userId         String
+  entryTime      DateTime
+  exitTime       DateTime?
   checkinTotemId String?
 
   @@map("access_logs")
@@ -118,4 +120,67 @@ model SpaceOperatingHours {
   overrides Json
 
   @@map("space_operating_hours")
+}
+
+// printing context
+model Printer {
+  id      String  @id
+  name    String
+  model   String
+  enabled Boolean
+  notes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("printers")
+}
+
+model Filament {
+  id   String @id
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("filaments")
+}
+
+model PrintRequest {
+  id                    String  @id
+  userId                String
+  printerId             String?
+  purpose               String
+  stlFileId             String  @unique
+  gcodeFileId           String  @unique
+  filamentId            String
+  status                String
+  rejectionCancelReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stlFile   File @relation("StlFile", fields: [stlFileId], references: [id])
+  gcodeFile File @relation("GcodeFile", fields: [gcodeFileId], references: [id])
+
+  @@map("print_requests")
+}
+
+// storage context
+model File {
+  id               String  @id
+  name             String
+  path             String
+  sizeBytes        Int
+  deleted          Boolean @default(false)
+  uploadedByUserId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  uploadedByUser    User          @relation(fields: [uploadedByUserId], references: [id])
+  printRequestStl   PrintRequest? @relation("StlFile")
+  printRequestGcode PrintRequest? @relation("GcodeFile")
+
+  @@map("files")
 }

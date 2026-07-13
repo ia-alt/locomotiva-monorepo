@@ -39,6 +39,12 @@
       "@report/*": [
         "src/modules/report/*"
       ],
+      "@printing/*": [
+        "src/modules/printing/*"
+      ],
+      "@storage/*": [
+        "src/modules/storage/*"
+      ],
       "@env": [
         "src/modules/env.ts"
       ]
