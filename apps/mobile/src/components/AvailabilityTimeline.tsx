@@ -8,7 +8,6 @@ type AvailableSlots = ORPCOutputs["booking"]["listAvailableSlotsByDay"]["slots"]
 export type AvailabilityTimelineSlot = AvailableSlots[0]
 
 interface AvailabilityTimelineProps {
-    onSelectSlot?: (slot: AvailabilityTimelineSlot) => void;
     availableSlots?: AvailableSlots;
     isLoadingSlots: boolean;
     selectedSlot: AvailabilityTimelineSlot | null;
@@ -16,7 +15,7 @@ interface AvailabilityTimelineProps {
 }
 
 
-export default function AvailabilityTimeline({ onSelectSlot, isLoadingSlots: isLoading, selectedSlot, setSelectedSlot, availableSlots  
+export default function AvailabilityTimeline({ isLoadingSlots: isLoading, selectedSlot, setSelectedSlot, availableSlots  
  }: AvailabilityTimelineProps) {
     
     const blockWithLabel = useMemo(() => {
@@ -63,7 +62,6 @@ export default function AvailabilityTimeline({ onSelectSlot, isLoadingSlots: isL
                             return (
                             <TouchableOpacity key={JSON.stringify(item)} onPress={() => {
                                 setSelectedSlot(item.slot);
-                                onSelectSlot?.(item.slot);
                             }} style={styles.itemContainer}>
                                 <Surface style={[styles.surface, isSelected && styles.selectedSurface]}>
                                     <Text variant="bodySmall" style={isSelected && styles.selectedText}>{item.label}</Text>
