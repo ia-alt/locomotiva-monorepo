@@ -1007,7 +1007,14 @@ export class DiContainer {
     }
 
     public getFindPrintRequestsAdminUseCase(authUser: User): FindPrintRequestsAdminUseCase {
-        return new FindPrintRequestsAdminUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+        return new FindPrintRequestsAdminUseCase(
+            this.getAuthUserService(authUser),
+            this.getPrintRequestRepository(),
+            this.getUserRepository(),
+            this.getPrinterRepository(),
+            this.getFilamentRepository(),
+            this.getStoredFileRepository(),
+         );
     }
 
     public getListPrintersUseCase(authUser: User): ListPrintersUseCase {

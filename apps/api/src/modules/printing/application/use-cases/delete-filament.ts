@@ -24,7 +24,7 @@ class DeleteFilamentUseCase extends UseCase<DeleteFilamentUseCase.Input, DeleteF
         }
 
         // os pedidos referenciam o filamento por id — excluir quebraria o histórico
-        const inUse = await this.printRequestRepository.existsByFilament(id);
+        const inUse = await this.printRequestRepository.existsByFilamentId(id);
         if (inUse) {
             throw new FilamentInUseError();
         }

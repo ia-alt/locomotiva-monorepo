@@ -37,11 +37,19 @@ export class PrismaPrintRequestRepository implements PrintRequestRepository {
         return this.printRequestDbToEntity(row);
     }
 
-    async findByUserId(params: PrintRequestRepository.FindByUserParams): Promise<PaginatedResult<typeof PrintRequest.JsonSchema, PrintRequest>> {
+
+    async findMany(params: PrintRequestRepository.FindParams): Promise<PaginatedResult<typeof PrintRequest.JsonSchema, PrintRequest>> {
         const { take, skip } = params.pagination.asTakeSkip;
-        const where: Prisma.PrintRequestWhereInput = { userId: params.userId.value };
-        if (params.status) {
-            where.status = { in: params.status };
+        const where: Prisma.PrintRequestWhereInput = {};
+
+        if (params.filter?.status) {
+            where.status = { in: params.filter.status };
+        }
+        if (params.filter?.printerId) {
+            where.printerId = params.filter.printerId;
+        }
+        if (params.filter?.search) {
+            where.userId = { in: params.filter!.usersIds!.map(x => x.toString()) };
         }
 
         const [rows, total] = await Promise.all([
@@ -57,91 +65,7 @@ export class PrismaPrintRequestRepository implements PrintRequestRepository {
         });
     }
 
-    async findAllAdmin(params: PrintRequestRepository.FindAllAdminParams): Promise<PaginatedResult<typeof PrintRequestRepository.AdminItemSchema, PrintRequestRepository.AdminItem>> {
-        const { take, skip } = params.pagination.asTakeSkip;
-        const where: Prisma.PrintRequestWhereInput = {};
-
-        if (params.filter?.status) {
-            where.status = { in: params.filter.status };
-        }
-        if (params.filter?.printerId) {
-            where.printerId = params.filter.printerId;
-        }
-        if (params.filter?.search) {
-            const matchingUsers = await this.prisma.user.findMany({
-                where: { name: { contains: params.filter.search, mode: "insensitive" } },
-                select: { id: true },
-            });
-            where.userId = { in: matchingUsers.map((u) => u.id) };
-        }
-
-        const [rows, total] = await Promise.all([
-            this.prisma.printRequest.findMany({ where, orderBy: { createdAt: "desc" }, take, skip }),
-            this.prisma.printRequest.count({ where }),
-        ]);
-
-        const items = await this.enrich(rows);
-        return PaginatedResult.create<typeof PrintRequestRepository.AdminItemSchema, PrintRequestRepository.AdminItem>({
-            items,
-            total,
-            paginatedQuery: params.pagination,
-        });
-    }
-
-    /** O pedido guarda só ids — o item do admin busca usuário, impressora, arquivos e filamento num lote por página. */
-    private async enrich(rows: PrintRequestDb[]): Promise<PrintRequestRepository.AdminItem[]> {
-        if (rows.length === 0) return [];
-
-        const userIds = [...new Set(rows.map((r) => r.userId))];
-        const printerIds = [...new Set(rows.map((r) => r.printerId).filter((x): x is string => !!x))];
-        const fileIds = [...new Set(rows.flatMap((r) => [r.stlFileId, r.gcodeFileId]))];
-        const filamentIds = [...new Set(rows.map((r) => r.filamentId))];
-
-        const [users, printers, files, filaments] = await Promise.all([
-            this.prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, email: true } }),
-            printerIds.length > 0
-                ? this.prisma.printer.findMany({ where: { id: { in: printerIds } }, select: { id: true, name: true } })
-                : Promise.resolve([]),
-            this.prisma.file.findMany({ where: { id: { in: fileIds } } }),
-            this.prisma.filament.findMany({ where: { id: { in: filamentIds } } }),
-        ]);
-
-        const userMap = new Map(users.map((u) => [u.id, u]));
-        const printerMap = new Map(printers.map((p) => [p.id, p]));
-        const fileMap = new Map(files.map((f) => [f.id, storedFileDbToEntity(f)]));
-        const filamentNameMap = new Map(filaments.map((f) => [f.id, f.name]));
-
-        return rows.map((row) => {
-            const entity = this.printRequestDbToEntity(row);
-            const json = entity.toJSON();
-            const stlFile = fileMap.get(row.stlFileId);
-            const gcodeFile = fileMap.get(row.gcodeFileId);
-            if (!stlFile || !gcodeFile) {
-                throw new Error(`Arquivos do pedido de impressão ${row.id} não encontrados no storage.`);
-            }
-
-            return new PrintRequestRepository.AdminItem({
-                id: json.id,
-                user: {
-                    id: json.userId,
-                    name: userMap.get(json.userId)?.name ?? "Usuário desconhecido",
-                    email: userMap.get(json.userId)?.email ?? "",
-                },
-                printer: json.printerId
-                    ? { id: json.printerId, name: printerMap.get(json.printerId)?.name ?? "Impressora desconhecida" }
-                    : null,
-                purpose: json.purpose,
-                stlFile: stlFile.toJSON(),
-                gcodeFile: gcodeFile.toJSON(),
-                material: filamentNameMap.get(row.filamentId) ?? "desconhecido",
-                status: json.status,
-                rejectionCancelReason: json.rejectionCancelReason,
-                createdAt: json.createdAt,
-            });
-        });
-    }
-
-    async findInProductionByPrinter(printerId: UniqueId): Promise<PrintRequest | null> {
+    async findInProductionByPrinterId(printerId: UniqueId): Promise<PrintRequest | null> {
         const row = await this.prisma.printRequest.findFirst({
             where: { printerId: printerId.value, status: PrintRequest.Status.IN_PRODUCTION },
         });
@@ -156,7 +80,7 @@ export class PrismaPrintRequestRepository implements PrintRequestRepository {
         return rows.map((row) => this.printRequestDbToEntity(row));
     }
 
-    async existsActiveByPrinter(printerId: UniqueId): Promise<boolean> {
+    async existsActiveByPrinterId(printerId: UniqueId): Promise<boolean> {
         const count = await this.prisma.printRequest.count({
             where: {
                 printerId: printerId.value,
@@ -166,7 +90,7 @@ export class PrismaPrintRequestRepository implements PrintRequestRepository {
         return count > 0;
     }
 
-    async existsByFilament(filamentId: UniqueId): Promise<boolean> {
+    async existsByFilamentId(filamentId: UniqueId): Promise<boolean> {
         const count = await this.prisma.printRequest.count({
             where: { filamentId: filamentId.value },
         });

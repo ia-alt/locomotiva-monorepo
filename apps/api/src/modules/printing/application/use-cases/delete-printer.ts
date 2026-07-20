@@ -24,7 +24,7 @@ class DeletePrinterUseCase extends UseCase<DeletePrinterUseCase.Input, DeletePri
         }
 
         // não deixar pedidos aprovados/em produção órfãos de impressora
-        const hasActive = await this.printRequestRepository.existsActiveByPrinter(printerId);
+        const hasActive = await this.printRequestRepository.existsActiveByPrinterId(printerId);
         if (hasActive) {
             throw new PrinterHasActiveRequestsError();
         }

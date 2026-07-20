@@ -60,7 +60,7 @@ class PrintRequestService {
      * duplicar a verificação nos use cases de alocar/iniciar produção).
      */
     async checkPrinterIsFree(printerId: UniqueId, ignorePrintRequestId?: UniqueId): Promise<void> {
-        const inProduction = await this.printRequestRepository.findInProductionByPrinter(printerId);
+        const inProduction = await this.printRequestRepository.findInProductionByPrinterId(printerId);
         if (inProduction && !(ignorePrintRequestId && inProduction.id.equals(ignorePrintRequestId))) {
             throw new PrinterBusyError();
         }

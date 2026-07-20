@@ -29,6 +29,13 @@ export class PrismaStoredFileRepository implements StoredFileRepository {
         if (!row) return null;
         return storedFileDbToEntity(row);
     }
+
+    async findManyByIds(ids: UniqueId[]): Promise<StoredFile[]> {
+        const rows = await this.prisma.file.findMany({
+            where: { id: { in: ids.map(id => id.value) } },
+        });
+        return rows.map(row => storedFileDbToEntity(row));
+    }
 }
 
 export function storedFileDbToEntity(row: FileDb): StoredFile {

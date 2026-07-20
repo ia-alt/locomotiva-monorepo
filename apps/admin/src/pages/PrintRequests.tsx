@@ -144,7 +144,7 @@ const PrintRequestsPage: React.FC = () => {
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell><Chip label={item.material.toUpperCase()} size="small" /></TableCell>
+                        <TableCell><Chip label={item.filament.name.toUpperCase()} size="small" /></TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, color: 'text.secondary' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

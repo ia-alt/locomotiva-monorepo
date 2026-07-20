@@ -222,7 +222,7 @@ export const PrintRequestDetailDialog: React.FC<PrintRequestDetailDialogProps> =
           </Box>
           <Box>
             <IconLabel icon={<ScienceOutlined sx={{ fontSize: 13 }} />}>Material</IconLabel>
-            <Typography sx={{ fontSize: 15, fontWeight: 600, color: '#1e293b' }}>{printRequest.material.toUpperCase()}</Typography>
+            <Typography sx={{ fontSize: 15, fontWeight: 600, color: '#1e293b' }}>{printRequest.filament.name.toUpperCase()}</Typography>
           </Box>
         </Box>
 

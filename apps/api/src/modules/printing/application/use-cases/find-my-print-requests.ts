@@ -16,10 +16,12 @@ class FindMyPrintRequestsUseCase extends UseCase<FindMyPrintRequestsUseCase.Inpu
     async execute(params: FindMyPrintRequestsUseCase.Input): Promise<FindMyPrintRequestsUseCase.Output> {
         const user = this.authUserService.getUser();
 
-        const result = await this.printRequestRepository.findByUserId({
-            userId: user.id,
+        const result = await this.printRequestRepository.findMany({
             pagination: PaginatedQuery.create(params.pagination),
-            status: params.status,
+            filter: {
+                usersIds: [user.id],
+                status: params.status,
+            }
         });
 
         return result.toJSON();
