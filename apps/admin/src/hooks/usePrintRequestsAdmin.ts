@@ -3,22 +3,13 @@ import { orpc } from '../services/api';
 
 export const PRINT_REQUESTS_ADMIN_QUERY_KEY = ['printing', 'admin-search'] as const;
 
-// o arquivo agora é uma entidade do storage: a API manda id + nome + flag de
-// exclusão lógica (o path do bucket não circula mais; download é via rota assinada)
-export type PrintRequestFile = { id: string; name: string; sizeBytes: number; deleted: boolean };
+// Tipos derivados do contrato da API — se a rota mudar, o erro aparece aqui no
+// tsc em vez de virar `undefined` na tela. Não escrever à mão nem usar `as`.
+export type PrintRequestAdminItem = Awaited<ReturnType<typeof orpc.printing.findPrintRequestsAdmin>>['items'][number];
 
-export type PrintRequestAdminItem = {
-  id: string;
-  user: { id: string; name: string; email: string };
-  printer: { id: string; name: string } | null;
-  purpose: string;
-  stlFile: PrintRequestFile;
-  gcodeFile: PrintRequestFile;
-  material: string;
-  status: string;
-  rejectionCancelReason: string | null;
-  createdAt: string;
-};
+// o arquivo é uma entidade do storage: id + nome + flag de exclusão lógica
+// (o path do bucket não circula mais; download é via rota assinada)
+export type PrintRequestFile = PrintRequestAdminItem['stlFile'];
 
 type UsePrintRequestsAdminParams = {
   page: number;
@@ -50,7 +41,7 @@ export const usePrintRequestsAdmin = ({
   });
 
   return {
-    printRequests: (data?.items ?? []) as PrintRequestAdminItem[],
+    printRequests: data?.items ?? [],
     pagesCount: data?.pagesCount ?? 0,
     isLoading,
     isError,

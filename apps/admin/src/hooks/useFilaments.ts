@@ -3,7 +3,8 @@ import { orpc } from '../services/api';
 
 export const FILAMENTS_QUERY_KEY = ['printing', 'filaments'] as const;
 
-export type Filament = { id: string; name: string };
+// derivado do contrato da API — ver comentário em usePrintRequestsAdmin
+export type Filament = Awaited<ReturnType<typeof orpc.printing.listFilaments>>[number];
 
 export const useFilaments = () => {
   const queryClient = useQueryClient();
@@ -26,7 +27,7 @@ export const useFilaments = () => {
   });
 
   return {
-    filaments: filaments as Filament[],
+    filaments,
     isLoading,
     isError,
     error,
