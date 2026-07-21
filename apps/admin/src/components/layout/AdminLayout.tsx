@@ -31,6 +31,7 @@ import {
   Layers as LayersIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { version } from '../../../package.json';
@@ -84,9 +85,12 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { user, isLoading } = useCurrentUser();
   const { mode, toggleTheme } = useThemeMode();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    // Sem isto, os dados do usuário anterior seguem em cache na próxima sessão.
+    queryClient.clear();
     navigate('/login');
   };
 
