@@ -48,8 +48,8 @@ export class PrismaPrintRequestRepository implements PrintRequestRepository {
         if (params.filter?.printerId) {
             where.printerId = params.filter.printerId;
         }
-        if (params.filter?.search) {
-            where.userId = { in: params.filter!.usersIds!.map(x => x.toString()) };
+        if (params.filter?.usersIds) {
+            where.userId = { in: params.filter.usersIds.map(x => x.value) };
         }
 
         const [rows, total] = await Promise.all([

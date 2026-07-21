@@ -28,8 +28,8 @@ class FindPrintRequestsAdminUseCase extends UseCase<FindPrintRequestsAdminUseCas
     async execute(params: FindPrintRequestsAdminUseCase.Input): Promise<FindPrintRequestsAdminUseCase.Output> {
         this.authUserService.checkIsAdmin();
         //
-        const usersOfFilter = params.filter?.search ? await this.userRepository.findManyByName(params.filter.search) : [];
-        let usersIds: UniqueId[] = usersOfFilter.map(u => u.id);
+        const usersOfFilter = params.filter?.search ? await this.userRepository.findManyByName(params.filter.search) : null;
+        const usersIds: UniqueId[] | undefined = usersOfFilter?.map(u => u.id);
 
         const statusFilter = params.filter?.status ? params.filter?.status.map(s => PrintRequest.StatusSchema.parse(s)) : undefined;
         
@@ -43,7 +43,7 @@ class FindPrintRequestsAdminUseCase extends UseCase<FindPrintRequestsAdminUseCas
         });
 
         const [users, printers, filaments, files] = await Promise.all([
-            usersOfFilter.length === 0 ? this.userRepository.findManyByIds(result.value.items.map(pr => pr.userId)) : usersOfFilter,
+            this.userRepository.findManyByIds(result.value.items.map(pr => pr.userId)),
             this.printerRepository.findAll(),
             this.filamentRepository.findAll(),
             this.storedFileRepository.findManyByIds(result.value.items.flatMap(pr => [pr.stlFileId, pr.gcodeFileId])),
@@ -54,8 +54,8 @@ class FindPrintRequestsAdminUseCase extends UseCase<FindPrintRequestsAdminUseCas
             let printer: Printer | null = null;
             if (pr.printerId !== null) {
                 const foundPrinter = printers.find(f => f.id.equals(pr.printerId!));
-                if (!printer) throw new PrinterNotFoundError(pr.printerId);
-                printer = foundPrinter!;
+                if (!foundPrinter) throw new PrinterNotFoundError(pr.printerId);
+                printer = foundPrinter;
             }
 
             const filament = filaments.find(f => f.id.equals(pr.filamentId));
@@ -64,13 +64,13 @@ class FindPrintRequestsAdminUseCase extends UseCase<FindPrintRequestsAdminUseCas
             if (!stlFile) throw new FileNotFoundError(pr.stlFileId);
             const gcodeFile = files.find(f => f.id.equals(pr.gcodeFileId));
             if (!gcodeFile) throw new FileNotFoundError(pr.gcodeFileId);
-            const user = usersOfFilter.find(u => u.id.equals(pr.userId))
+            const user = users.find(u => u.id.equals(pr.userId))
             if (!user) throw new UserNotFoundError();
             
             const item: FindPrintRequestsAdminUseCase.OutputItem = {
                 ...pr.toJSON(),
                 user: user.toJSON(),
-                printer: printer!.toJSON(),
+                printer: printer?.toJSON() ?? null,
                 stlFile: stlFile.toJSON(),
                 gcodeFile: gcodeFile.toJSON(),
                 filament: filament.toJSON(),
