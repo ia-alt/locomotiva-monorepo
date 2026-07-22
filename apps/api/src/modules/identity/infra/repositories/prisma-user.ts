@@ -75,6 +75,14 @@ export class PrismaUserRepository implements UserRepository {
         return this.userDbToEntity(user);
     }
 
+    async findManyByName(name: string): Promise<User[]> {
+        const users = await this.prisma.user.findMany({
+            where: { name: { contains: name, mode: 'insensitive' } },
+            orderBy: { name: 'asc' },
+        });
+        return users.map(user => this.userDbToEntity(user));
+    }
+
     async delete(id: UniqueId): Promise<void> {
         await this.prisma.user.delete({ where: { id: id.value } });
         DomainEvents.dispatchEventsForAggregate(id);

@@ -27,8 +27,11 @@ import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
   Assessment as AssessmentIcon,
+  Print as PrintIcon,
+  Layers as LayersIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { version } from '../../../package.json';
@@ -56,6 +59,13 @@ const menuGroups = [
     ],
   },
   {
+    label: 'IMPRESSÃO 3D',
+    items: [
+      { text: 'Pedidos de Impressão', icon: <PrintIcon />, path: '/print-requests' },
+      { text: 'Impressoras', icon: <LayersIcon />, path: '/printers' },
+    ],
+  },
+  {
     label: 'ADMIN',
     items: [
       { text: 'Usuários', icon: <PeopleIcon />, path: '/users' },
@@ -75,9 +85,12 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { user, isLoading } = useCurrentUser();
   const { mode, toggleTheme } = useThemeMode();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    // Sem isto, os dados do usuário anterior seguem em cache na próxima sessão.
+    queryClient.clear();
     navigate('/login');
   };
 

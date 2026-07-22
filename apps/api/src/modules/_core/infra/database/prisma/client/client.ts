@@ -81,3 +81,23 @@ export type AccessLog = Prisma.AccessLogModel
  * 
  */
 export type SpaceOperatingHours = Prisma.SpaceOperatingHoursModel
+/**
+ * Model Printer
+ * 
+ */
+export type Printer = Prisma.PrinterModel
+/**
+ * Model Filament
+ * 
+ */
+export type Filament = Prisma.FilamentModel
+/**
+ * Model PrintRequest
+ * 
+ */
+export type PrintRequest = Prisma.PrintRequestModel
+/**
+ * Model File
+ * 
+ */
+export type File = Prisma.FileModel

@@ -13,6 +13,11 @@ import DetalhesReservaScreen from '../screens/private/booking-flow/3-DetalhesRes
 import ConfirmarReservaScreen from '../screens/private/booking-flow/4-ConfirmarReservaScreen';
 import ReservaSucessoScreen from '../screens/private/booking-flow/5-ReservaSucessoScreen';
 import DetalhesMinhaReservaScreen from '../screens/private/DetalhesMinhaReservaScreen';
+import ImpressoesScreen from '../screens/private/ImpressoesScreen';
+import CriarImpressaoScreen from '../screens/private/printing-flow/1-CriarImpressaoScreen';
+import ConfirmarImpressaoScreen from '../screens/private/printing-flow/2-ConfirmarImpressaoScreen';
+import ImpressaoSucessoScreen from '../screens/private/printing-flow/3-ImpressaoSucessoScreen';
+import DetalhesMinhaImpressaoScreen from '../screens/private/DetalhesMinhaImpressaoScreen';
 import EditarPerfilScreen from '../screens/private/EditarPerfilScreen';
 import AlterarSenhaScreen from '../screens/private/AlterarSenhaScreen';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
@@ -46,9 +51,22 @@ export type PrivateStackParamList = {
     DetalhesMinhaReserva: {
         bookingId: string;
     };
+    CriarImpressao: undefined;
+    ConfirmarImpressao: {
+        stlFile: { id: string; fileName: string; fileSizeBytes: number | null };
+        gcodeFile: { id: string; fileName: string; fileSizeBytes: number | null };
+        filamentId: string;
+        material: string;
+        purpose: string;
+    };
+    ImpressaoSucesso: undefined;
+    DetalhesMinhaImpressao: {
+        printRequestId: string;
+    };
     EditarPerfil: undefined;
     AlterarSenha: undefined;
-    PerfilIncompleto: undefined;
+    /** next = para onde seguir após completar o perfil (default: fluxo de reserva) */
+    PerfilIncompleto: { next: 'CriarReserva' | 'CriarImpressao' } | undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -92,8 +110,14 @@ function DrawerRoutes() {
                 component={BottomTabs}
                 options={{
                     title: 'Locomotiva',
-                    headerLeft: () => null,
-                    swipeEnabled: false,
+                    drawerIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+                }}
+            />
+            <Drawer.Screen
+                name="Impressões 3D"
+                component={ImpressoesScreen}
+                options={{
+                    drawerIcon: ({ color, size }) => <Ionicons name="print-outline" size={size} color={color} />,
                 }}
             />
         </Drawer.Navigator>
@@ -144,6 +168,10 @@ export default function PrivateNavigator() {
                 component={DetalhesMinhaReservaScreen}
                 options={{ title: 'Detalhes da Reserva', animation: 'slide_from_right' }}
             />
+            <Stack.Screen name="CriarImpressao" component={CriarImpressaoScreen} options={{ title: 'Nova Impressão' }} />
+            <Stack.Screen name="ConfirmarImpressao" component={ConfirmarImpressaoScreen} options={{ title: 'Confirmar Pedido' }} />
+            <Stack.Screen name="ImpressaoSucesso" component={ImpressaoSucessoScreen} options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="DetalhesMinhaImpressao" component={DetalhesMinhaImpressaoScreen} options={{ title: 'Detalhes da Impressão', animation: 'slide_from_right' }} />
             <Stack.Screen
                 name="EditarPerfil"
                 component={EditarPerfilScreen}

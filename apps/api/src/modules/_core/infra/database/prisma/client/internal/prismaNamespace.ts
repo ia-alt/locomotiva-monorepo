@@ -391,7 +391,11 @@ export const ModelName = {
   CalendarEvent: 'CalendarEvent',
   CoworkingSettings: 'CoworkingSettings',
   AccessLog: 'AccessLog',
-  SpaceOperatingHours: 'SpaceOperatingHours'
+  SpaceOperatingHours: 'SpaceOperatingHours',
+  Printer: 'Printer',
+  Filament: 'Filament',
+  PrintRequest: 'PrintRequest',
+  File: 'File'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -407,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "apiKey" | "room" | "booking" | "calendarEvent" | "coworkingSettings" | "accessLog" | "spaceOperatingHours"
+    modelProps: "user" | "apiKey" | "room" | "booking" | "calendarEvent" | "coworkingSettings" | "accessLog" | "spaceOperatingHours" | "printer" | "filament" | "printRequest" | "file"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1003,6 +1007,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Printer: {
+      payload: Prisma.$PrinterPayload<ExtArgs>
+      fields: Prisma.PrinterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PrinterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PrinterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>
+        }
+        findFirst: {
+          args: Prisma.PrinterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PrinterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>
+        }
+        findMany: {
+          args: Prisma.PrinterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>[]
+        }
+        create: {
+          args: Prisma.PrinterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>
+        }
+        createMany: {
+          args: Prisma.PrinterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PrinterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>[]
+        }
+        delete: {
+          args: Prisma.PrinterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>
+        }
+        update: {
+          args: Prisma.PrinterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>
+        }
+        deleteMany: {
+          args: Prisma.PrinterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PrinterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PrinterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>[]
+        }
+        upsert: {
+          args: Prisma.PrinterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrinterPayload>
+        }
+        aggregate: {
+          args: Prisma.PrinterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePrinter>
+        }
+        groupBy: {
+          args: Prisma.PrinterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrinterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PrinterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrinterCountAggregateOutputType> | number
+        }
+      }
+    }
+    Filament: {
+      payload: Prisma.$FilamentPayload<ExtArgs>
+      fields: Prisma.FilamentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FilamentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FilamentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>
+        }
+        findFirst: {
+          args: Prisma.FilamentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FilamentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>
+        }
+        findMany: {
+          args: Prisma.FilamentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>[]
+        }
+        create: {
+          args: Prisma.FilamentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>
+        }
+        createMany: {
+          args: Prisma.FilamentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FilamentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>[]
+        }
+        delete: {
+          args: Prisma.FilamentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>
+        }
+        update: {
+          args: Prisma.FilamentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>
+        }
+        deleteMany: {
+          args: Prisma.FilamentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FilamentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FilamentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>[]
+        }
+        upsert: {
+          args: Prisma.FilamentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilamentPayload>
+        }
+        aggregate: {
+          args: Prisma.FilamentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFilament>
+        }
+        groupBy: {
+          args: Prisma.FilamentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FilamentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FilamentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FilamentCountAggregateOutputType> | number
+        }
+      }
+    }
+    PrintRequest: {
+      payload: Prisma.$PrintRequestPayload<ExtArgs>
+      fields: Prisma.PrintRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PrintRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PrintRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.PrintRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PrintRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>
+        }
+        findMany: {
+          args: Prisma.PrintRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>[]
+        }
+        create: {
+          args: Prisma.PrintRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>
+        }
+        createMany: {
+          args: Prisma.PrintRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PrintRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.PrintRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>
+        }
+        update: {
+          args: Prisma.PrintRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.PrintRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PrintRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PrintRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.PrintRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.PrintRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePrintRequest>
+        }
+        groupBy: {
+          args: Prisma.PrintRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrintRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PrintRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrintRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    File: {
+      payload: Prisma.$FilePayload<ExtArgs>
+      fields: Prisma.FileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>
+        }
+        findFirst: {
+          args: Prisma.FileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>
+        }
+        findMany: {
+          args: Prisma.FileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>[]
+        }
+        create: {
+          args: Prisma.FileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>
+        }
+        createMany: {
+          args: Prisma.FileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>[]
+        }
+        delete: {
+          args: Prisma.FileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>
+        }
+        update: {
+          args: Prisma.FileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>
+        }
+        deleteMany: {
+          args: Prisma.FileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>[]
+        }
+        upsert: {
+          args: Prisma.FileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilePayload>
+        }
+        aggregate: {
+          args: Prisma.FileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFile>
+        }
+        groupBy: {
+          args: Prisma.FileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1142,6 +1442,60 @@ export const SpaceOperatingHoursScalarFieldEnum = {
 } as const
 
 export type SpaceOperatingHoursScalarFieldEnum = (typeof SpaceOperatingHoursScalarFieldEnum)[keyof typeof SpaceOperatingHoursScalarFieldEnum]
+
+
+export const PrinterScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  model: 'model',
+  enabled: 'enabled',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrinterScalarFieldEnum = (typeof PrinterScalarFieldEnum)[keyof typeof PrinterScalarFieldEnum]
+
+
+export const FilamentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FilamentScalarFieldEnum = (typeof FilamentScalarFieldEnum)[keyof typeof FilamentScalarFieldEnum]
+
+
+export const PrintRequestScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  printerId: 'printerId',
+  purpose: 'purpose',
+  stlFileId: 'stlFileId',
+  gcodeFileId: 'gcodeFileId',
+  filamentId: 'filamentId',
+  status: 'status',
+  rejectionCancelReason: 'rejectionCancelReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrintRequestScalarFieldEnum = (typeof PrintRequestScalarFieldEnum)[keyof typeof PrintRequestScalarFieldEnum]
+
+
+export const FileScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  path: 'path',
+  sizeBytes: 'sizeBytes',
+  deleted: 'deleted',
+  uploadedByUserId: 'uploadedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1384,6 +1738,10 @@ export type GlobalOmitConfig = {
   coworkingSettings?: Prisma.CoworkingSettingsOmit
   accessLog?: Prisma.AccessLogOmit
   spaceOperatingHours?: Prisma.SpaceOperatingHoursOmit
+  printer?: Prisma.PrinterOmit
+  filament?: Prisma.FilamentOmit
+  printRequest?: Prisma.PrintRequestOmit
+  file?: Prisma.FileOmit
 }
 
 /* Types for Logging */

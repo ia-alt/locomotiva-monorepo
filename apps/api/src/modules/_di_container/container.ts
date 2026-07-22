@@ -89,6 +89,40 @@ import { RenderReportService } from "src/modules/report/domain/services/render-r
 import { ReactPdfRenderReportService } from "src/modules/report/infra/services/react-pdf-render-report";
 import { GenerateMonthReportUseCase } from "src/modules/report/application/use-cases/generate-month-report";
 import { GenerateAndRenderMonthReportUseCase } from "src/modules/report/application/use-cases/generate-and-render-month-report";
+import { PrinterRepository, PrintRequestRepository, FilamentRepository } from "@printing/domain/repositories";
+import { PrismaPrinterRepository } from "@printing/infra/repositories/prisma-printer";
+import { PrismaPrintRequestRepository } from "@printing/infra/repositories/prisma-print-request";
+import { PrismaFilamentRepository } from "@printing/infra/repositories/prisma-filament";
+import { PrintRequestService, PrintRequestEmailTemplater } from "@printing/domain/services";
+import { TemplateStringPrintRequestEmailTemplater } from "@printing/infra/services";
+import { BucketStorageService, StoredFileService } from "@storage/domain/services";
+import { StoredFileRepository } from "@storage/domain/repositories";
+import { PrismaStoredFileRepository } from "@storage/infra/repositories";
+import { SupabaseBucketStorageService } from "@storage/infra/services";
+import { UploadFileUseCase } from "@storage/application/use-cases/upload-file";
+import { AfterPrintRequestStatusChanged } from "@printing/application/subscribers/after-print-request-status-changed";
+import { RequestPrintUseCase } from "@printing/application/use-cases/request-print";
+import { CreatePrintFileDownloadUrlUseCase } from "@printing/application/use-cases/create-print-file-download-url";
+import { CancelPrintRequestUseCase } from "@printing/application/use-cases/cancel-print-request";
+import { FindMyPrintRequestsUseCase } from "@printing/application/use-cases/find-my-print-requests";
+import { GetPrintRequestByIdUseCase } from "@printing/application/use-cases/get-print-request-by-id";
+import { ProcessPrintRequestUseCase } from "@printing/application/use-cases/process-print-request";
+import { AllocatePrinterUseCase } from "@printing/application/use-cases/allocate-printer";
+import { DeliverPrintRequestUseCase } from "@printing/application/use-cases/deliver-print-request";
+import { DiscardPrintRequestUseCase } from "@printing/application/use-cases/discard-print-request";
+import { AdminCancelPrintRequestUseCase } from "@printing/application/use-cases/admin-cancel-print-request";
+import { FindPrintRequestsAdminUseCase } from "@printing/application/use-cases/find-print-requests-admin";
+import { ListPrintersUseCase } from "@printing/application/use-cases/list-printers";
+import { StartPrintProductionUseCase } from "@printing/application/use-cases/start-print-production";
+import { CompletePrintRequestUseCase } from "@printing/application/use-cases/complete-print-request";
+import { GetPrinterByIdUseCase } from "@printing/application/use-cases/get-printer-by-id";
+import { CreatePrinterUseCase } from "@printing/application/use-cases/create-printer";
+import { UpdatePrinterUseCase } from "@printing/application/use-cases/update-printer";
+import { SetPrinterEnabledUseCase } from "@printing/application/use-cases/set-printer-enabled";
+import { DeletePrinterUseCase } from "@printing/application/use-cases/delete-printer";
+import { ListFilamentsUseCase } from "@printing/application/use-cases/list-filaments";
+import { CreateFilamentUseCase } from "@printing/application/use-cases/create-filament";
+import { DeleteFilamentUseCase } from "@printing/application/use-cases/delete-filament";
 
 export class DiContainer {
     public readonly prisma: PrismaClient;
@@ -160,6 +194,38 @@ export class DiContainer {
             this._calendarRepository = new PrismaCalendarRepository(this.prisma);
         }
         return this._calendarRepository;
+    }
+
+    private _printerRepository?: PrinterRepository;
+    public getPrinterRepository(): PrinterRepository {
+        if (!this._printerRepository) {
+            this._printerRepository = new PrismaPrinterRepository(this.prisma);
+        }
+        return this._printerRepository;
+    }
+
+    private _printRequestRepository?: PrintRequestRepository;
+    public getPrintRequestRepository(): PrintRequestRepository {
+        if (!this._printRequestRepository) {
+            this._printRequestRepository = new PrismaPrintRequestRepository(this.prisma);
+        }
+        return this._printRequestRepository;
+    }
+
+    private _storedFileRepository?: StoredFileRepository;
+    public getStoredFileRepository(): StoredFileRepository {
+        if (!this._storedFileRepository) {
+            this._storedFileRepository = new PrismaStoredFileRepository(this.prisma);
+        }
+        return this._storedFileRepository;
+    }
+
+    private _filamentRepository?: FilamentRepository;
+    public getFilamentRepository(): FilamentRepository {
+        if (!this._filamentRepository) {
+            this._filamentRepository = new PrismaFilamentRepository(this.prisma);
+        }
+        return this._filamentRepository;
     }
     //#endregion
 
@@ -356,6 +422,55 @@ export class DiContainer {
             );
         }
         return this._calendarService;
+    }
+
+    private _bucketStorageService?: BucketStorageService;
+    public getBucketStorageService(): BucketStorageService {
+        if (!this._bucketStorageService) {
+            if (!env.SUPABASE_URL || !env.SUPABASE_SECRET_KEY || !env.STORAGE_BUCKET) {
+                throw new Error(
+                    "Storage não configurado: defina SUPABASE_URL, SUPABASE_SECRET_KEY e STORAGE_BUCKET no .env (Supabase Storage).",
+                );
+            }
+            this._bucketStorageService = new SupabaseBucketStorageService({
+                url: env.SUPABASE_URL,
+                secretKey: env.SUPABASE_SECRET_KEY,
+                bucket: env.STORAGE_BUCKET,
+            });
+        }
+        return this._bucketStorageService;
+    }
+
+    private _storedFileService?: StoredFileService;
+    public getStoredFileService(): StoredFileService {
+        if (!this._storedFileService) {
+            this._storedFileService = new StoredFileService(
+                this.getStoredFileRepository(),
+                this.getBucketStorageService(),
+            );
+        }
+        return this._storedFileService;
+    }
+
+    private _printRequestService?: PrintRequestService;
+    public getPrintRequestService(): PrintRequestService {
+        if (!this._printRequestService) {
+            this._printRequestService = new PrintRequestService(
+                this.getPrintRequestRepository(),
+                this.getPrinterRepository(),
+                this.getFilamentRepository(),
+                this.getStoredFileService(),
+            );
+        }
+        return this._printRequestService;
+    }
+
+    private _printRequestEmailTemplater?: PrintRequestEmailTemplater;
+    public getPrintRequestEmailTemplater(): PrintRequestEmailTemplater {
+        if (!this._printRequestEmailTemplater) {
+            this._printRequestEmailTemplater = new TemplateStringPrintRequestEmailTemplater();
+        }
+        return this._printRequestEmailTemplater;
     }
     //#endregion
 
@@ -838,6 +953,105 @@ export class DiContainer {
             this.getRenderReportService(),
         );
     }
+
+    public getRequestPrintUseCase(authUser: User): RequestPrintUseCase {
+        return new RequestPrintUseCase(this.getAuthUserService(authUser), this.getPrintRequestService());
+    }
+
+    public getUploadFileUseCase(authUser: User): UploadFileUseCase {
+        return new UploadFileUseCase(this.getAuthUserService(authUser), this.getStoredFileService());
+    }
+
+    public getCreatePrintFileDownloadUrlUseCase(authUser: User): CreatePrintFileDownloadUrlUseCase {
+        return new CreatePrintFileDownloadUrlUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository(), this.getStoredFileService());
+    }
+
+    public getCancelPrintRequestUseCase(authUser: User): CancelPrintRequestUseCase {
+        return new CancelPrintRequestUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+    }
+
+    public getFindMyPrintRequestsUseCase(authUser: User): FindMyPrintRequestsUseCase {
+        return new FindMyPrintRequestsUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+    }
+
+    public getGetPrintRequestByIdUseCase(authUser: User): GetPrintRequestByIdUseCase {
+        return new GetPrintRequestByIdUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository(), this.getFilamentRepository(), this.getStoredFileService());
+    }
+
+    public getProcessPrintRequestUseCase(authUser: User): ProcessPrintRequestUseCase {
+        return new ProcessPrintRequestUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+    }
+
+    public getAllocatePrinterUseCase(authUser: User): AllocatePrinterUseCase {
+        return new AllocatePrinterUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository(), this.getPrinterRepository(), this.getPrintRequestService());
+    }
+
+    public getDeliverPrintRequestUseCase(authUser: User): DeliverPrintRequestUseCase {
+        return new DeliverPrintRequestUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+    }
+
+    public getDiscardPrintRequestUseCase(authUser: User): DiscardPrintRequestUseCase {
+        return new DiscardPrintRequestUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+    }
+
+    public getStartPrintProductionUseCase(authUser: User): StartPrintProductionUseCase {
+        return new StartPrintProductionUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository(), this.getPrinterRepository(), this.getPrintRequestService());
+    }
+
+    public getCompletePrintRequestUseCase(authUser: User): CompletePrintRequestUseCase {
+        return new CompletePrintRequestUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+    }
+
+    public getAdminCancelPrintRequestUseCase(authUser: User): AdminCancelPrintRequestUseCase {
+        return new AdminCancelPrintRequestUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository());
+    }
+
+    public getFindPrintRequestsAdminUseCase(authUser: User): FindPrintRequestsAdminUseCase {
+        return new FindPrintRequestsAdminUseCase(
+            this.getAuthUserService(authUser),
+            this.getPrintRequestRepository(),
+            this.getUserRepository(),
+            this.getPrinterRepository(),
+            this.getFilamentRepository(),
+            this.getStoredFileRepository(),
+         );
+    }
+
+    public getListPrintersUseCase(authUser: User): ListPrintersUseCase {
+        return new ListPrintersUseCase(this.getAuthUserService(authUser), this.getPrinterRepository(), this.getPrintRequestRepository());
+    }
+
+    public getGetPrinterByIdUseCase(authUser: User): GetPrinterByIdUseCase {
+        return new GetPrinterByIdUseCase(this.getAuthUserService(authUser), this.getPrinterRepository());
+    }
+
+    public getCreatePrinterUseCase(authUser: User): CreatePrinterUseCase {
+        return new CreatePrinterUseCase(this.getAuthUserService(authUser), this.getPrinterRepository());
+    }
+
+    public getUpdatePrinterUseCase(authUser: User): UpdatePrinterUseCase {
+        return new UpdatePrinterUseCase(this.getAuthUserService(authUser), this.getPrinterRepository());
+    }
+
+    public getSetPrinterEnabledUseCase(authUser: User): SetPrinterEnabledUseCase {
+        return new SetPrinterEnabledUseCase(this.getAuthUserService(authUser), this.getPrinterRepository());
+    }
+
+    public getDeletePrinterUseCase(authUser: User): DeletePrinterUseCase {
+        return new DeletePrinterUseCase(this.getAuthUserService(authUser), this.getPrinterRepository(), this.getPrintRequestRepository());
+    }
+
+    public getListFilamentsUseCase(authUser: User): ListFilamentsUseCase {
+        return new ListFilamentsUseCase(this.getAuthUserService(authUser), this.getFilamentRepository());
+    }
+
+    public getCreateFilamentUseCase(authUser: User): CreateFilamentUseCase {
+        return new CreateFilamentUseCase(this.getAuthUserService(authUser), this.getFilamentRepository());
+    }
+
+    public getDeleteFilamentUseCase(authUser: User): DeleteFilamentUseCase {
+        return new DeleteFilamentUseCase(this.getAuthUserService(authUser), this.getFilamentRepository(), this.getPrintRequestRepository());
+    }
     //#endregion
 }
 
@@ -870,6 +1084,15 @@ new AfterBookingStatusChanged(
 
 new AfterUserCheckin(
     container.getTotemCheckinNotifier(),
+);
+
+new AfterPrintRequestStatusChanged(
+    container.getSendEmailService(),
+    container.getUserRepository(),
+    container.getPrintRequestEmailTemplater(),
+    container.getFilamentRepository(),
+    container.getStoredFileService(),
+    env.ADMIN_URL,
 );
 //#endregion
 

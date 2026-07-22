@@ -58,7 +58,11 @@ export const ModelName = {
   CalendarEvent: 'CalendarEvent',
   CoworkingSettings: 'CoworkingSettings',
   AccessLog: 'AccessLog',
-  SpaceOperatingHours: 'SpaceOperatingHours'
+  SpaceOperatingHours: 'SpaceOperatingHours',
+  Printer: 'Printer',
+  Filament: 'Filament',
+  PrintRequest: 'PrintRequest',
+  File: 'File'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -177,6 +181,60 @@ export const SpaceOperatingHoursScalarFieldEnum = {
 } as const
 
 export type SpaceOperatingHoursScalarFieldEnum = (typeof SpaceOperatingHoursScalarFieldEnum)[keyof typeof SpaceOperatingHoursScalarFieldEnum]
+
+
+export const PrinterScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  model: 'model',
+  enabled: 'enabled',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrinterScalarFieldEnum = (typeof PrinterScalarFieldEnum)[keyof typeof PrinterScalarFieldEnum]
+
+
+export const FilamentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FilamentScalarFieldEnum = (typeof FilamentScalarFieldEnum)[keyof typeof FilamentScalarFieldEnum]
+
+
+export const PrintRequestScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  printerId: 'printerId',
+  purpose: 'purpose',
+  stlFileId: 'stlFileId',
+  gcodeFileId: 'gcodeFileId',
+  filamentId: 'filamentId',
+  status: 'status',
+  rejectionCancelReason: 'rejectionCancelReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrintRequestScalarFieldEnum = (typeof PrintRequestScalarFieldEnum)[keyof typeof PrintRequestScalarFieldEnum]
+
+
+export const FileScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  path: 'path',
+  sizeBytes: 'sizeBytes',
+  deleted: 'deleted',
+  uploadedByUserId: 'uploadedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
 
 
 export const SortOrder = {

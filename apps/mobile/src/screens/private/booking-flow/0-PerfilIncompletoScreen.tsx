@@ -3,11 +3,13 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, TextInput, Button } from 'react-native-paper';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../../contexts/auth-context';
-import { usePrivateStackNavigation } from '../../../navigation/PrivateNavigator';
+import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
 
 export default function PerfilIncompletoScreen() {
     const { authUser, updateMe } = useAuth();
     const navigation = usePrivateStackNavigation();
+    const route = usePrivateStackRoute<'PerfilIncompleto'>();
+    const nextScreen = route.params?.next ?? 'CriarReserva';
 
     const existingCompany = authUser?.company;
     const existingJobTitle = authUser?.jobTitle;
@@ -41,7 +43,7 @@ export default function PerfilIncompletoScreen() {
                 jobTitle: jobTitle.trim(),
                 phone: phone.trim(),
             });
-            navigation.replace('CriarReserva');
+            navigation.replace(nextScreen);
         } catch (e: any) {
             setError(e?.message ?? 'Erro ao salvar. Tente novamente.');
         } finally {
@@ -62,7 +64,9 @@ export default function PerfilIncompletoScreen() {
 
                 <Text style={styles.title}>Só mais um passo!</Text>
                 <Text style={styles.subtitle}>
-                    Preencha seus dados profissionais para podermos prosseguir com a sua reserva.
+                    {nextScreen === 'CriarImpressao'
+                        ? 'Preencha seus dados profissionais para podermos prosseguir com o seu pedido de impressão.'
+                        : 'Preencha seus dados profissionais para podermos prosseguir com a sua reserva.'}
                 </Text>
 
                 <View style={styles.fields}>
