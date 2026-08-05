@@ -119,14 +119,14 @@ E-mail ao cliente em: criado, aprovado, **pronto para retirada** (completed), re
 | `PrintPurpose` | 5–500 caracteres → `InvalidPrintPurposeError` |
 
 > **Decisões registradas:**
-> - O material é **dado dinâmico** (entity `Filament`, nome único validado no domínio — `InvalidFilamentNameError`). O pedido referencia o filamento **por id** (`filamentId`); por isso um filamento **já usado em pedidos não pode ser excluído** (`FilamentInUseError`, 409).
+> - O material é **dado dinâmico** (entity `Filament`, nome único validado no domínio — `InvalidFilamentNameError`, flag `active`). O pedido referencia o filamento **por id** (`filamentId`); por isso um filamento **já usado em pedidos não é excluído fisicamente** — a "exclusão" o **desativa** (`deactivate()`, soft-delete): some da escolha do cliente (`findAllActive`) e não pode ser usado em novos pedidos (`MaterialNotAvailableError`), mas o histórico continua resolvendo o nome. Filamento **nunca usado** é apagado de vez (`delete`).
 > - Os arquivos do pedido são **entidades do módulo `storage`** (`StoredFile`) referenciadas por id (`stlFileId`/`gcodeFileId`). O antigo VO `PrintFile` foi removido; a validação de extensão (.stl / .gcode,.gco) vive no `PrintRequestService` (`InvalidPrintFileError`).
 > - **Motivo obrigatório é regra de domínio**: `reject()`/`discard()`/`adminCancel()` validam o motivo (`PrintRequestReasonRequiredError`) — o schema Zod não carrega `.trim().min()`.
 
 ### 3.3 Repositórios (interfaces)
 
 - `PrinterRepository`: `save`, `findAll`, `findAllEnabled`, `findById`, `delete`.
-- `FilamentRepository`: `save`, `findAll`, `findById`, `findByName` (case-insensitive, p/ unicidade), `delete`.
+- `FilamentRepository`: `save`, `findAll` (todos, inclui desativados — uso admin/histórico), `findAllActive` (só ativos — escolha do cliente), `findById`, `findByName` (case-insensitive, p/ unicidade), `delete`.
 - `PrintRequestRepository`: `save`, `findById`, `findByUserId` (paginado), `findAllAdmin` (paginado + filtros status/impressora/busca), `findInProductionByPrinter` e `findAllInProduction` (regra de ocupação / "em uso"), `existsActiveByPrinter` (guarda de exclusão de impressora), `existsByFilament` (guarda de exclusão de filamento). Inclui o **read-model** `AdminItem` (projeção com `user`/`printer` resolvidos) — mesmo padrão do `BookingRepository.AdminBookingItem`.
 
 ### 3.4 Domain Service
@@ -293,7 +293,7 @@ sequenceDiagram
 | **Módulo novo `printing`** (não estender `booking`) | domínio próprio (arquivos, material, análise técnica, produção física). |
 | **Módulo `storage` separado** | upload é transversal; port/adapter reusável. |
 | **Sem agendamento por data** | escolha de produto: o técnico decide *quando* iniciar cada produção; datas geravam burocracia sem valor. O controle temporal é implícito no ciclo de status. |
-| **Catálogo de filamentos dinâmico, referenciado por id** | o admin cadastra os materiais (entity `Filament`, nome único); o app monta as opções dinamicamente. O pedido referencia o filamento **por id** — em troca, um filamento usado em pedidos não pode ser excluído (`FilamentInUseError`). |
+| **Catálogo de filamentos dinâmico, referenciado por id** | o admin cadastra os materiais (entity `Filament`, nome único); o app monta as opções dinamicamente. O pedido referencia o filamento **por id** — em troca, um filamento usado em pedidos não é excluído fisicamente: a exclusão o **desativa** (flag `active`), preservando o histórico e removendo-o das novas escolhas. |
 | **Dois arquivos por pedido (.stl + .gcode)** | o `.stl` documenta o modelo; o `.gcode` é o que a impressora executa. Validação de extensão em **duas camadas**: no app (filtro do file picker + checagem) e no `PrintRequestService` (na criação do pedido). |
 | **Arquivo como entidade (`StoredFile`) com exclusão lógica** | o registro do arquivo sobrevive à remoção do bucket (`deleted`); o `path` do bucket nunca vai pro cliente (toJSON restrito); o histórico do pedido fica rastreável. |
 | **Aceite ≠ alocação** | aceitar é análise; vincular impressora é logística. Separar os dois permite aceitar rápido e alocar quando for produzir (impressora editável — até finalizar). |

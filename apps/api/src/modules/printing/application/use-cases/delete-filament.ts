@@ -1,6 +1,5 @@
 import { UniqueId, UseCase } from "@core/base-classes";
 import { FilamentRepository, PrintRequestRepository } from "@printing/domain/repositories";
-import { FilamentInUseError } from "@printing/domain/errors";
 import { AuthUserService } from "src/modules/identity/domain/services";
 import z from "zod";
 import { FilamentNotFoundError } from "../errors";
@@ -23,10 +22,14 @@ class DeleteFilamentUseCase extends UseCase<DeleteFilamentUseCase.Input, DeleteF
             throw new FilamentNotFoundError(id);
         }
 
-        // os pedidos referenciam o filamento por id — excluir quebraria o histórico
+        // os pedidos referenciam o filamento por id — excluir quebraria o histórico.
+        // já usado: desativa (some da escolha do cliente, histórico intacto).
+        // nunca usado: pode ser removido de vez do catálogo.
         const inUse = await this.printRequestRepository.existsByFilamentId(id);
         if (inUse) {
-            throw new FilamentInUseError();
+            filament.deactivate();
+            await this.filamentRepository.save(filament);
+            return;
         }
 
         await this.filamentRepository.delete(id);

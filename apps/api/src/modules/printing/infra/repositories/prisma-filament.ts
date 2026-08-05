@@ -10,13 +10,21 @@ export class PrismaFilamentRepository implements FilamentRepository {
         const data = filament.toJSON();
         await this.prisma.filament.upsert({
             where: { id: data.id },
-            update: { name: data.name },
-            create: { id: data.id, name: data.name },
+            update: { name: data.name, active: data.active },
+            create: { id: data.id, name: data.name, active: data.active },
         });
     }
 
     async findAll(): Promise<Filament[]> {
         const rows = await this.prisma.filament.findMany({ orderBy: { name: "asc" } });
+        return rows.map((row) => this.filamentDbToEntity(row));
+    }
+
+    async findAllActive(): Promise<Filament[]> {
+        const rows = await this.prisma.filament.findMany({
+            where: { active: true },
+            orderBy: { name: "asc" },
+        });
         return rows.map((row) => this.filamentDbToEntity(row));
     }
 
@@ -39,6 +47,6 @@ export class PrismaFilamentRepository implements FilamentRepository {
     }
 
     private filamentDbToEntity(row: FilamentDb): Filament {
-        return new Filament(UniqueId.fromString(row.id), row.name);
+        return new Filament(UniqueId.fromString(row.id), row.name, row.active);
     }
 }
