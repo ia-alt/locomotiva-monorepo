@@ -8,6 +8,7 @@ import { AuthProvider } from './contexts/auth-context';
 import { CheckinProvider } from './contexts/checkin-context';
 import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
+import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 // Sistema de Toast Global acessível fora do fluxo do React
@@ -116,16 +117,28 @@ export default function Main() {
 
 const MAX_WIDTH = 800;
 
+/** Precisa ser idêntico ao GOVBR_REDIRECT_URI cadastrado no gov.br. */
+const CAMINHO_CALLBACK_GOVBR = '/auth/govbr/callback';
+
 function App() {
   const { width } = useWindowDimensions();
   const isWide = width > MAX_WIDTH;
+
+  // O retorno do gov.br é tratado ANTES do React Navigation. O `linking` dele
+  // tem prefixos fixos que não cobrem o domínio de produção, então ele
+  // descartaria a URL e voltaria para a tela inicial — levando o `code` junto.
+  const [emCallbackGovbr, setEmCallbackGovbr] = React.useState(
+    () => typeof window !== 'undefined' && window.location.pathname === CAMINHO_CALLBACK_GOVBR
+  );
 
   return (
     <View style={[
       { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_WIDTH },
       isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
     ]}>
-      <Navigation />
+      {emCallbackGovbr
+        ? <GovbrCallbackScreen onConcluir={() => setEmCallbackGovbr(false)} />
+        : <Navigation />}
     </View>
   );
 }

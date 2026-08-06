@@ -1,2 +1,4 @@
 export * from "./user"
 export * from "./api-key"
+export * from "./govbr-auth-request"
+export * from "./govbr-pending-identity"

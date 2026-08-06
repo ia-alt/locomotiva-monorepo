@@ -53,6 +53,8 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   ApiKey: 'ApiKey',
+  GovbrAuthRequest: 'GovbrAuthRequest',
+  GovbrPendingIdentity: 'GovbrPendingIdentity',
   Room: 'Room',
   Booking: 'Booking',
   CalendarEvent: 'CalendarEvent',
@@ -95,6 +97,8 @@ export const UserScalarFieldEnum = {
   company: 'company',
   jobTitle: 'jobTitle',
   phone: 'phone',
+  authProvider: 'authProvider',
+  govbrSub: 'govbrSub',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -112,6 +116,35 @@ export const ApiKeyScalarFieldEnum = {
 } as const
 
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+export const GovbrAuthRequestScalarFieldEnum = {
+  state: 'state',
+  nonce: 'nonce',
+  codeVerifier: 'codeVerifier',
+  redirectTo: 'redirectTo',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GovbrAuthRequestScalarFieldEnum = (typeof GovbrAuthRequestScalarFieldEnum)[keyof typeof GovbrAuthRequestScalarFieldEnum]
+
+
+export const GovbrPendingIdentityScalarFieldEnum = {
+  id: 'id',
+  govbrSub: 'govbrSub',
+  cpf: 'cpf',
+  name: 'name',
+  email: 'email',
+  picture: 'picture',
+  redirectTo: 'redirectTo',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GovbrPendingIdentityScalarFieldEnum = (typeof GovbrPendingIdentityScalarFieldEnum)[keyof typeof GovbrPendingIdentityScalarFieldEnum]
 
 
 export const RoomScalarFieldEnum = {

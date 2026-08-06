@@ -38,6 +38,8 @@ export type UserMinAggregateOutputType = {
   company: string | null
   jobTitle: string | null
   phone: string | null
+  authProvider: string | null
+  govbrSub: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +58,8 @@ export type UserMaxAggregateOutputType = {
   company: string | null
   jobTitle: string | null
   phone: string | null
+  authProvider: string | null
+  govbrSub: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -74,6 +78,8 @@ export type UserCountAggregateOutputType = {
   company: number
   jobTitle: number
   phone: number
+  authProvider: number
+  govbrSub: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -94,6 +100,8 @@ export type UserMinAggregateInputType = {
   company?: true
   jobTitle?: true
   phone?: true
+  authProvider?: true
+  govbrSub?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +120,8 @@ export type UserMaxAggregateInputType = {
   company?: true
   jobTitle?: true
   phone?: true
+  authProvider?: true
+  govbrSub?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -130,6 +140,8 @@ export type UserCountAggregateInputType = {
   company?: true
   jobTitle?: true
   phone?: true
+  authProvider?: true
+  govbrSub?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -213,7 +225,7 @@ export type UserGroupByOutputType = {
   email: string
   cpf: string
   birthDate: Date
-  passwordHash: string
+  passwordHash: string | null
   lastPasswordResetDate: Date
   passwordResetCode: string | null
   passwordResetCodeExpiry: Date | null
@@ -221,6 +233,8 @@ export type UserGroupByOutputType = {
   company: string | null
   jobTitle: string | null
   phone: string | null
+  authProvider: string
+  govbrSub: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -252,7 +266,7 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   cpf?: Prisma.StringFilter<"User"> | string
   birthDate?: Prisma.DateTimeFilter<"User"> | Date | string
-  passwordHash?: Prisma.StringFilter<"User"> | string
+  passwordHash?: Prisma.StringNullableFilter<"User"> | string | null
   lastPasswordResetDate?: Prisma.DateTimeFilter<"User"> | Date | string
   passwordResetCode?: Prisma.StringNullableFilter<"User"> | string | null
   passwordResetCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -260,6 +274,8 @@ export type UserWhereInput = {
   company?: Prisma.StringNullableFilter<"User"> | string | null
   jobTitle?: Prisma.StringNullableFilter<"User"> | string | null
   phone?: Prisma.StringNullableFilter<"User"> | string | null
+  authProvider?: Prisma.StringFilter<"User"> | string
+  govbrSub?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   files?: Prisma.FileListRelationFilter
@@ -271,7 +287,7 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   cpf?: Prisma.SortOrder
   birthDate?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   lastPasswordResetDate?: Prisma.SortOrder
   passwordResetCode?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordResetCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -279,6 +295,8 @@ export type UserOrderByWithRelationInput = {
   company?: Prisma.SortOrderInput | Prisma.SortOrder
   jobTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  authProvider?: Prisma.SortOrder
+  govbrSub?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   files?: Prisma.FileOrderByRelationAggregateInput
@@ -288,12 +306,13 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   email?: string
   cpf?: string
+  govbrSub?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   name?: Prisma.StringFilter<"User"> | string
   birthDate?: Prisma.DateTimeFilter<"User"> | Date | string
-  passwordHash?: Prisma.StringFilter<"User"> | string
+  passwordHash?: Prisma.StringNullableFilter<"User"> | string | null
   lastPasswordResetDate?: Prisma.DateTimeFilter<"User"> | Date | string
   passwordResetCode?: Prisma.StringNullableFilter<"User"> | string | null
   passwordResetCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -301,10 +320,11 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   company?: Prisma.StringNullableFilter<"User"> | string | null
   jobTitle?: Prisma.StringNullableFilter<"User"> | string | null
   phone?: Prisma.StringNullableFilter<"User"> | string | null
+  authProvider?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   files?: Prisma.FileListRelationFilter
-}, "id" | "email" | "cpf">
+}, "id" | "email" | "cpf" | "govbrSub">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -312,7 +332,7 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   cpf?: Prisma.SortOrder
   birthDate?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   lastPasswordResetDate?: Prisma.SortOrder
   passwordResetCode?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordResetCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -320,6 +340,8 @@ export type UserOrderByWithAggregationInput = {
   company?: Prisma.SortOrderInput | Prisma.SortOrder
   jobTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  authProvider?: Prisma.SortOrder
+  govbrSub?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -336,7 +358,7 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   cpf?: Prisma.StringWithAggregatesFilter<"User"> | string
   birthDate?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
-  passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string
+  passwordHash?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   lastPasswordResetDate?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   passwordResetCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   passwordResetCodeExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -344,6 +366,8 @@ export type UserScalarWhereWithAggregatesInput = {
   company?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   jobTitle?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  authProvider?: Prisma.StringWithAggregatesFilter<"User"> | string
+  govbrSub?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -354,7 +378,7 @@ export type UserCreateInput = {
   email: string
   cpf: string
   birthDate: Date | string
-  passwordHash: string
+  passwordHash?: string | null
   lastPasswordResetDate: Date | string
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
@@ -362,6 +386,8 @@ export type UserCreateInput = {
   company?: string | null
   jobTitle?: string | null
   phone?: string | null
+  authProvider?: string
+  govbrSub?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   files?: Prisma.FileCreateNestedManyWithoutUploadedByUserInput
@@ -373,7 +399,7 @@ export type UserUncheckedCreateInput = {
   email: string
   cpf: string
   birthDate: Date | string
-  passwordHash: string
+  passwordHash?: string | null
   lastPasswordResetDate: Date | string
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
@@ -381,6 +407,8 @@ export type UserUncheckedCreateInput = {
   company?: string | null
   jobTitle?: string | null
   phone?: string | null
+  authProvider?: string
+  govbrSub?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   files?: Prisma.FileUncheckedCreateNestedManyWithoutUploadedByUserInput
@@ -392,7 +420,7 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -400,6 +428,8 @@ export type UserUpdateInput = {
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  govbrSub?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   files?: Prisma.FileUpdateManyWithoutUploadedByUserNestedInput
@@ -411,7 +441,7 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -419,6 +449,8 @@ export type UserUncheckedUpdateInput = {
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  govbrSub?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   files?: Prisma.FileUncheckedUpdateManyWithoutUploadedByUserNestedInput
@@ -430,7 +462,7 @@ export type UserCreateManyInput = {
   email: string
   cpf: string
   birthDate: Date | string
-  passwordHash: string
+  passwordHash?: string | null
   lastPasswordResetDate: Date | string
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
@@ -438,6 +470,8 @@ export type UserCreateManyInput = {
   company?: string | null
   jobTitle?: string | null
   phone?: string | null
+  authProvider?: string
+  govbrSub?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -448,7 +482,7 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -456,6 +490,8 @@ export type UserUpdateManyMutationInput = {
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  govbrSub?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -466,7 +502,7 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -474,6 +510,8 @@ export type UserUncheckedUpdateManyInput = {
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  govbrSub?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -492,6 +530,8 @@ export type UserCountOrderByAggregateInput = {
   company?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  authProvider?: Prisma.SortOrder
+  govbrSub?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -510,6 +550,8 @@ export type UserMaxOrderByAggregateInput = {
   company?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  authProvider?: Prisma.SortOrder
+  govbrSub?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -528,6 +570,8 @@ export type UserMinOrderByAggregateInput = {
   company?: Prisma.SortOrder
   jobTitle?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  authProvider?: Prisma.SortOrder
+  govbrSub?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -573,7 +617,7 @@ export type UserCreateWithoutFilesInput = {
   email: string
   cpf: string
   birthDate: Date | string
-  passwordHash: string
+  passwordHash?: string | null
   lastPasswordResetDate: Date | string
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
@@ -581,6 +625,8 @@ export type UserCreateWithoutFilesInput = {
   company?: string | null
   jobTitle?: string | null
   phone?: string | null
+  authProvider?: string
+  govbrSub?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -591,7 +637,7 @@ export type UserUncheckedCreateWithoutFilesInput = {
   email: string
   cpf: string
   birthDate: Date | string
-  passwordHash: string
+  passwordHash?: string | null
   lastPasswordResetDate: Date | string
   passwordResetCode?: string | null
   passwordResetCodeExpiry?: Date | string | null
@@ -599,6 +645,8 @@ export type UserUncheckedCreateWithoutFilesInput = {
   company?: string | null
   jobTitle?: string | null
   phone?: string | null
+  authProvider?: string
+  govbrSub?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -625,7 +673,7 @@ export type UserUpdateWithoutFilesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -633,6 +681,8 @@ export type UserUpdateWithoutFilesInput = {
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  govbrSub?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -643,7 +693,7 @@ export type UserUncheckedUpdateWithoutFilesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   cpf?: Prisma.StringFieldUpdateOperationsInput | string
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastPasswordResetDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passwordResetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -651,6 +701,8 @@ export type UserUncheckedUpdateWithoutFilesInput = {
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jobTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  govbrSub?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -700,6 +752,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   company?: boolean
   jobTitle?: boolean
   phone?: boolean
+  authProvider?: boolean
+  govbrSub?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   files?: boolean | Prisma.User$filesArgs<ExtArgs>
@@ -720,6 +774,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   company?: boolean
   jobTitle?: boolean
   phone?: boolean
+  authProvider?: boolean
+  govbrSub?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -738,6 +794,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   company?: boolean
   jobTitle?: boolean
   phone?: boolean
+  authProvider?: boolean
+  govbrSub?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -756,11 +814,13 @@ export type UserSelectScalar = {
   company?: boolean
   jobTitle?: boolean
   phone?: boolean
+  authProvider?: boolean
+  govbrSub?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "cpf" | "birthDate" | "passwordHash" | "lastPasswordResetDate" | "passwordResetCode" | "passwordResetCodeExpiry" | "userType" | "company" | "jobTitle" | "phone" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "cpf" | "birthDate" | "passwordHash" | "lastPasswordResetDate" | "passwordResetCode" | "passwordResetCodeExpiry" | "userType" | "company" | "jobTitle" | "phone" | "authProvider" | "govbrSub" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   files?: boolean | Prisma.User$filesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -779,7 +839,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     cpf: string
     birthDate: Date
-    passwordHash: string
+    passwordHash: string | null
     lastPasswordResetDate: Date
     passwordResetCode: string | null
     passwordResetCodeExpiry: Date | null
@@ -787,6 +847,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     company: string | null
     jobTitle: string | null
     phone: string | null
+    authProvider: string
+    govbrSub: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -1226,6 +1288,8 @@ export interface UserFieldRefs {
   readonly company: Prisma.FieldRef<"User", 'String'>
   readonly jobTitle: Prisma.FieldRef<"User", 'String'>
   readonly phone: Prisma.FieldRef<"User", 'String'>
+  readonly authProvider: Prisma.FieldRef<"User", 'String'>
+  readonly govbrSub: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

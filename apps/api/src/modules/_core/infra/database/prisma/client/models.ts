@@ -10,6 +10,8 @@
  */
 export type * from './models/User'
 export type * from './models/ApiKey'
+export type * from './models/GovbrAuthRequest'
+export type * from './models/GovbrPendingIdentity'
 export type * from './models/Room'
 export type * from './models/Booking'
 export type * from './models/CalendarEvent'

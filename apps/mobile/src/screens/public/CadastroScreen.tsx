@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { usePublicStackNavigation } from '../../navigation/PublicNavigator';
 import { useAuth } from '../../contexts/auth-context';
+import BotaoGovbr from '../../components/BotaoGovbr';
+import { showToast } from '../../App';
 
 const cadastroSchema = z.object({
     name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
@@ -455,6 +457,10 @@ export default function CadastroScreen() {
             >
                 Criar Conta
             </Button>
+
+            {/* Pelo gov.br o cadastro pede só data de nascimento e telefone:
+                nome, CPF e e-mail vêm confirmados, e não há senha a criar. */}
+            <BotaoGovbr onErro={(m) => showToast(m)} />
 
             {/* Terms and Privacy Component */}
             <View style={styles.termsContainer}>

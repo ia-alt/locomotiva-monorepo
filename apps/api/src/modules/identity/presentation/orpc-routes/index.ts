@@ -15,12 +15,22 @@ import { requestPasswordResetCodeRoute } from "./routes/request-password-reset-c
 import { verifyPasswordResetCodeRoute } from "./routes/verify-password-reset-code";
 import { executePasswordResetWithCodeRoute } from "./routes/execute-password-reset-with-code";
 import { getApiKeyInfoRoute } from "./routes/get-api-key-info";
+import { getGovbrStatusRoute } from "./routes/get-govbr-status";
+import { startGovbrLoginRoute } from "./routes/start-govbr-login";
+import { completeGovbrLoginRoute } from "./routes/complete-govbr-login";
+import { linkGovbrToAccountRoute } from "./routes/link-govbr-to-account";
+import { completeGovbrRegistrationRoute } from "./routes/complete-govbr-registration";
 
 export const identyRoutes = {
     registerUser: registerUserRoute,
     getMe: getMeRoute,
     updateMe: updateMeRoute,
     login: loginRoute,
+    getGovbrStatus: getGovbrStatusRoute,
+    startGovbrLogin: startGovbrLoginRoute,
+    completeGovbrLogin: completeGovbrLoginRoute,
+    linkGovbrToAccount: linkGovbrToAccountRoute,
+    completeGovbrRegistration: completeGovbrRegistrationRoute,
     requestPasswordReset: requestPasswordResetRoute,
     changePassword: changePasswordRoute,
     executePasswordReset: executePasswordResetRoute,

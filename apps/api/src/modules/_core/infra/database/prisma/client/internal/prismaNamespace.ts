@@ -386,6 +386,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   ApiKey: 'ApiKey',
+  GovbrAuthRequest: 'GovbrAuthRequest',
+  GovbrPendingIdentity: 'GovbrPendingIdentity',
   Room: 'Room',
   Booking: 'Booking',
   CalendarEvent: 'CalendarEvent',
@@ -411,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "apiKey" | "room" | "booking" | "calendarEvent" | "coworkingSettings" | "accessLog" | "spaceOperatingHours" | "printer" | "filament" | "printRequest" | "file"
+    modelProps: "user" | "apiKey" | "govbrAuthRequest" | "govbrPendingIdentity" | "room" | "booking" | "calendarEvent" | "coworkingSettings" | "accessLog" | "spaceOperatingHours" | "printer" | "filament" | "printRequest" | "file"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -560,6 +562,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ApiKeyCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ApiKeyCountAggregateOutputType> | number
+        }
+      }
+    }
+    GovbrAuthRequest: {
+      payload: Prisma.$GovbrAuthRequestPayload<ExtArgs>
+      fields: Prisma.GovbrAuthRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GovbrAuthRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GovbrAuthRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.GovbrAuthRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GovbrAuthRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>
+        }
+        findMany: {
+          args: Prisma.GovbrAuthRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>[]
+        }
+        create: {
+          args: Prisma.GovbrAuthRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>
+        }
+        createMany: {
+          args: Prisma.GovbrAuthRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GovbrAuthRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.GovbrAuthRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>
+        }
+        update: {
+          args: Prisma.GovbrAuthRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.GovbrAuthRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GovbrAuthRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GovbrAuthRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.GovbrAuthRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrAuthRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.GovbrAuthRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGovbrAuthRequest>
+        }
+        groupBy: {
+          args: Prisma.GovbrAuthRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GovbrAuthRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GovbrAuthRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GovbrAuthRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    GovbrPendingIdentity: {
+      payload: Prisma.$GovbrPendingIdentityPayload<ExtArgs>
+      fields: Prisma.GovbrPendingIdentityFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GovbrPendingIdentityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GovbrPendingIdentityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>
+        }
+        findFirst: {
+          args: Prisma.GovbrPendingIdentityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GovbrPendingIdentityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>
+        }
+        findMany: {
+          args: Prisma.GovbrPendingIdentityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>[]
+        }
+        create: {
+          args: Prisma.GovbrPendingIdentityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>
+        }
+        createMany: {
+          args: Prisma.GovbrPendingIdentityCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GovbrPendingIdentityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>[]
+        }
+        delete: {
+          args: Prisma.GovbrPendingIdentityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>
+        }
+        update: {
+          args: Prisma.GovbrPendingIdentityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>
+        }
+        deleteMany: {
+          args: Prisma.GovbrPendingIdentityDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GovbrPendingIdentityUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GovbrPendingIdentityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>[]
+        }
+        upsert: {
+          args: Prisma.GovbrPendingIdentityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GovbrPendingIdentityPayload>
+        }
+        aggregate: {
+          args: Prisma.GovbrPendingIdentityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGovbrPendingIdentity>
+        }
+        groupBy: {
+          args: Prisma.GovbrPendingIdentityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GovbrPendingIdentityGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GovbrPendingIdentityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GovbrPendingIdentityCountAggregateOutputType> | number
         }
       }
     }
@@ -1356,6 +1506,8 @@ export const UserScalarFieldEnum = {
   company: 'company',
   jobTitle: 'jobTitle',
   phone: 'phone',
+  authProvider: 'authProvider',
+  govbrSub: 'govbrSub',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1373,6 +1525,35 @@ export const ApiKeyScalarFieldEnum = {
 } as const
 
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+export const GovbrAuthRequestScalarFieldEnum = {
+  state: 'state',
+  nonce: 'nonce',
+  codeVerifier: 'codeVerifier',
+  redirectTo: 'redirectTo',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GovbrAuthRequestScalarFieldEnum = (typeof GovbrAuthRequestScalarFieldEnum)[keyof typeof GovbrAuthRequestScalarFieldEnum]
+
+
+export const GovbrPendingIdentityScalarFieldEnum = {
+  id: 'id',
+  govbrSub: 'govbrSub',
+  cpf: 'cpf',
+  name: 'name',
+  email: 'email',
+  picture: 'picture',
+  redirectTo: 'redirectTo',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GovbrPendingIdentityScalarFieldEnum = (typeof GovbrPendingIdentityScalarFieldEnum)[keyof typeof GovbrPendingIdentityScalarFieldEnum]
 
 
 export const RoomScalarFieldEnum = {
@@ -1733,6 +1914,8 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   apiKey?: Prisma.ApiKeyOmit
+  govbrAuthRequest?: Prisma.GovbrAuthRequestOmit
+  govbrPendingIdentity?: Prisma.GovbrPendingIdentityOmit
   room?: Prisma.RoomOmit
   booking?: Prisma.BookingOmit
   calendarEvent?: Prisma.CalendarEventOmit

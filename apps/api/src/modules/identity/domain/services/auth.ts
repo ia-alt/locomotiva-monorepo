@@ -22,7 +22,14 @@ class AuthService {
             throw new InvalidCredentialsError();
         }
 
-        const passwordOk = await this.passwordHashService.check(password, user.getPasswordHash());
+        // Conta federada não tem senha local. Mesmo erro do "usuário inexistente"
+        // e da "senha errada", para não revelar que a conta existe.
+        const passwordHash = user.getPasswordHash();
+        if (!passwordHash) {
+            throw new InvalidCredentialsError();
+        }
+
+        const passwordOk = await this.passwordHashService.check(password, passwordHash);
         if (!passwordOk) {
             throw new InvalidCredentialsError();
         }

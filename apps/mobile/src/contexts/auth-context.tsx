@@ -13,6 +13,8 @@ type AuthContextType = {
     authUser: User | null;
     isAuthenticated: boolean;
     login: (credentials: LoginInput) => Promise<void>;
+    /** Cria a sessão a partir de um token já emitido — usado pelo login gov.br. */
+    loginWithToken: (token: string) => Promise<void>;
     logout: () => Promise<void>;
     register: (newUserData: RegisterUserInput) => Promise<void>;
     updateMe: (data: UpdateMeInput) => Promise<void>;
@@ -67,6 +69,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await loginMutation.mutateAsync(credentials);
     };
 
+    /**
+     * No fluxo gov.br o token já vem emitido pela API — a senha nunca passa por
+     * aqui. Guarda e carrega o usuário, igual ao final do login normal.
+     */
+    const loginWithToken = async (token: string) => {
+        await AsyncStorage.setItem('token', token);
+        await getMe();
+    };
+
     const logout = async () => {
         await AsyncStorage.removeItem('token');
         queryClient.clear();
@@ -107,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             authUser: (authUser as any) || null,
             isAuthenticated,
             login,
+            loginWithToken,
             logout,
             register,
             updateMe,
