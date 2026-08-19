@@ -16,6 +16,7 @@ import { verifyPasswordResetCodeRoute } from "./routes/verify-password-reset-cod
 import { executePasswordResetWithCodeRoute } from "./routes/execute-password-reset-with-code";
 import { getApiKeyInfoRoute } from "./routes/get-api-key-info";
 import { getGovbrStatusRoute } from "./routes/get-govbr-status";
+import { getGovbrLogoutUrlRoute } from "./routes/get-govbr-logout-url";
 import { startGovbrLoginRoute } from "./routes/start-govbr-login";
 import { completeGovbrLoginRoute } from "./routes/complete-govbr-login";
 import { linkGovbrToAccountRoute } from "./routes/link-govbr-to-account";
@@ -27,6 +28,7 @@ export const identyRoutes = {
     updateMe: updateMeRoute,
     login: loginRoute,
     getGovbrStatus: getGovbrStatusRoute,
+    getGovbrLogoutUrl: getGovbrLogoutUrlRoute,
     startGovbrLogin: startGovbrLoginRoute,
     completeGovbrLogin: completeGovbrLoginRoute,
     linkGovbrToAccount: linkGovbrToAccountRoute,

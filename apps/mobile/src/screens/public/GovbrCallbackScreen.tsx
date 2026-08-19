@@ -285,13 +285,13 @@ function FormularioSenha({ ticket, emailMascarado, onCancelar, onErro }: {
                 <Text variant="bodyMedium" style={styles.subtitulo}>
                     Encontramos um cadastro com o seu CPF
                     {emailMascarado ? `, no e-mail ${emailMascarado}` : ''}.
-                    Digite a senha dessa conta uma última vez para vinculá-la ao gov.br.
+                    Confirme a senha dessa conta para vinculá-la ao gov.br.
                 </Text>
 
                 <View style={styles.aviso}>
                     <Icon source="information-outline" size={18} color={theme.colors.onSurfaceVariant} />
                     <Text variant="bodySmall" style={styles.avisoTexto}>
-                        Depois disso você entra só pelo gov.br, e essa senha deixa de existir.
+                        Depois de vincular, você escolhe como entrar: com sua senha de sempre ou pelo gov.br.
                     </Text>
                 </View>
 

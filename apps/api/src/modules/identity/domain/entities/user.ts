@@ -1,4 +1,5 @@
 import { AggregateRoot, UniqueId } from "@core/base-classes";
+import { randomInt } from "node:crypto";
 import { UserRegisteredEvent } from "../events/user-registered";
 import { PasswordResetRequestedEvent } from "../events/password-reset-requested";
 import { PasswordResetCodeRequestedEvent } from "../events/password-reset-code-requested";
@@ -114,21 +115,15 @@ class User extends AggregateRoot {
     /**
      * Vincula uma identidade gov.br a esta conta já existente.
      *
-     * A senha local é ANULADA de propósito. Manter as duas vias abertas deixaria
-     * a conta acessível pelo caminho mais fraco — senha, mais o código de 6
-     * dígitos do "esqueci minha senha" —, o que anularia o ganho da federação.
-     * `lastPasswordResetDate` avança junto para invalidar tokens de reset que
-     * estivessem em circulação.
+     * A senha local PERMANECE: decisão de produto (2026-08-07) — a pessoa
+     * escolhe entrar com senha ou com gov.br, e é isso que permite a um admin
+     * vincular sem se trancar fora do painel, que só aceita senha.
      *
      * Quem chama é responsável por já ter exigido prova de posse da conta.
      */
     linkGovbrIdentity(govbrSub: string): void {
         this._govbrSub = govbrSub;
         this._authProvider = User.AuthProvider.GOVBR;
-        this._passwordHash = null;
-        this._passwordResetCode = null;
-        this._passwordResetCodeExpiry = null;
-        this._lastPasswordResetDate = new Date();
     }
 
     update(data: User.UpdateParams): void {
@@ -179,7 +174,9 @@ class User extends AggregateRoot {
     }
 
     generatePasswordResetCode(validForMinutes: number = 15): string {
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        // CSPRNG: Math.random é previsível o bastante para reduzir o espaço de
+        // busca de um código que autoriza troca de senha.
+        const code = randomInt(100000, 1000000).toString();
         this._passwordResetCode = code;
         this._passwordResetCodeExpiry = new Date(Date.now() + validForMinutes * 60 * 1000);
         this.addDomainEvent(new PasswordResetCodeRequestedEvent(this, code));

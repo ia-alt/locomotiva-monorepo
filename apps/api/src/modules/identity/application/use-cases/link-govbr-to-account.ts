@@ -3,7 +3,6 @@ import z from "zod";
 import { AuthTokenService, PasswordHashService } from "src/modules/identity/domain/services";
 import { GovbrPendingIdentityRepository, UserRepository } from "src/modules/identity/domain/repositories";
 import {
-    GovbrAdminLinkNotAllowedError,
     GovbrIntegrationDisabledError,
     GovbrInvalidAuthRequestError,
     InvalidCredentialsError,
@@ -51,10 +50,6 @@ class LinkGovbrToAccountUseCase implements UseCase<LinkGovbrToAccountUseCase.Inp
             throw new GovbrInvalidAuthRequestError();
         }
 
-        if (user.isAdmin()) {
-            throw new GovbrAdminLinkNotAllowedError();
-        }
-
         const passwordHash = user.getPasswordHash();
         if (!passwordHash) {
             // Conta ficou sem senha entre uma chamada e outra. Não há o que
@@ -67,7 +62,7 @@ class LinkGovbrToAccountUseCase implements UseCase<LinkGovbrToAccountUseCase.Inp
             throw new InvalidCredentialsError();
         }
 
-        // Anula a senha local: a partir daqui a conta entra só pelo gov.br.
+        // A senha permanece: a pessoa passa a escolher entre os dois acessos.
         user.linkGovbrIdentity(pendente.govbrSub);
         await this.userRepository.save(user);
 

@@ -111,6 +111,8 @@ const makeStyles = (theme: MD3Theme) => StyleSheet.create({
     botaoPressionado: { backgroundColor: '#0C326F' },
     botaoDesabilitado: { opacity: 0.7 },
     rotulo: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-    marca: { fontWeight: '800' },
+    // O Text do Paper aninhado NÃO herda a cor do pai — aplica a cor do tema
+    // (quase preta). Sem redeclarar o branco, "GOV.BR" sai escuro sobre azul.
+    marca: { fontWeight: '800', color: '#FFFFFF' },
     explicacao: { color: theme.colors.onSurfaceVariant, textAlign: 'center', marginTop: 10 },
 });

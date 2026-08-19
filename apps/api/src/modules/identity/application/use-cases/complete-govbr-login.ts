@@ -8,7 +8,6 @@ import {
 } from "src/modules/identity/domain/repositories";
 import { GovbrPendingIdentity, User } from "src/modules/identity/domain/entities";
 import {
-    GovbrAdminLinkNotAllowedError,
     GovbrIntegrationDisabledError,
     GovbrInvalidAuthRequestError,
 } from "src/modules/identity/domain/errors";
@@ -68,10 +67,6 @@ class CompleteGovbrLoginUseCase implements UseCase<CompleteGovbrLoginUseCase.Inp
         const porCpf = await this.userRepository.findByEmailOrCpf(Cpf.fromString(identity.cpf));
 
         if (porCpf) {
-            if (porCpf.isAdmin()) {
-                throw new GovbrAdminLinkNotAllowedError();
-            }
-
             // Conta sem senha: não há dono a provar, então vincula direto. É o
             // caso de quem começou pelo gov.br e parou no meio do cadastro.
             if (!porCpf.hasLocalPassword()) {

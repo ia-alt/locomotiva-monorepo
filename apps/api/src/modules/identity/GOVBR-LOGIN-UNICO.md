@@ -639,7 +639,7 @@ Logout federado nos dois clientes; atualizar `PoliticaDePrivacidadeScreen.tsx` e
 - [ ] **Ordem de resolução:** (1) `findByGovbrSub`; (2) `findByEmailOrCpf(Cpf)`; (3) provisionar.
 - [ ] **Vinculação automática por CPF SOMENTE quando** a conta local **não tem credencial local ativa** (`passwordHash` null) ou foi criada pelo próprio fluxo federado.
 - [ ] **Conta local COM senha:** não logar automaticamente. Exigir prova de posse — pedir a senha local na mesma sessão ("já existe uma conta com este CPF, confirme a senha para vincular") ou confirmação por link no e-mail cadastrado.
-- [ ] Ao vincular: **anular `passwordHash`** (ou forçar reset), atualizar `sessionsValidFrom`, e **disparar e-mail de notificação**.
+- [x] ~~Ao vincular: anular `passwordHash`~~ **REVISTO (2026-08-07, decisão de produto):** a senha PERMANECE após vincular — a pessoa escolhe entrar com senha ou gov.br, e é isso que permite admin vincular sem se trancar fora do painel (que segue só com senha). E-mail de notificação ao vincular continua recomendado.
 - [ ] **Nunca** vincular automaticamente conta com `userType='admin'`.
 - [ ] **Nunca** usar e-mail como chave de resolução nem sobrescrever e-mail local a partir das claims. Colisão de e-mail → 409 explicativo, nunca P2002/500.
   *Nota: `update-me.ts:26` permite trocar o próprio e-mail sem verificação nenhuma, então plantar uma colisão é trivial.*

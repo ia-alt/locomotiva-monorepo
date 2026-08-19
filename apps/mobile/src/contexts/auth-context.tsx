@@ -49,6 +49,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onSuccess: async (data) => {
             if (data?.token) {
                 await AsyncStorage.setItem('token', data.token);
+                // Registrado para o logout saber se também precisa encerrar a
+                // sessão no gov.br. Quem entrou por senha faz só logout local.
+                await AsyncStorage.setItem('loginMethod', 'password');
             }
             getMe();
         },
@@ -75,13 +78,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      */
     const loginWithToken = async (token: string) => {
         await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('loginMethod', 'govbr');
         await getMe();
     };
 
     const logout = async () => {
+        const loginMethod = await AsyncStorage.getItem('loginMethod');
+
         await AsyncStorage.removeItem('token');
+        await AsyncStorage.removeItem('loginMethod');
         queryClient.clear();
         setAuthUser(null);
+
+        // Quem entrou pelo gov.br também sai do gov.br. Sem isso, num
+        // computador compartilhado o próximo clique em "Entrar com GOV.BR"
+        // entraria na conta anterior sem pedir senha.
+        if (loginMethod === 'govbr' && typeof window !== 'undefined') {
+            try {
+                const { url } = await orpc.identy.getGovbrLogoutUrl.call({});
+                if (url) {
+                    window.location.assign(url);
+                }
+            } catch {
+                // Sessão local já foi encerrada; a do gov.br expira sozinha.
+            }
+        }
     };
 
     const registerMutation = useMutation({

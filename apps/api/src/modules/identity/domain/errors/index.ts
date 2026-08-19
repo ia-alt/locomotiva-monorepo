@@ -141,22 +141,6 @@ export class GovbrAccountNotLinkedError extends DomainError {
     }
 }
 
-/**
- * Conta administrativa nunca é vinculada pelo fluxo automático.
- *
- * Acesso de equipe é interno e restrito; deixá-lo depender de um provedor
- * externo aumentaria a superfície de ataque sem ganho nenhum.
- */
-export class GovbrAdminLinkNotAllowedError extends DomainError {
-    constructor() {
-        super(
-            "GOVBR_ADMIN_LINK_NOT_ALLOWED",
-            "Contas administrativas devem acessar com e-mail e senha.",
-            ErrorType.FORBIDDEN
-        );
-    }
-}
-
 export class GovbrEmailAlreadyInUseError extends DomainError {
     constructor() {
         super(

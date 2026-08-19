@@ -25,10 +25,14 @@ const envSchema = z.object({
     // O .trim() é essencial: espaço sobrando no id/secret gera 401 e invalid_client.
     GOVBR_ENABLED: z.enum(["true", "false"]).default("false"),
     GOVBR_CLIENT_ID: z.string().trim().optional(),
-    GOVBR_CLIENT_SECRET: z.string().trim(),
+    GOVBR_CLIENT_SECRET: z.string().trim().optional(),
     GOVBR_ISSUER: z.string().trim().default("https://sso.staging.acesso.gov.br"),
     GOVBR_REDIRECT_URI: z.string().trim().optional(),
     GOVBR_SCOPES: z.string().trim().default("openid email phone profile"),
+    // Para onde o gov.br devolve a pessoa após o logout federado. Precisa estar
+    // cadastrada na credencial (campo "URL de Log Out"). Sem ela, usa a origem
+    // da GOVBR_REDIRECT_URI.
+    GOVBR_POST_LOGOUT_REDIRECT_URI: z.string().trim().optional(),
 })
 
 export const env = envSchema.parse(process.env);
