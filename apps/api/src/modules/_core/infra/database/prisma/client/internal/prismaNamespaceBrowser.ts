@@ -120,6 +120,7 @@ export const RoomScalarFieldEnum = {
   capacity: 'capacity',
   enabled: 'enabled',
   photoUrl: 'photoUrl',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

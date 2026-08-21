@@ -3,6 +3,7 @@ import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { usePrivateStackNavigation } from '../../../navigation/PrivateNavigator';
 import RoomSelector from '../../../components/RoomSelector';
+import { HorarioFuncionamentoCard } from '../../../components/HorarioFuncionamentoCard';
 import { Feather } from '@expo/vector-icons';
 import { ORPCOutputs } from '../../../locomotiva-api/types';
 
@@ -23,7 +24,12 @@ export default function CriarReservaScreen() {
                 <View style={styles.stepInactive}><Text style={styles.stepTextInactive}>3</Text></View>
             </View>
 
-            <Text style={styles.stepLabel}>Selecione a sala desejada para a reserva.</Text>
+            <HorarioFuncionamentoCard style={styles.horario} />
+
+            <Text style={styles.stepLabel}>
+                Selecione a sala desejada para a reserva. Toque no campo abaixo para ver as salas
+                e o que cada uma oferece.
+            </Text>
 
             <RoomSelector
                 selectedRoom={selectedRoom}
@@ -94,11 +100,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 14,
     },
+    horario: {
+        marginBottom: 20,
+    },
     stepLabel: {
         fontSize: 14,
         color: '#6B7280',
         textAlign: 'center',
         marginBottom: 24,
+        lineHeight: 20,
     },
     nextButton: {
         backgroundColor: '#1E88E5',

@@ -20,11 +20,11 @@ build/
 .DS_Store
 
 # Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Ignora QUALQUER arquivo que comece com .env (incluindo backups: .env.bak-govbr, .env.old...)
+.env*
+# ...exceto os arquivos de exemplo, que devem ser versionados.
+!.env.example
+!.env.exemple
 
 # Logs
 logs

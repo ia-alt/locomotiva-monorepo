@@ -21,6 +21,7 @@ const RoomsPage: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createCapacity, setCreateCapacity] = useState<number | string>('');
+  const [createDescription, setCreateDescription] = useState('');
   const [createEnabled, setCreateEnabled] = useState(true);
 
   const [isGlobalRestrictionsOpen, setIsGlobalRestrictionsOpen] = useState(false);
@@ -61,12 +62,18 @@ const RoomsPage: React.FC = () => {
   const handleSubmitCreate = (e: React.FormEvent) => {
     e.preventDefault();
     createRoom(
-      { name: createName, capacity: Number(createCapacity), enabled: createEnabled },
+      {
+        name: createName,
+        capacity: Number(createCapacity),
+        enabled: createEnabled,
+        description: createDescription.trim() || null,
+      },
       {
         onSuccess: () => {
           setIsCreateOpen(false);
           setCreateName('');
           setCreateCapacity('');
+          setCreateDescription('');
           setCreateEnabled(true);
         },
       },
@@ -175,6 +182,19 @@ const RoomsPage: React.FC = () => {
                 onChange={(e) => setCreateCapacity(e.target.value)}
                 required
                 slotProps={{ htmlInput: { min: 1 } }}
+              />
+              <TextField
+                label="Descrição da Sala"
+                variant="outlined"
+                fullWidth
+                multiline
+                minRows={3}
+                value={createDescription}
+                onChange={(e) => setCreateDescription(e.target.value)}
+                placeholder="Ex.: Sala de treinamento, reuniões e workshop. Monitor de 75 polegadas com cabo HDMI e quadro branco."
+                helperText={`Aparece no app antes da pessoa escolher a sala e nos detalhes da reserva. ${createDescription.trim().length}/500`}
+                error={createDescription.trim().length > 500}
+                slotProps={{ htmlInput: { maxLength: 500 } }}
               />
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, p: 1, border: '1px solid #e0e0e0', borderRadius: 1 }}>
                 <Box>

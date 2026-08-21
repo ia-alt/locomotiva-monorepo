@@ -34,12 +34,12 @@ lerna-debug.log*
 hs-err-pid*
 
 # Ambiente e Chaves (Não comitar!)
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env*.local
+# Ignora QUALQUER arquivo que comece com .env — inclui backups como
+# .env.bak, .env.bak-govbr, .env.old, .env.producao, .env.local, etc.
+.env*
+# ...exceto os arquivos de exemplo, que devem ser versionados.
+!.env.example
+!.env.exemple
 *.pem
 
 # Editor de Código
