@@ -120,6 +120,7 @@ export const RoomScalarFieldEnum = {
   capacity: 'capacity',
   enabled: 'enabled',
   photoUrl: 'photoUrl',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -199,6 +200,7 @@ export type PrinterScalarFieldEnum = (typeof PrinterScalarFieldEnum)[keyof typeo
 export const FilamentScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  active: 'active',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

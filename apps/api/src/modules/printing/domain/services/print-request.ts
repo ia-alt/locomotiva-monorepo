@@ -31,9 +31,10 @@ class PrintRequestService {
             throw new NoPrinterAvailableError();
         }
 
-        // o material precisa ser um dos filamentos do catálogo do admin
+        // o material precisa ser um filamento ativo do catálogo do admin —
+        // um desativado ainda existe (histórico) mas não pode ser escolhido
         const filament = await this.filamentRepository.findById(params.filamentId);
-        if (!filament) {
+        if (!filament || !filament.active) {
             throw new MaterialNotAvailableError();
         }
 

@@ -51,11 +51,12 @@ model ApiKey {
 
 // booking context
 model Room {
-  id       String  @id
-  name     String
-  capacity Int
-  enabled  Boolean
-  photoUrl String?
+  id          String  @id
+  name        String
+  capacity    Int
+  enabled     Boolean
+  photoUrl    String?
+  description String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -137,8 +138,9 @@ model Printer {
 }
 
 model Filament {
-  id   String @id
-  name String @unique
+  id     String  @id
+  name   String  @unique
+  active Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

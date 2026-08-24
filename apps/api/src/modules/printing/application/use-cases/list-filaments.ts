@@ -16,7 +16,7 @@ class ListFilamentsUseCase extends UseCase<ListFilamentsUseCase.Input, ListFilam
     async execute(): Promise<ListFilamentsUseCase.Output> {
         this.authUserService.getUser(); // qualquer usuário autenticado
 
-        const filaments = await this.filamentRepository.findAll();
+        const filaments = await this.filamentRepository.findAllActive();
         return filaments.map((f) => f.toJSON());
     }
 }

@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useORPC } from '../locomotiva-api/context';
 import { ORPCOutputs } from '../locomotiva-api/types';
 import { onlyDateStrToBrDate, onlyTimeObjToTimeStr } from '../utils/datetime-formaters';
+import { fonteImagemSala } from '../constants/imagens';
 
 type Booking = ORPCOutputs["booking"]["findMyBookings"]["items"][0];
 
@@ -37,8 +38,7 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
 
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
 
-    const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
-    const roomImageUrl = room?.photoUrl || FALLBACK_IMAGE;
+    const roomImageSource = fonteImagemSala(room?.photoUrl);
 
     return (
         <Surface style={styles.card} elevation={0}>
@@ -46,7 +46,7 @@ export default function BookingCard({ booking, onPressDetails }: BookingCardProp
             <TouchableOpacity onPress={onPressDetails} activeOpacity={0.7}>
                 <View style={styles.header}>
                     <Animated.Image
-                        source={{ uri: roomImageUrl }}
+                        source={roomImageSource}
                         style={styles.roomImage}
                         sharedTransitionTag={`room-image-${booking.id}`}
                     />

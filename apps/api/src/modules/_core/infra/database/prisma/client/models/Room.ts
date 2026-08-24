@@ -40,6 +40,7 @@ export type RoomMinAggregateOutputType = {
   capacity: number | null
   enabled: boolean | null
   photoUrl: string | null
+  description: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +51,7 @@ export type RoomMaxAggregateOutputType = {
   capacity: number | null
   enabled: boolean | null
   photoUrl: string | null
+  description: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +62,7 @@ export type RoomCountAggregateOutputType = {
   capacity: number
   enabled: number
   photoUrl: number
+  description: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -80,6 +83,7 @@ export type RoomMinAggregateInputType = {
   capacity?: true
   enabled?: true
   photoUrl?: true
+  description?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -90,6 +94,7 @@ export type RoomMaxAggregateInputType = {
   capacity?: true
   enabled?: true
   photoUrl?: true
+  description?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +105,7 @@ export type RoomCountAggregateInputType = {
   capacity?: true
   enabled?: true
   photoUrl?: true
+  description?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,6 +203,7 @@ export type RoomGroupByOutputType = {
   capacity: number
   enabled: boolean
   photoUrl: string | null
+  description: string | null
   createdAt: Date
   updatedAt: Date
   _count: RoomCountAggregateOutputType | null
@@ -230,6 +237,7 @@ export type RoomWhereInput = {
   capacity?: Prisma.IntFilter<"Room"> | number
   enabled?: Prisma.BoolFilter<"Room"> | boolean
   photoUrl?: Prisma.StringNullableFilter<"Room"> | string | null
+  description?: Prisma.StringNullableFilter<"Room"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Room"> | Date | string
 }
@@ -240,6 +248,7 @@ export type RoomOrderByWithRelationInput = {
   capacity?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -253,6 +262,7 @@ export type RoomWhereUniqueInput = Prisma.AtLeast<{
   capacity?: Prisma.IntFilter<"Room"> | number
   enabled?: Prisma.BoolFilter<"Room"> | boolean
   photoUrl?: Prisma.StringNullableFilter<"Room"> | string | null
+  description?: Prisma.StringNullableFilter<"Room"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Room"> | Date | string
 }, "id">
@@ -263,6 +273,7 @@ export type RoomOrderByWithAggregationInput = {
   capacity?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RoomCountOrderByAggregateInput
@@ -281,6 +292,7 @@ export type RoomScalarWhereWithAggregatesInput = {
   capacity?: Prisma.IntWithAggregatesFilter<"Room"> | number
   enabled?: Prisma.BoolWithAggregatesFilter<"Room"> | boolean
   photoUrl?: Prisma.StringNullableWithAggregatesFilter<"Room"> | string | null
+  description?: Prisma.StringNullableWithAggregatesFilter<"Room"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Room"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Room"> | Date | string
 }
@@ -291,6 +303,7 @@ export type RoomCreateInput = {
   capacity: number
   enabled: boolean
   photoUrl?: string | null
+  description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -301,6 +314,7 @@ export type RoomUncheckedCreateInput = {
   capacity: number
   enabled: boolean
   photoUrl?: string | null
+  description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -311,6 +325,7 @@ export type RoomUpdateInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -321,6 +336,7 @@ export type RoomUncheckedUpdateInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -331,6 +347,7 @@ export type RoomCreateManyInput = {
   capacity: number
   enabled: boolean
   photoUrl?: string | null
+  description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -341,6 +358,7 @@ export type RoomUpdateManyMutationInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -351,6 +369,7 @@ export type RoomUncheckedUpdateManyInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -361,6 +380,7 @@ export type RoomCountOrderByAggregateInput = {
   capacity?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -375,6 +395,7 @@ export type RoomMaxOrderByAggregateInput = {
   capacity?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -385,6 +406,7 @@ export type RoomMinOrderByAggregateInput = {
   capacity?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -409,6 +431,7 @@ export type RoomSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   capacity?: boolean
   enabled?: boolean
   photoUrl?: boolean
+  description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["room"]>
@@ -419,6 +442,7 @@ export type RoomSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   capacity?: boolean
   enabled?: boolean
   photoUrl?: boolean
+  description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["room"]>
@@ -429,6 +453,7 @@ export type RoomSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   capacity?: boolean
   enabled?: boolean
   photoUrl?: boolean
+  description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["room"]>
@@ -439,11 +464,12 @@ export type RoomSelectScalar = {
   capacity?: boolean
   enabled?: boolean
   photoUrl?: boolean
+  description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RoomOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "capacity" | "enabled" | "photoUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["room"]>
+export type RoomOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "capacity" | "enabled" | "photoUrl" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["room"]>
 
 export type $RoomPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Room"
@@ -454,6 +480,7 @@ export type $RoomPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     capacity: number
     enabled: boolean
     photoUrl: string | null
+    description: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["room"]>
@@ -884,6 +911,7 @@ export interface RoomFieldRefs {
   readonly capacity: Prisma.FieldRef<"Room", 'Int'>
   readonly enabled: Prisma.FieldRef<"Room", 'Boolean'>
   readonly photoUrl: Prisma.FieldRef<"Room", 'String'>
+  readonly description: Prisma.FieldRef<"Room", 'String'>
   readonly createdAt: Prisma.FieldRef<"Room", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Room", 'DateTime'>
 }

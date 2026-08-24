@@ -27,6 +27,7 @@ export type AggregateFilament = {
 export type FilamentMinAggregateOutputType = {
   id: string | null
   name: string | null
+  active: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -34,6 +35,7 @@ export type FilamentMinAggregateOutputType = {
 export type FilamentMaxAggregateOutputType = {
   id: string | null
   name: string | null
+  active: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -41,6 +43,7 @@ export type FilamentMaxAggregateOutputType = {
 export type FilamentCountAggregateOutputType = {
   id: number
   name: number
+  active: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -50,6 +53,7 @@ export type FilamentCountAggregateOutputType = {
 export type FilamentMinAggregateInputType = {
   id?: true
   name?: true
+  active?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -57,6 +61,7 @@ export type FilamentMinAggregateInputType = {
 export type FilamentMaxAggregateInputType = {
   id?: true
   name?: true
+  active?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -64,6 +69,7 @@ export type FilamentMaxAggregateInputType = {
 export type FilamentCountAggregateInputType = {
   id?: true
   name?: true
+  active?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -144,6 +150,7 @@ export type FilamentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type FilamentGroupByOutputType = {
   id: string
   name: string
+  active: boolean
   createdAt: Date
   updatedAt: Date
   _count: FilamentCountAggregateOutputType | null
@@ -172,6 +179,7 @@ export type FilamentWhereInput = {
   NOT?: Prisma.FilamentWhereInput | Prisma.FilamentWhereInput[]
   id?: Prisma.StringFilter<"Filament"> | string
   name?: Prisma.StringFilter<"Filament"> | string
+  active?: Prisma.BoolFilter<"Filament"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Filament"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Filament"> | Date | string
 }
@@ -179,6 +187,7 @@ export type FilamentWhereInput = {
 export type FilamentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -189,6 +198,7 @@ export type FilamentWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.FilamentWhereInput | Prisma.FilamentWhereInput[]
   OR?: Prisma.FilamentWhereInput[]
   NOT?: Prisma.FilamentWhereInput | Prisma.FilamentWhereInput[]
+  active?: Prisma.BoolFilter<"Filament"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Filament"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Filament"> | Date | string
 }, "id" | "name">
@@ -196,6 +206,7 @@ export type FilamentWhereUniqueInput = Prisma.AtLeast<{
 export type FilamentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.FilamentCountOrderByAggregateInput
@@ -209,6 +220,7 @@ export type FilamentScalarWhereWithAggregatesInput = {
   NOT?: Prisma.FilamentScalarWhereWithAggregatesInput | Prisma.FilamentScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Filament"> | string
   name?: Prisma.StringWithAggregatesFilter<"Filament"> | string
+  active?: Prisma.BoolWithAggregatesFilter<"Filament"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Filament"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Filament"> | Date | string
 }
@@ -216,6 +228,7 @@ export type FilamentScalarWhereWithAggregatesInput = {
 export type FilamentCreateInput = {
   id: string
   name: string
+  active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -223,6 +236,7 @@ export type FilamentCreateInput = {
 export type FilamentUncheckedCreateInput = {
   id: string
   name: string
+  active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -230,6 +244,7 @@ export type FilamentUncheckedCreateInput = {
 export type FilamentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -237,6 +252,7 @@ export type FilamentUpdateInput = {
 export type FilamentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -244,6 +260,7 @@ export type FilamentUncheckedUpdateInput = {
 export type FilamentCreateManyInput = {
   id: string
   name: string
+  active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -251,6 +268,7 @@ export type FilamentCreateManyInput = {
 export type FilamentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -258,6 +276,7 @@ export type FilamentUpdateManyMutationInput = {
 export type FilamentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -265,6 +284,7 @@ export type FilamentUncheckedUpdateManyInput = {
 export type FilamentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -272,6 +292,7 @@ export type FilamentCountOrderByAggregateInput = {
 export type FilamentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -279,6 +300,7 @@ export type FilamentMaxOrderByAggregateInput = {
 export type FilamentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -288,6 +310,7 @@ export type FilamentMinOrderByAggregateInput = {
 export type FilamentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["filament"]>
@@ -295,6 +318,7 @@ export type FilamentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type FilamentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["filament"]>
@@ -302,6 +326,7 @@ export type FilamentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type FilamentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["filament"]>
@@ -309,11 +334,12 @@ export type FilamentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type FilamentSelectScalar = {
   id?: boolean
   name?: boolean
+  active?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FilamentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["filament"]>
+export type FilamentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["filament"]>
 
 export type $FilamentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Filament"
@@ -321,6 +347,7 @@ export type $FilamentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
+    active: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["filament"]>
@@ -748,6 +775,7 @@ export interface Prisma__FilamentClient<T, Null = never, ExtArgs extends runtime
 export interface FilamentFieldRefs {
   readonly id: Prisma.FieldRef<"Filament", 'String'>
   readonly name: Prisma.FieldRef<"Filament", 'String'>
+  readonly active: Prisma.FieldRef<"Filament", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Filament", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Filament", 'DateTime'>
 }
