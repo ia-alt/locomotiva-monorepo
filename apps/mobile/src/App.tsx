@@ -9,6 +9,7 @@ import { CheckinProvider } from './contexts/checkin-context';
 import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { LayoutProvider, useLayout } from './contexts/layout-context';
 
 // Sistema de Toast Global acessível fora do fluxo do React
 type ToastShow = (message: string) => void;
@@ -98,7 +99,9 @@ export default function Main() {
                   <QRCodeReaderProvider>
 
                     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                      <App />
+                      <LayoutProvider>
+                        <App />
+                      </LayoutProvider>
                     </SafeAreaView>
 
                   </QRCodeReaderProvider>
@@ -118,12 +121,16 @@ const MAX_WIDTH = 800;
 
 function App() {
   const { width } = useWindowDimensions();
+  const { fullBleed } = useLayout();
   const isWide = width > MAX_WIDTH;
 
+  // Telas "full bleed" (ex.: EntradaScreen) ocupam a viewport inteira e
+  // centralizam o próprio conteúdo; as demais ficam limitadas a MAX_WIDTH.
   return (
     <View style={[
-      { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_WIDTH },
-      isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
+      { flex: 1, alignSelf: 'center', width: '100%' },
+      !fullBleed && { maxWidth: MAX_WIDTH },
+      !fullBleed && isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
     ]}>
       <Navigation />
     </View>
