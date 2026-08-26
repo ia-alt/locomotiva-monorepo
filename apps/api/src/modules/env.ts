@@ -33,6 +33,13 @@ const envSchema = z.object({
     // cadastrada na credencial (campo "URL de Log Out"). Sem ela, usa a origem
     // da GOVBR_REDIRECT_URI.
     GOVBR_POST_LOGOUT_REDIRECT_URI: z.string().trim().optional(),
+    // Controle de quanto tempo a sessão JÁ EXISTENTE no gov.br é aceita.
+    // "login" força autenticação a cada acesso, ignorando a sessão deles —
+    // é o que faz o sistema pedir senha de novo depois de sair.
+    GOVBR_PROMPT: z.enum(["none", "login", "consent", "select_account"]).optional(),
+    // Alternativa mais branda: aceita a sessão só se a pessoa autenticou há
+    // menos de N segundos. Ex.: 900 = 15 minutos.
+    GOVBR_MAX_AGE: z.coerce.number().int().nonnegative().optional(),
 })
 
 export const env = envSchema.parse(process.env);

@@ -125,22 +125,6 @@ export class GovbrInvalidAuthRequestError extends DomainError {
     }
 }
 
-/**
- * Autenticou no gov.br, mas nenhuma conta local está vinculada àquele `sub`.
- *
- * Temporário: sai de cena na Etapa 4, quando o provisionamento e a vinculação
- * com prova de posse entrarem.
- */
-export class GovbrAccountNotLinkedError extends DomainError {
-    constructor() {
-        super(
-            "GOVBR_ACCOUNT_NOT_LINKED",
-            "Nenhuma conta desta aplicação está vinculada a esta conta gov.br.",
-            ErrorType.NOT_FOUND
-        );
-    }
-}
-
 export class GovbrEmailAlreadyInUseError extends DomainError {
     constructor() {
         super(

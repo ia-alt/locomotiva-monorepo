@@ -25,6 +25,8 @@ export class OpenIdGovbrOidcService implements GovbrOidcService {
     private readonly baseUrl: string;
     private readonly redirectUri: string;
     private readonly scopes: string;
+    private readonly prompt: string | undefined;
+    private readonly maxAge: number | undefined;
     private readonly jwks: ReturnType<typeof createRemoteJWKSet>;
 
     constructor() {
@@ -34,6 +36,8 @@ export class OpenIdGovbrOidcService implements GovbrOidcService {
 
         this.baseUrl = env.GOVBR_ISSUER.replace(/\/+$/, "");
         this.scopes = env.GOVBR_SCOPES;
+        this.prompt = env.GOVBR_PROMPT;
+        this.maxAge = env.GOVBR_MAX_AGE;
         this.jwks = createRemoteJWKSet(new URL(`${this.baseUrl}/jwk`));
     }
 
@@ -54,6 +58,20 @@ export class OpenIdGovbrOidcService implements GovbrOidcService {
         url.searchParams.set("state", params.state);
         url.searchParams.set("code_challenge", params.codeChallenge);
         url.searchParams.set("code_challenge_method", "S256");
+
+        // Sem estes, o gov.br reaproveita a sessão que a pessoa já tem no
+        // navegador e entra sem pedir senha — inclusive logo após ela sair
+        // daqui. `prompt=login` recusa essa sessão; `max_age` a aceita apenas
+        // se for recente. Ambos são do OpenID Connect Core, não do gov.br: o
+        // discovery deles não os declara, então confirme por teste antes de
+        // depender do comportamento (ver ARQUITETURA-GOVBR.md).
+        if (this.prompt) {
+            url.searchParams.set("prompt", this.prompt);
+        }
+        if (this.maxAge !== undefined) {
+            url.searchParams.set("max_age", String(this.maxAge));
+        }
+
         return url.toString();
     }
 
