@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { Text } from 'react-native-paper';
 import { usePrivateStackNavigation } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useORPC } from '../../../locomotiva-api/context';
-import { pickAndUploadPrintFile, type PrintFileKind, type UploadedPrintFile } from '../../../utils/upload-print-file';
+import { clearPickedFiles, pickPrintFile, type PickedPrintFile, type PrintFileKind } from '../../../utils/pick-print-file';
 
 const PURPOSE_MIN = 5;
 const PURPOSE_MAX = 500;
@@ -13,12 +13,11 @@ const PURPOSE_MAX = 500;
 type FileSlotProps = {
     label: string;
     hint: string;
-    file: UploadedPrintFile | null;
-    uploading: boolean;
+    file: PickedPrintFile | null;
     onPick: () => void;
 };
 
-function FileSlot({ label, hint, file, uploading, onPick }: FileSlotProps) {
+function FileSlot({ label, hint, file, onPick }: FileSlotProps) {
     return (
         <View style={styles.formGroup}>
             <Text style={styles.label}>{label}</Text>
@@ -26,20 +25,14 @@ function FileSlot({ label, hint, file, uploading, onPick }: FileSlotProps) {
                 <View style={styles.fileCard}>
                     <Feather name="file" size={20} color="#10B981" />
                     <Text style={styles.fileName} numberOfLines={1}>{file.fileName}</Text>
-                    <TouchableOpacity onPress={onPick} disabled={uploading}>
+                    <TouchableOpacity onPress={onPick}>
                         <Text style={styles.changeLink}>Trocar</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
-                <TouchableOpacity style={styles.uploadBox} onPress={onPick} disabled={uploading} activeOpacity={0.7}>
-                    {uploading ? (
-                        <ActivityIndicator color="#1E88E5" />
-                    ) : (
-                        <>
-                            <Feather name="upload-cloud" size={28} color="#1E88E5" />
-                            <Text style={styles.uploadText}>{hint}</Text>
-                        </>
-                    )}
+                <TouchableOpacity style={styles.uploadBox} onPress={onPick} activeOpacity={0.7}>
+                    <Feather name="upload-cloud" size={28} color="#1E88E5" />
+                    <Text style={styles.uploadText}>{hint}</Text>
                 </TouchableOpacity>
             )}
         </View>
@@ -50,12 +43,14 @@ export default function CriarImpressaoScreen() {
     const navigation = usePrivateStackNavigation();
     const orpc = useORPC();
 
-    const [stlFile, setStlFile] = useState<UploadedPrintFile | null>(null);
-    const [gcodeFile, setGcodeFile] = useState<UploadedPrintFile | null>(null);
+    const [stlFile, setStlFile] = useState<PickedPrintFile | null>(null);
+    const [gcodeFile, setGcodeFile] = useState<PickedPrintFile | null>(null);
     const [material, setMaterial] = useState<{ id: string; name: string } | null>(null);
     const [purpose, setPurpose] = useState('');
-    const [uploadingKind, setUploadingKind] = useState<PrintFileKind | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    // começo de fluxo: nenhum arquivo escolhido antes pode sobrar aqui
+    useEffect(() => clearPickedFiles(), []);
 
     const { data: filaments = [], isLoading: filamentsLoading } = useQuery(
         orpc.printing.listFilaments.queryOptions({ input: {} })
@@ -63,22 +58,19 @@ export default function CriarImpressaoScreen() {
 
     const handlePickFile = async (kind: PrintFileKind) => {
         setError(null);
-        setUploadingKind(kind);
         try {
-            const uploaded = await pickAndUploadPrintFile(orpc, kind);
-            if (uploaded) {
-                if (kind === 'stl') setStlFile(uploaded);
-                else setGcodeFile(uploaded);
+            const picked = await pickPrintFile(kind);
+            if (picked) {
+                if (kind === 'stl') setStlFile(picked);
+                else setGcodeFile(picked);
             }
         } catch (e) {
-            setError(e instanceof Error ? e.message : 'Erro ao enviar o arquivo.');
-        } finally {
-            setUploadingKind(null);
+            setError(e instanceof Error ? e.message : 'Erro ao anexar o arquivo.');
         }
     };
 
     const purposeValid = purpose.trim().length >= PURPOSE_MIN && purpose.trim().length <= PURPOSE_MAX;
-    const canAdvance = !!stlFile && !!gcodeFile && !!material && purposeValid && !uploadingKind;
+    const canAdvance = !!stlFile && !!gcodeFile && !!material && purposeValid;
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
@@ -91,7 +83,7 @@ export default function CriarImpressaoScreen() {
             <View style={styles.headerInfo}>
                 <Feather name="info" size={24} color="#1E88E5" />
                 <Text style={styles.headerText}>
-                    Anexe o modelo 3D (.stl) e o arquivo já fatiado (.gcode), escolha o material e conte pra gente o motivo da impressão.
+                    Anexe o modelo 3D (.stl) e o arquivo já fatiado (.gcode), escolha o material e conte pra gente o motivo da impressão. Os arquivos são enviados só quando você confirmar o pedido.
                 </Text>
             </View>
 
@@ -99,7 +91,6 @@ export default function CriarImpressaoScreen() {
                 label="Modelo 3D (.stl)"
                 hint="Anexar arquivo .stl"
                 file={stlFile}
-                uploading={uploadingKind === 'stl'}
                 onPick={() => handlePickFile('stl')}
             />
 
@@ -107,7 +98,6 @@ export default function CriarImpressaoScreen() {
                 label="Arquivo fatiado (.gcode)"
                 hint="Anexar arquivo .gcode"
                 file={gcodeFile}
-                uploading={uploadingKind === 'gcode'}
                 onPick={() => handlePickFile('gcode')}
             />
 

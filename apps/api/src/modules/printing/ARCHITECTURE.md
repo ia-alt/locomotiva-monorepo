@@ -121,6 +121,7 @@ E-mail ao cliente em: criado, aprovado, **pronto para retirada** (completed), re
 > **Decisões registradas:**
 > - O material é **dado dinâmico** (entity `Filament`, nome único validado no domínio — `InvalidFilamentNameError`, flag `active`). O pedido referencia o filamento **por id** (`filamentId`); por isso um filamento **já usado em pedidos não é excluído fisicamente** — a "exclusão" o **desativa** (`deactivate()`, soft-delete): some da escolha do cliente (`findAllActive`) e não pode ser usado em novos pedidos (`MaterialNotAvailableError`), mas o histórico continua resolvendo o nome. Filamento **nunca usado** é apagado de vez (`delete`).
 > - Os arquivos do pedido são **entidades do módulo `storage`** (`StoredFile`) referenciadas por id (`stlFileId`/`gcodeFileId`). O antigo VO `PrintFile` foi removido; a validação de extensão (.stl / .gcode,.gco) vive no `PrintRequestService` (`InvalidPrintFileError`).
+> - **Arquivo só chega ao bucket junto com o pedido**: os dois arquivos viajam no mesmo request de `requestPrint` (multipart). Quem anexa e desiste no meio do fluxo não deixa nada no storage — antes o upload acontecia no clique de "anexar" e sobrava lixo sem dono.
 > - **Motivo obrigatório é regra de domínio**: `reject()`/`discard()`/`adminCancel()` validam o motivo (`PrintRequestReasonRequiredError`) — o schema Zod não carrega `.trim().min()`.
 
 ### 3.3 Repositórios (interfaces)
@@ -132,7 +133,7 @@ E-mail ao cliente em: criado, aprovado, **pronto para retirada** (completed), re
 ### 3.4 Domain Service
 
 `PrintRequestService` concentra as regras que envolvem múltiplos agregados:
-- `createPrintRequest()`: valida **impressora habilitada** (`NoPrinterAvailableError`), **filamento existente por id** (`MaterialNotAvailableError`), busca os dois arquivos no storage (`StoredFileService.getFile` → `FileNotFoundError`) e valida a **extensão de cada um** (`InvalidPrintFileError`); só então cria o agregado e persiste.
+- `createPrintRequest()`: recebe os dois arquivos crus (`{ file, fileName }`), valida **impressora habilitada** (`NoPrinterAvailableError`), **filamento ativo por id** (`MaterialNotAvailableError`) e a **extensão de cada nome** (`InvalidPrintFileError`) — tudo **antes** de tocar no bucket. Só então sobe os arquivos (`StoredFileService.uploadFile`), cria o agregado e persiste. Se o upload do segundo arquivo ou a persistência falharem, os arquivos já enviados são **descartados** (`StoredFileService.deleteFile` — sai do bucket, registro marcado como `deleted`), para nenhum objeto ficar no bucket sem pedido.
 - `checkPrinterIsFree(printerId, ignoreId?)`: regra de ocupação (1 pedido EM PRODUÇÃO por impressora). No estilo do `checkIsAdmin`: **dispara `PrinterBusyError` em vez de retornar** — usada por `AllocatePrinter` e `StartPrintProduction` sem duplicar código.
 
 ### 3.5 Eventos de domínio
@@ -149,7 +150,7 @@ Cada caso de uso estende `UseCase<Input, Output>`, recebe `AuthUserService` (aut
 
 | Caso de uso | Função |
 |---|---|
-| `RequestPrintUseCase` | cria o pedido por **referências**: `filamentId` + `stlFileId`/`gcodeFileId` (os arquivos já subiram pela rota `storage.uploadFile`) |
+| `RequestPrintUseCase` | cria o pedido e **recebe os arquivos** no mesmo request (multipart): `purpose`, `filamentId`, `stlFile`/`stlFileName`, `gcodeFile`/`gcodeFileName` |
 | `CancelPrintRequestUseCase` | cliente cancela o próprio pedido (autorização via `checkOwner`) |
 | `FindMyPrintRequestsUseCase` / `GetPrintRequestByIdUseCase` | acompanhamento |
 | `ListFilamentsUseCase` | catálogo de materiais (para o cliente escolher no app) |
@@ -186,12 +187,11 @@ Cada caso de uso estende `UseCase<Input, Output>`, recebe `AuthUserService` (aut
 
 ## 6. Camada Presentation (oRPC)
 
-22 rotas no `printing` (+ 1 no `storage`), cada uma seguindo o template padrão do projeto: `protectedRoute`, `.input/.output` com os schemas do caso de uso, e handler envolto em `orpcSafe` chamando `container.getXUseCase(context.user)`. Contratos **tipados de ponta a ponta** — o frontend importa o tipo do router e usa `orpc.printing.*` / `orpc.storage.*` sem codegen.
+22 rotas no `printing`, cada uma seguindo o template padrão do projeto: `protectedRoute`, `.input/.output` com os schemas do caso de uso, e handler envolto em `orpcSafe` chamando `container.getXUseCase(context.user)`. Contratos **tipados de ponta a ponta** — o frontend importa o tipo do router e usa `orpc.printing.*` sem codegen. O `storage` não expõe rota própria: ele é consumido pelo domínio do `printing`.
 
 | Recurso | Método + caminho |
 |---|---|
-| Upload (módulo storage) | `POST /storage/files` (multipart — o arquivo vai no corpo) |
-| Pedidos (cliente) | `POST /printing/print-requests`, `POST .../{id}/cancel`, `POST .../mine/search`, `GET .../{id}` |
+| Pedidos (cliente) | `POST /printing/print-requests` (multipart, com os dois arquivos), `POST .../{id}/cancel`, `POST .../mine/search`, `GET .../{id}` |
 | Pedidos (admin) | `POST .../search`, `POST .../{id}/process`, `POST .../{id}/allocate-printer`, `POST .../{id}/start-production`, `POST .../{id}/complete`, `POST .../{id}/deliver`, `POST .../{id}/discard`, `POST .../{id}/admin-cancel` |
 | Impressoras | `GET/POST /printing/printers`, `GET/PUT/DELETE /printing/printers/{id}`, `PUT .../{id}/enabled` |
 | Filamentos | `GET/POST /printing/filaments`, `DELETE /printing/filaments/{id}` |
@@ -208,19 +208,17 @@ storage/
 │   ├── entities/stored-file.ts        # StoredFile — name, path (chave no bucket), sizeBytes, deleted
 │   ├── repositories/stored-file.ts    # INTERFACE: StoredFileRepository (save, findById)
 │   ├── services/
-│   │   ├── file-storage-service.ts    # PORTA: uploadFile(blob) + createDownloadUrl(storedFile)
-│   │   └── stored-file.ts             # StoredFileService: uploadFile (bucket + registro) e getFile (ou erro)
+│   │   ├── bucket-storage-service.ts  # PORTA: uploadFile(blob) + createDownloadUrl(path) + deleteFile(path)
+│   │   └── stored-file.ts             # StoredFileService: uploadFile (bucket + registro), getFile (ou erro), deleteFile (bucket + marca deleted)
 │   └── errors/                        # InvalidFileNameError, FileNotFoundError, FileDeletedError
-├── application/use-cases/upload-file.ts   # UploadFileUseCase (input multipart: { file, fileName })
 ├── infra/
 │   ├── repositories/prisma-stored-file.ts # + mapper exportado (reusado pelo printing)
-│   └── services/supabase-file-storage-service.ts   # ADAPTER: Supabase Storage
-└── presentation/orpc-routes/          # storageRouter: uploadFile
+│   └── services/supabase-bucket-storage-service.ts   # ADAPTER: Supabase Storage
 ```
 
-**Fluxo de upload**: o front envia o arquivo **pra API** (`orpc.storage.uploadFile`, multipart); a API sobe pro bucket privado (`upload`) e **registra a entidade `StoredFile`** no banco. O `toJSON()` da entidade devolve **só o que pode ir pro usuário** (`id`, `name`, `sizeBytes`, `deleted`) — o `path` (chave do bucket) nunca circula fora do backend. O download continua por **URL assinada** (`createDownloadUrl(storedFile)`), restrito a admin/dono.
+**Fluxo de upload**: quem sobe arquivo é o domínio que precisa dele — no `printing`, o `PrintRequestService` ao criar o pedido. O front manda o arquivo **pra API** dentro do próprio request do pedido (multipart); a API sobe pro bucket privado (`upload`) e **registra a entidade `StoredFile`** no banco. O `toJSON()` da entidade devolve **só o que pode ir pro usuário** (`id`, `name`, `sizeBytes`, `deleted`) — o `path` (chave do bucket) nunca circula fora do backend. O download continua por **URL assinada** (`createDownloadUrl(storedFile)`), restrito a admin/dono.
 
-**Exclusão lógica**: o campo `deleted` marca arquivos removidos do bucket sem apagar o registro do sistema — o admin vê o nome do arquivo em cinza, sem download (o fluxo que efetivamente remove do bucket fica pra fase 2).
+**Exclusão lógica**: o campo `deleted` marca arquivos removidos do bucket sem apagar o registro do sistema — o admin vê o nome do arquivo em cinza, sem download. Hoje o único caminho que remove é a **compensação** do `createPrintRequest` (upload feito, pedido não criado); a exclusão pelo admin fica pra fase 2.
 
 O container exige `SUPABASE_URL` + `SUPABASE_SECRET_KEY` + `STORAGE_BUCKET` (sem elas, lança erro explícito). A porta `BucketStorageService` isola o provedor — trocar de storage é implementar outro adapter, sem tocar no `printing`.
 
@@ -253,7 +251,7 @@ O pedido guarda **referências por id** (arquivos e filamento); a hidratação (
 
 ## 10. Fluxos principais
 
-**Criar pedido (cliente) — upload via API, arquivo registrado como entidade:**
+**Criar pedido (cliente) — arquivos e pedido no mesmo request:**
 
 ```mermaid
 sequenceDiagram
@@ -261,12 +259,13 @@ sequenceDiagram
   participant API as oRPC
   participant Storage as Supabase (bucket privado)
   participant DB
-  App->>API: storage.uploadFile({ file: peca.stl }) / ({ file: peca.gcode })
-  API->>Storage: upload (bytes)
-  API->>DB: save StoredFile (name, path, sizeBytes)
-  API-->>App: { id, name, sizeBytes } (um por arquivo — sem o path)
-  App->>API: requestPrint({ purpose, filamentId, stlFileId, gcodeFileId })
-  API->>API: valida filamento (por id) + arquivos (existem/extensão) + impressora habilitada → save → evento Created
+  Note over App: anexar = só escolher o arquivo; nada sai do aparelho ainda
+  App->>API: requestPrint({ purpose, filamentId, stlFile, gcodeFile }) (multipart)
+  API->>API: valida impressora habilitada + filamento (por id) + extensões
+  API->>Storage: upload dos dois arquivos (bytes)
+  API->>DB: save StoredFile x2 (name, path, sizeBytes)
+  API->>DB: save PrintRequest (stlFileId, gcodeFileId) → evento Created
+  Note over API,Storage: se algo falhar depois do upload, os arquivos são removidos do bucket
   API-->>App: pedido (status PENDING = "Em análise") + e-mails disparados
 ```
 
@@ -291,7 +290,8 @@ sequenceDiagram
 | Decisão | Justificativa |
 |---|---|
 | **Módulo novo `printing`** (não estender `booking`) | domínio próprio (arquivos, material, análise técnica, produção física). |
-| **Módulo `storage` separado** | upload é transversal; port/adapter reusável. |
+| **Módulo `storage` separado** | upload é transversal; port/adapter reusável. Sem rota própria: quem sobe arquivo é o domínio dono dele. |
+| **Upload só na confirmação do pedido** | anexar não é enviar. Enquanto o cliente pode desistir do fluxo, o arquivo fica no aparelho — evita objetos órfãos no bucket, sem precisar de rotina de faxina. Em troca, a espera do envio se concentra no botão final. |
 | **Sem agendamento por data** | escolha de produto: o técnico decide *quando* iniciar cada produção; datas geravam burocracia sem valor. O controle temporal é implícito no ciclo de status. |
 | **Catálogo de filamentos dinâmico, referenciado por id** | o admin cadastra os materiais (entity `Filament`, nome único); o app monta as opções dinamicamente. O pedido referencia o filamento **por id** — em troca, um filamento usado em pedidos não é excluído fisicamente: a exclusão o **desativa** (flag `active`), preservando o histórico e removendo-o das novas escolhas. |
 | **Dois arquivos por pedido (.stl + .gcode)** | o `.stl` documenta o modelo; o `.gcode` é o que a impressora executa. Validação de extensão em **duas camadas**: no app (filtro do file picker + checagem) e no `PrintRequestService` (na criação do pedido). |

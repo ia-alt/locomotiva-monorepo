@@ -1,6 +1,7 @@
 interface BucketStorageService {
     uploadFile(file: Blob, params: BucketStorageService.UploadFileParams): Promise<BucketStorageService.UploadFileResult>;
     createDownloadUrl(path: string, params?: BucketStorageService.CreateDownloadUrlParams): Promise<BucketStorageService.CreateDownloadUrlResult>;
+    deleteFile(path: string): Promise<void>;
 }
 
 namespace BucketStorageService {

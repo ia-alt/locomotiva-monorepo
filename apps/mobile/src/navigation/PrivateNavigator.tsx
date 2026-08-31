@@ -53,8 +53,9 @@ export type PrivateStackParamList = {
     };
     CriarImpressao: undefined;
     ConfirmarImpressao: {
-        stlFile: { id: string; fileName: string; fileSizeBytes: number | null };
-        gcodeFile: { id: string; fileName: string; fileSizeBytes: number | null };
+        /** só os metadados: o arquivo em si fica em `utils/pick-print-file` até o envio */
+        stlFile: { fileName: string; fileSizeBytes: number | null };
+        gcodeFile: { fileName: string; fileSizeBytes: number | null };
         filamentId: string;
         material: string;
         purpose: string;

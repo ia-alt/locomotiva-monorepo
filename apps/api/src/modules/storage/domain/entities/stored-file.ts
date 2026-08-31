@@ -51,9 +51,10 @@ class StoredFile extends Entity {
         return this._updatedAt;
     }
 
-    get extension(): string {
-        const dotIndex = this._name.lastIndexOf(".");
-        return dotIndex === -1 ? "" : this._name.slice(dotIndex).toLowerCase();
+    /** Exclusão é lógica: o objeto sai do bucket, o registro fica no sistema. */
+    markDeleted(): void {
+        this._deleted = true;
+        this._updatedAt = new Date();
     }
 
     static create(input: StoredFile.CreateParams): StoredFile {

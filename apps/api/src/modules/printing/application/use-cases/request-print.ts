@@ -5,8 +5,9 @@ import { AuthUserService } from "src/modules/identity/domain/services";
 import z from "zod";
 
 /**
- * O cliente já enviou os arquivos pela rota de upload do storage; aqui chegam
- * só as referências (ids) — o PrintRequestService valida catálogo e arquivos.
+ * Os arquivos vêm no mesmo request do pedido (multipart) — nada é enviado ao
+ * bucket enquanto o cliente não finaliza a solicitação. O PrintRequestService
+ * valida catálogo e extensões, sobe os arquivos e cria o pedido.
  */
 class RequestPrintUseCase extends UseCase<RequestPrintUseCase.Input, RequestPrintUseCase.Output> {
     constructor(
@@ -22,8 +23,8 @@ class RequestPrintUseCase extends UseCase<RequestPrintUseCase.Input, RequestPrin
         const printRequest = await this.printRequestService.createPrintRequest({
             userId: user.id,
             purpose: params.purpose,
-            stlFileId: UniqueId.fromString(params.stlFileId),
-            gcodeFileId: UniqueId.fromString(params.gcodeFileId),
+            stlFile: { file: params.stlFile, fileName: params.stlFileName },
+            gcodeFile: { file: params.gcodeFile, fileName: params.gcodeFileName },
             filamentId: UniqueId.fromString(params.filamentId),
         });
 
@@ -35,8 +36,10 @@ namespace RequestPrintUseCase {
     export const InputSchema = z.object({
         purpose: z.string(),
         filamentId: z.string(),
-        stlFileId: z.string(),
-        gcodeFileId: z.string(),
+        stlFile: z.file(),
+        stlFileName: z.string(),
+        gcodeFile: z.file(),
+        gcodeFileName: z.string(),
     });
 
     export const OutputSchema = PrintRequest.JsonSchema;

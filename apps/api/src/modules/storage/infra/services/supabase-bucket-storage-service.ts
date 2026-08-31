@@ -13,6 +13,8 @@ export type SupabaseStorageConfig = {
  * Implementação via SDK oficial @supabase/supabase-js (Supabase Storage).
  * - Upload: a API recebe o arquivo do front e sobe direto pro bucket (`upload`).
  * - Download: `createSignedUrl` — leitura temporária de bucket PRIVADO.
+ * - Delete: `remove` — tira o objeto do bucket (a entidade continua no banco,
+ *   marcada como deletada).
  * O `path` persistido na entidade é a chave do objeto no bucket.
  */
 export class SupabaseBucketStorageService implements BucketStorageService {
@@ -56,5 +58,12 @@ export class SupabaseBucketStorageService implements BucketStorageService {
             throw new Error(`Falha ao gerar URL de download no Supabase: ${error?.message ?? "sem dados"}`);
         }
         return { downloadUrl: data.signedUrl };
+    }
+
+    async deleteFile(path: string): Promise<void> {
+        const { error } = await this.client.storage.from(this.bucket).remove([path]);
+        if (error) {
+            throw new Error(`Falha ao remover o arquivo no Supabase: ${error.message}`);
+        }
     }
 }

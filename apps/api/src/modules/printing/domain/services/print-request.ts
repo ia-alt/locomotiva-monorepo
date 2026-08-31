@@ -38,21 +38,28 @@ class PrintRequestService {
             throw new MaterialNotAvailableError();
         }
 
-        // os arquivos precisam existir no storage e ter a extensão do seu tipo
-        const stlFile = await this.storedFileService.getFile(params.stlFileId);
-        this.checkPrintFile(stlFile, "stl");
-        const gcodeFile = await this.storedFileService.getFile(params.gcodeFileId);
-        this.checkPrintFile(gcodeFile, "gcode");
+        // extensão conferida ANTES do upload: o arquivo só vai pro bucket depois
+        // que o resto do pedido já passou por todas as validações
+        this.checkPrintFileName(params.stlFile.fileName, "stl");
+        this.checkPrintFileName(params.gcodeFile.fileName, "gcode");
 
-        const printRequest = PrintRequest.create({
-            userId: params.userId,
-            purpose: params.purpose,
-            stlFileId: params.stlFileId,
-            gcodeFileId: params.gcodeFileId,
-            filamentId: params.filamentId,
-        });
-        await this.printRequestRepository.save(printRequest);
-        return printRequest;
+        const { stlFile, gcodeFile } = await this.uploadPrintFiles(params);
+
+        try {
+            const printRequest = PrintRequest.create({
+                userId: params.userId,
+                purpose: params.purpose,
+                stlFileId: stlFile.id,
+                gcodeFileId: gcodeFile.id,
+                filamentId: params.filamentId,
+            });
+            await this.printRequestRepository.save(printRequest);
+            return printRequest;
+        } catch (error) {
+            // o pedido não nasceu: os arquivos não podem ficar no bucket sem dono
+            await this.discardUploadedFiles(stlFile, gcodeFile);
+            throw error;
+        }
     }
 
     /**
@@ -67,11 +74,38 @@ class PrintRequestService {
         }
     }
 
-    private checkPrintFile(file: StoredFile, kind: PrintFileKind): void {
-        if (file.deleted) {
-            throw new InvalidPrintFileError("O arquivo não está mais disponível no armazenamento.");
+    /**
+     * Os dois arquivos sobem juntos, no momento em que o pedido é enviado. Se o
+     * segundo falhar, o primeiro não pode ficar sozinho no bucket.
+     */
+    private async uploadPrintFiles(params: PrintRequestService.CreatePrintRequestParams): Promise<{ stlFile: StoredFile; gcodeFile: StoredFile }> {
+        const stlFile = await this.storedFileService.uploadFile(params.stlFile.file, {
+            fileName: params.stlFile.fileName,
+            uploadedByUserId: params.userId,
+        });
+
+        try {
+            const gcodeFile = await this.storedFileService.uploadFile(params.gcodeFile.file, {
+                fileName: params.gcodeFile.fileName,
+                uploadedByUserId: params.userId,
+            });
+            return { stlFile, gcodeFile };
+        } catch (error) {
+            await this.discardUploadedFiles(stlFile);
+            throw error;
         }
-        if (!EXTENSIONS[kind].includes(file.extension)) {
+    }
+
+    /** Uma falha na limpeza não pode esconder o erro que a disparou. */
+    private async discardUploadedFiles(...files: StoredFile[]): Promise<void> {
+        await Promise.all(
+            files.map(file => this.storedFileService.deleteFile(file).catch(() => undefined)),
+        );
+    }
+
+    private checkPrintFileName(fileName: string, kind: PrintFileKind): void {
+        const name = fileName.trim().toLowerCase();
+        if (!EXTENSIONS[kind].some(extension => name.endsWith(extension))) {
             throw new InvalidPrintFileError(`O arquivo precisa ser um ${EXTENSIONS[kind][0]} (${LABELS[kind]}).`);
         }
     }
@@ -81,9 +115,15 @@ namespace PrintRequestService {
     export type CreatePrintRequestParams = {
         userId: UniqueId;
         purpose: string;
-        stlFileId: UniqueId;
-        gcodeFileId: UniqueId;
+        stlFile: PrintRequestService.PrintFileUpload;
+        gcodeFile: PrintRequestService.PrintFileUpload;
         filamentId: UniqueId;
+    };
+
+    /** O arquivo cru que o cliente enviou junto com o pedido. */
+    export type PrintFileUpload = {
+        file: Blob;
+        fileName: string;
     };
 }
 

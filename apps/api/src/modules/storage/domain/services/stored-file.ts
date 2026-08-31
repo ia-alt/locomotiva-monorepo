@@ -31,6 +31,17 @@ class StoredFileService {
         return storedFile;
     }
 
+    /**
+     * Remove o objeto do bucket e marca a entidade como deletada — usado quando
+     * o arquivo subiu mas o que dependia dele não se concretizou (ex.: o pedido
+     * de impressão falhou depois do upload), pra não deixar lixo no bucket.
+     */
+    async deleteFile(file: StoredFile): Promise<void> {
+        await this.bucketStorageService.deleteFile(file.path);
+        file.markDeleted();
+        await this.storedFileRepository.save(file);
+    }
+
     async createDownloadUrl(file:StoredFile): Promise<string> {
         const result = await this.bucketStorageService.createDownloadUrl(file.path, {downloadFileName: file.name});
         return result.downloadUrl;

@@ -5,6 +5,7 @@ import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../naviga
 import { Feather } from '@expo/vector-icons';
 import { useMutation } from '@tanstack/react-query';
 import { useORPC } from '../../../locomotiva-api/context';
+import { clearPickedFiles, getPickedFile } from '../../../utils/pick-print-file';
 
 export default function ConfirmarImpressaoScreen() {
     const navigation = usePrivateStackNavigation();
@@ -18,10 +19,26 @@ export default function ConfirmarImpressaoScreen() {
     const [error, setError] = useState<string | null>(null);
 
     const handleConfirm = async () => {
+        // é aqui que os arquivos sobem: até confirmar, nada foi parar no storage
+        const stl = getPickedFile('stl');
+        const gcode = getPickedFile('gcode');
+        if (!stl || !gcode) {
+            setError('Os arquivos não estão mais disponíveis. Volte e anexe novamente.');
+            return;
+        }
+
         setIsSubmitting(true);
         setError(null);
         try {
-            await requestPrint({ purpose, filamentId, stlFileId: stlFile.id, gcodeFileId: gcodeFile.id });
+            await requestPrint({
+                purpose,
+                filamentId,
+                stlFile: stl,
+                stlFileName: stlFile.fileName,
+                gcodeFile: gcode,
+                gcodeFileName: gcodeFile.fileName,
+            });
+            clearPickedFiles();
             // replace: voltar da tela de sucesso não pode reabrir a confirmação (evita pedido duplicado)
             navigation.replace('ImpressaoSucesso');
         } catch (e) {
@@ -41,7 +58,7 @@ export default function ConfirmarImpressaoScreen() {
 
             <View style={styles.headerInfo}>
                 <Feather name="check-circle" size={24} color="#1E88E5" />
-                <Text style={styles.headerText}>Revise os dados abaixo. Se estiver tudo certo, envie seu pedido de impressão.</Text>
+                <Text style={styles.headerText}>Revise os dados abaixo. Ao enviar, seus arquivos são anexados ao pedido — pode levar alguns instantes.</Text>
             </View>
 
             <Surface style={styles.card} elevation={0}>
@@ -65,7 +82,7 @@ export default function ConfirmarImpressaoScreen() {
                 activeOpacity={0.7}
             >
                 <Feather name="send" size={20} color="#FFFFFF" />
-                <Text style={styles.confirmButtonText}>{isSubmitting ? 'Enviando...' : 'Enviar pedido'}</Text>
+                <Text style={styles.confirmButtonText}>{isSubmitting ? 'Enviando arquivos...' : 'Enviar pedido'}</Text>
             </TouchableOpacity>
         </ScrollView>
     );

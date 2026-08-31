@@ -99,7 +99,6 @@ import { BucketStorageService, StoredFileService } from "@storage/domain/service
 import { StoredFileRepository } from "@storage/domain/repositories";
 import { PrismaStoredFileRepository } from "@storage/infra/repositories";
 import { SupabaseBucketStorageService } from "@storage/infra/services";
-import { UploadFileUseCase } from "@storage/application/use-cases/upload-file";
 import { AfterPrintRequestStatusChanged } from "@printing/application/subscribers/after-print-request-status-changed";
 import { RequestPrintUseCase } from "@printing/application/use-cases/request-print";
 import { CreatePrintFileDownloadUrlUseCase } from "@printing/application/use-cases/create-print-file-download-url";
@@ -958,9 +957,6 @@ export class DiContainer {
         return new RequestPrintUseCase(this.getAuthUserService(authUser), this.getPrintRequestService());
     }
 
-    public getUploadFileUseCase(authUser: User): UploadFileUseCase {
-        return new UploadFileUseCase(this.getAuthUserService(authUser), this.getStoredFileService());
-    }
 
     public getCreatePrintFileDownloadUrlUseCase(authUser: User): CreatePrintFileDownloadUrlUseCase {
         return new CreatePrintFileDownloadUrlUseCase(this.getAuthUserService(authUser), this.getPrintRequestRepository(), this.getStoredFileService());

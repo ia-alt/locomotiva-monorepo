@@ -3,7 +3,6 @@ import { coworkingRoutes } from "@coworking/presentation/orpc-routes";
 import { bookingRouter } from "@booking/presentation/orpc-routes";
 import { reportRoutes } from "@report/presentation/orpc-routes";
 import { printingRouter } from "@printing/presentation/orpc-routes";
-import { storageRouter } from "@storage/presentation/orpc-routes";
 import { RouterClient } from "@orpc/server";
 
 
@@ -14,7 +13,6 @@ export const router = {
     booking: bookingRouter,
     report: reportRoutes,
     printing: printingRouter,
-    storage: storageRouter,
 }
 
 export type RouterClientType = RouterClient<typeof router>
