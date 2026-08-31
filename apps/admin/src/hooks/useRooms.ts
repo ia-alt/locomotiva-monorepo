@@ -13,7 +13,7 @@ export const useRooms = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: (input: { name: string; capacity: number; enabled: boolean }) =>
+    mutationFn: (input: { name: string; capacity: number; enabled: boolean; description: string | null }) =>
       orpc.booking.createRoom(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ROOMS_QUERY_KEY });

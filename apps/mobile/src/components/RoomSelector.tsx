@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator, StatusBar, Dimensions, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator, StatusBar, Dimensions, useWindowDimensions, ImageSourcePropType } from 'react-native';
 import { Text, Surface, Divider } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useORPC } from '../locomotiva-api/context';
 import { useQuery } from '@tanstack/react-query';
 import { ORPCOutputs } from '../locomotiva-api/types';
+import { fonteImagemSala } from '../constants/imagens';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 type RoomFromList = ORPCOutputs["booking"]["listRooms"][0]
@@ -15,8 +16,6 @@ interface RoomSelectorProps {
 }
 
 const MAX_WIDTH = 800;
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
-const getRoomImage = (room?: RoomFromList | null) => room?.photoUrl || FALLBACK_IMAGE;
 
 
 export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSelectorProps) {
@@ -26,7 +25,7 @@ export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSele
     const modalWidth = Math.min(width, MAX_WIDTH);
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [previewImage, setPreviewImage] = useState<ImageSourcePropType | null>(null);
 
     const availableRooms = useMemo(
         () => rooms?.filter(r => r.enabled) || [],
@@ -46,7 +45,7 @@ export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSele
                     ) : (
                         <>
                             <Image
-                                source={{ uri: getRoomImage(selectedRoom) }}
+                                source={fonteImagemSala(selectedRoom?.photoUrl)}
                                 style={styles.image}
                             />
                             <View style={styles.textContainer}>
@@ -54,9 +53,16 @@ export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSele
                                     {selectedRoom ? selectedRoom.name : 'Selecione uma sala...'}
                                 </Text>
                                 {selectedRoom && (
-                                    <Text variant="bodyMedium" style={styles.roomCapacity}>
-                                        Capacidade: {selectedRoom.capacity} pessoas
-                                    </Text>
+                                    <>
+                                        <Text variant="bodyMedium" style={styles.roomCapacity}>
+                                            Capacidade: {selectedRoom.capacity} pessoas
+                                        </Text>
+                                        {!!selectedRoom.description && (
+                                            <Text variant="bodySmall" style={styles.roomDescription} numberOfLines={2}>
+                                                {selectedRoom.description}
+                                            </Text>
+                                        )}
+                                    </>
                                 )}
                             </View>
                             <Ionicons name="chevron-down" size={24} color="#6B7280" />
@@ -95,13 +101,13 @@ export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSele
                                         <TouchableOpacity
                                             onPress={(e) => {
                                                 e.stopPropagation();
-                                                setPreviewImage(getRoomImage(item));
+                                                setPreviewImage(fonteImagemSala(item.photoUrl));
                                             }}
                                             activeOpacity={0.8}
                                         >
                                             <View>
                                                 <Image
-                                                    source={{ uri: getRoomImage(item) }}
+                                                    source={fonteImagemSala(item.photoUrl)}
                                                     style={styles.modalItemImage}
                                                 />
                                                 <View style={styles.previewBadge}>
@@ -112,6 +118,11 @@ export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSele
                                         <View style={styles.modalItemText}>
                                             <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{item.name}</Text>
                                             <Text variant="bodyMedium" style={{ color: '#6B7280' }}>Capacidade: {item.capacity} pessoas</Text>
+                                            {!!item.description && (
+                                                <Text variant="bodySmall" style={styles.modalItemDescription}>
+                                                    {item.description}
+                                                </Text>
+                                            )}
                                         </View>
                                         {selectedRoom === item && (
                                             <Ionicons name="checkmark-circle" size={24} color="#0D9488" />
@@ -127,15 +138,15 @@ export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSele
             </Modal>
 
             {/* Modal visualização em tela cheia */}
-            <Modal visible={!!previewImage} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setPreviewImage(null)}>
+            <Modal visible={previewImage !== null} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setPreviewImage(null)}>
                 <View style={styles.fullscreenOverlay}>
                     <StatusBar hidden />
                     <TouchableOpacity style={styles.fullscreenClose} onPress={() => setPreviewImage(null)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                         <Ionicons name="close-circle" size={36} color="#fff" />
                     </TouchableOpacity>
-                    {previewImage && (
+                    {previewImage !== null && (
                         <Image
-                            source={{ uri: previewImage }}
+                            source={previewImage}
                             style={styles.fullscreenImage}
                             resizeMode="contain"
                         />
@@ -187,6 +198,16 @@ const styles = StyleSheet.create({
     roomCapacity: {
         color: '#6B7280',
     },
+    roomDescription: {
+        color: '#6B7280',
+        marginTop: 2,
+        lineHeight: 18,
+    },
+    modalItemDescription: {
+        color: '#6B7280',
+        marginTop: 4,
+        lineHeight: 18,
+    },
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
@@ -210,7 +231,7 @@ const styles = StyleSheet.create({
     },
     modalItem: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         paddingVertical: 12,
     },
     modalItemImage: {

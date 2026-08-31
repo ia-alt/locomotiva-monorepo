@@ -10,6 +10,8 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
 import { onlyDateStrToLongBrDate, onlyTimeObjToTimeStr } from '../../utils/datetime-formaters';
+import { HorarioFuncionamentoCard } from '../../components/HorarioFuncionamentoCard';
+import { fonteImagemSala } from '../../constants/imagens';
 
 type Props = RouteProp<PrivateStackParamList, 'DetalhesMinhaReserva'>;
 
@@ -41,8 +43,7 @@ export default function DetalhesMinhaReservaScreen() {
         enabled: !!booking?.roomId
     });
 
-    const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=200&h=200';
-    const roomImageUrl = room?.photoUrl || FALLBACK_IMAGE;
+    const roomImageSource = fonteImagemSala(room?.photoUrl);
     const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
 
     const { mutateAsync: cancelBooking, isPending: isCanceling } = useMutation({
@@ -112,7 +113,7 @@ export default function DetalhesMinhaReservaScreen() {
         <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
             <TouchableOpacity activeOpacity={0.85} onPress={() => setImagePreviewVisible(true)}>
                 <Animated.Image
-                    source={{ uri: roomImageUrl }}
+                    source={roomImageSource}
                     style={styles.headerImage}
                     sharedTransitionTag={`room-image-${booking.id}`}
                 />
@@ -127,7 +128,7 @@ export default function DetalhesMinhaReservaScreen() {
                     <TouchableOpacity style={styles.fullscreenClose} onPress={() => setImagePreviewVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                         <Ionicons name="close-circle" size={36} color="#fff" />
                     </TouchableOpacity>
-                    <Image source={{ uri: roomImageUrl }} style={styles.fullscreenImage} resizeMode="contain" />
+                    <Image source={roomImageSource} style={styles.fullscreenImage} resizeMode="contain" />
                 </View>
             </Modal>
             <Surface style={styles.card} elevation={0}>
@@ -190,6 +191,13 @@ export default function DetalhesMinhaReservaScreen() {
                                 <Text style={styles.infoText}>Capacidade: {room.capacity} pessoas</Text>
                             </View>
                         )}
+                        {!!room?.description && (
+                            <View style={styles.roomDescriptionBox}>
+                                <Feather name="info" size={16} color="#6B7280" />
+                                <Text style={styles.roomDescriptionText}>{room.description}</Text>
+                            </View>
+                        )}
+                        <HorarioFuncionamentoCard style={styles.horario} />
                     </>
                 )}
 
@@ -324,6 +332,21 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#374151',
         marginLeft: 8,
+    },
+    roomDescriptionBox: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 12,
+    },
+    roomDescriptionText: {
+        flex: 1,
+        fontSize: 14,
+        color: '#4B5563',
+        marginLeft: 8,
+        lineHeight: 20,
+    },
+    horario: {
+        marginTop: 4,
     },
     expandBadge: {
         position: 'absolute',

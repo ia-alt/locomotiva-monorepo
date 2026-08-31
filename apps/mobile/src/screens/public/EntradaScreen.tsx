@@ -13,6 +13,7 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePublicStackNavigation } from '../../navigation/PublicNavigator';
+import { useFullBleedScreen } from '../../contexts/layout-context';
 
 const LOGO_URL =
     'https://static.wixstatic.com/media/f13483_e83b4980282f49f39edd6da27f2a6515~mv2.png/v1/crop/x_162,y_0,w_340,h_299/fill/w_286,h_252,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/f13483_e83b4980282f49f39edd6da27f2a6515~mv2.png';
@@ -24,6 +25,9 @@ const FOOTER_SECTI_URL =
     'https://static.wixstatic.com/media/f13483_b90e46d874184c38924124d72f588c5f~mv2.png/v1/crop/x_168,y_0,w_4467,h_1137/fill/w_264,h_67,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/logo%20secti%20com%20fundo%20branco-08.png';
 
 const SOBRE_IMAGE = require('../../../assets/foto_locomotiva.jpeg');
+
+// Largura máxima do conteúdo (o fundo azul sempre ocupa a tela inteira)
+const CONTENT_MAX_WIDTH = 800;
 
 const SPACES = [
     {
@@ -77,7 +81,11 @@ export default function EntradaScreen() {
     const navigation = usePublicStackNavigation();
     const scrollRef = useRef<ScrollView>(null);
     const { width } = useWindowDimensions();
-    const isWide = width >= 800;
+    const isWide = width >= CONTENT_MAX_WIDTH;
+
+    // Na web o app é limitado a MAX_WIDTH (App.tsx); esta tela ocupa a viewport
+    // inteira com o fundo azul e centraliza o conteúdo por conta própria.
+    useFullBleedScreen();
 
     return (
         <View style={styles.root}>
@@ -88,6 +96,7 @@ export default function EntradaScreen() {
                 contentContainerStyle={styles.scroll}
                 showsVerticalScrollIndicator={false}
             >
+              <View style={styles.content}>
                 {/* Top Nav 
                 <View style={styles.navbar}>
                     <Text style={styles.navBrand}>LOCOMOTIVA HUB</Text>
@@ -254,6 +263,7 @@ export default function EntradaScreen() {
                 <Text style={styles.footerCopy}>
                     © 2026 INOVA Maranhão - Locomotiva HUB. Todos os direitos reservados.
                 </Text>
+              </View>
             </ScrollView>
         </View>
     );
@@ -263,6 +273,11 @@ const styles = StyleSheet.create({
     root: {
         flex: 1,
         backgroundColor: '#08184B',
+    },
+    content: {
+        width: '100%',
+        maxWidth: CONTENT_MAX_WIDTH,
+        alignSelf: 'center',
     },
 
     // Navbar

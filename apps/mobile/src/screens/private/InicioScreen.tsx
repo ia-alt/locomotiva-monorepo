@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { CheckinCard } from '../../components/CheckinCard';
+import { HorarioFuncionamentoCard } from '../../components/HorarioFuncionamentoCard';
 import { CheckinProvider } from '../../contexts/checkin-context';
 import { useAuth } from '../../contexts/auth-context';
 
@@ -44,6 +45,8 @@ export default function InicioScreen() {
                     </Text>
                 </View>
 
+                <HorarioFuncionamentoCard style={styles.horario} />
+
                 <CheckinCard accessCode={cleanCode} onCodeProcessed={handleCodeProcessed} />
             </View>
         </CheckinProvider>
@@ -58,6 +61,9 @@ const styles = StyleSheet.create({
     },
     headerContainer: {
         width: '100%',
+        marginBottom: 20,
+    },
+    horario: {
         marginBottom: 24,
     },
     title: {

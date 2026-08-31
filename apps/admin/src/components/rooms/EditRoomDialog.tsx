@@ -30,16 +30,18 @@ export const EditRoomDialog: React.FC<EditRoomDialogProps> = ({ open, onClose, r
   const [capacity, setCapacity] = useState<number | string>(room?.capacity || '');
   const [enabled, setEnabled] = useState<boolean>(room?.enabled ?? true);
   const [photoUrl, setPhotoUrl] = useState<string>(room?.photoUrl || '');
+  const [description, setDescription] = useState<string>(room?.description || '');
   const [error, setError] = useState<string | null>(null);
 
   const updateMutation = useMutation({
-    mutationFn: async (input: { roomId: string; name: string; capacity: number; enabled: boolean; photoUrl: string }) => {
+    mutationFn: async (input: { roomId: string; name: string; capacity: number; enabled: boolean; photoUrl: string; description: string }) => {
       await orpc.booking.updateRoom({
         roomId: input.roomId,
         data: {
           name: input.name,
           capacity: input.capacity,
           photoUrl: input.photoUrl || null,
+          description: input.description.trim() || null,
         },
       });
 
@@ -73,6 +75,7 @@ export const EditRoomDialog: React.FC<EditRoomDialogProps> = ({ open, onClose, r
       capacity: Number(capacity),
       enabled,
       photoUrl,
+      description,
     });
   };
 
@@ -122,6 +125,20 @@ export const EditRoomDialog: React.FC<EditRoomDialogProps> = ({ open, onClose, r
               slotProps={{
                 htmlInput: { min: 1 }
               }}
+            />
+
+            <TextField
+              label="Descrição da Sala"
+              variant="outlined"
+              fullWidth
+              multiline
+              minRows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Ex.: Sala de treinamento, reuniões e workshop. Monitor de 75 polegadas com cabo HDMI e quadro branco."
+              helperText={`Aparece no app antes da pessoa escolher a sala e nos detalhes da reserva. ${description.trim().length}/500`}
+              error={description.trim().length > 500}
+              slotProps={{ htmlInput: { maxLength: 500 } }}
             />
 
             <TextField

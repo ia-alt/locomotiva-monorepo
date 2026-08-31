@@ -9,6 +9,7 @@ export interface Room {
   capacity: number;
   enabled: boolean;
   photoUrl: string | null;
+  description: string | null;
   hasOperatingSchedule: boolean;
 }
 
@@ -56,6 +57,16 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onEdit, onDelete, onOp
             Capacidade: {room.capacity} Pessoas
           </Typography>
         </Box>
+
+        {room.description ? (
+          <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
+            {room.description}
+          </Typography>
+        ) : (
+          <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
+            Sem descrição cadastrada
+          </Typography>
+        )}
 
         {!room.hasOperatingSchedule && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1.5, p: 1, bgcolor: 'warning.50', border: '1px solid', borderColor: 'warning.200', borderRadius: 1 }}>

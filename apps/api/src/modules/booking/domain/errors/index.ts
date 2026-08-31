@@ -76,4 +76,5 @@ export class IncompleteUserProfileError extends DomainError {
 export * from "./invalid-booking-title-error";
 export * from "./invalid-booking-description-error";
 export * from "./invalid-booking-number-of-people-error";
+export * from "./invalid-room-description-error";
 

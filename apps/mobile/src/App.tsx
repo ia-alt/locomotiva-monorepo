@@ -10,6 +10,7 @@ import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
 import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { LayoutProvider, useLayout } from './contexts/layout-context';
 
 // Sistema de Toast Global acessível fora do fluxo do React
 type ToastShow = (message: string) => void;
@@ -99,7 +100,9 @@ export default function Main() {
                   <QRCodeReaderProvider>
 
                     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                      <App />
+                      <LayoutProvider>
+                        <App />
+                      </LayoutProvider>
                     </SafeAreaView>
 
                   </QRCodeReaderProvider>
@@ -122,6 +125,7 @@ const CAMINHO_CALLBACK_GOVBR = '/auth/govbr/callback';
 
 function App() {
   const { width } = useWindowDimensions();
+  const { fullBleed } = useLayout();
   const isWide = width > MAX_WIDTH;
 
   // O retorno do gov.br é tratado ANTES do React Navigation. O `linking` dele
@@ -131,10 +135,13 @@ function App() {
     () => typeof window !== 'undefined' && window.location.pathname === CAMINHO_CALLBACK_GOVBR
   );
 
+  // Telas "full bleed" (ex.: EntradaScreen) ocupam a viewport inteira e
+  // centralizam o próprio conteúdo; as demais ficam limitadas a MAX_WIDTH.
   return (
     <View style={[
-      { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_WIDTH },
-      isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
+      { flex: 1, alignSelf: 'center', width: '100%' },
+      !fullBleed && { maxWidth: MAX_WIDTH },
+      !fullBleed && isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
     ]}>
       {emCallbackGovbr
         ? <GovbrCallbackScreen onConcluir={() => setEmCallbackGovbr(false)} />
