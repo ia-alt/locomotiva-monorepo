@@ -1,6 +1,8 @@
 import { getMeRoute } from "./routes/get-me";
 import { updateMeRoute } from "./routes/update-me";
 import { loginRoute } from "./routes/login";
+import { refreshSessionRoute } from "./routes/refresh-session";
+import { logoutRoute } from "./routes/logout";
 import { registerUserRoute } from "./routes/register-user";
 import { requestPasswordResetRoute } from "./routes/request-password-reset";
 import { changePasswordRoute } from "./routes/change-password";
@@ -27,6 +29,8 @@ export const identyRoutes = {
     getMe: getMeRoute,
     updateMe: updateMeRoute,
     login: loginRoute,
+    refreshSession: refreshSessionRoute,
+    logout: logoutRoute,
     getGovbrStatus: getGovbrStatusRoute,
     getGovbrLogoutUrl: getGovbrLogoutUrlRoute,
     startGovbrLogin: startGovbrLoginRoute,

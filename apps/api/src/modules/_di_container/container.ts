@@ -5,8 +5,8 @@ import { AfterPasswordResetCodeRequested } from "src/modules/identity/applicatio
 import { AfterUserRegistered } from "src/modules/identity/application/subscribers/after-user-registered";
 import { PasswordResetCodeEmailTemplater } from "src/modules/identity/domain/services/password-reset-code-email-templater";
 import { WelcomeEmailTemplater } from "src/modules/identity/domain/services/welcome-email-templater";
-import { PrismaUserRepository, PrismaApiKeyRepository, PrismaGovbrAuthRequestRepository, PrismaGovbrPendingIdentityRepository } from "src/modules/identity/infra/repositories";
-import { UserRepository, ApiKeyRepository, GovbrAuthRequestRepository, GovbrPendingIdentityRepository } from "src/modules/identity/domain/repositories";
+import { PrismaUserRepository, PrismaApiKeyRepository, PrismaGovbrAuthRequestRepository, PrismaGovbrPendingIdentityRepository, PrismaRefreshTokenRepository } from "src/modules/identity/infra/repositories";
+import { UserRepository, ApiKeyRepository, GovbrAuthRequestRepository, GovbrPendingIdentityRepository, RefreshTokenRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { prisma } from "@core/infra/database/prisma/prisma-instance";
 import { RegisterUserUseCase } from "src/modules/identity/application/use-cases/register-user";
@@ -33,8 +33,10 @@ import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
 import { User, ApiKey } from "src/modules/identity/domain/entities";
-import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, GovbrOidcService, PasswordHashService, PasswordResetTokenService, PasswordService } from "src/modules/identity/domain/services";
+import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, GovbrOidcService, PasswordHashService, PasswordResetTokenService, PasswordService, RefreshTokenService } from "src/modules/identity/domain/services";
 import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
+import { RefreshSessionUseCase } from "src/modules/identity/application/use-cases/refresh-session";
+import { LogoutUseCase } from "src/modules/identity/application/use-cases/logout";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
 import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
@@ -244,6 +246,27 @@ export class DiContainer {
     }
 
     /** Chave geral da integração gov.br, vinda de GOVBR_ENABLED. */
+    private _refreshTokenRepository?: RefreshTokenRepository;
+    public getRefreshTokenRepository(): RefreshTokenRepository {
+        if (!this._refreshTokenRepository) {
+            this._refreshTokenRepository = new PrismaRefreshTokenRepository(this.prisma);
+        }
+        return this._refreshTokenRepository;
+    }
+
+    private _refreshTokenService?: RefreshTokenService;
+    public getRefreshTokenService(): RefreshTokenService {
+        if (!this._refreshTokenService) {
+            this._refreshTokenService = new RefreshTokenService(
+                this.getRefreshTokenRepository(),
+                this.getUserRepository(),
+                this.getAuthTokenService(),
+                env.AUTH_REFRESH_TOKEN_TTL_SECONDS,
+            );
+        }
+        return this._refreshTokenService;
+    }
+
     public isGovbrEnabled(): boolean {
         return this.govbrLigado;
     }
@@ -287,7 +310,7 @@ export class DiContainer {
                 this.getGovbrPendingIdentityRepository(),
                 this.getUserRepository(),
                 this.getPasswordHashService(),
-                this.getAuthTokenService(),
+                this.getRefreshTokenService(),
                 this.govbrLigado,
             );
         }
@@ -300,7 +323,7 @@ export class DiContainer {
             this._completeGovbrRegistrationUseCase = new CompleteGovbrRegistrationUseCase(
                 this.getGovbrPendingIdentityRepository(),
                 this.getUserRepository(),
-                this.getAuthTokenService(),
+                this.getRefreshTokenService(),
                 this.govbrLigado,
             );
         }
@@ -315,7 +338,7 @@ export class DiContainer {
                 this.getGovbrAuthRequestRepository(),
                 this.getGovbrPendingIdentityRepository(),
                 this.getUserRepository(),
-                this.getAuthTokenService(),
+                this.getRefreshTokenService(),
                 this.govbrLigado,
             );
         }
@@ -496,7 +519,7 @@ export class DiContainer {
             this._authService = new AuthService(
                 this.getUserRepository(),
                 this.getPasswordHashService(),
-                this.getAuthTokenService(),
+                this.getRefreshTokenService(),
             );
         }
         return this._authService;
@@ -618,6 +641,18 @@ export class DiContainer {
             this.getAuthService(),
         );
         return loginUseCase;
+    }
+
+    public getRefreshSessionUseCase(): RefreshSessionUseCase {
+        return new RefreshSessionUseCase(
+            this.getRefreshTokenService(),
+        );
+    }
+
+    public getLogoutUseCase(): LogoutUseCase {
+        return new LogoutUseCase(
+            this.getRefreshTokenService(),
+        );
     }
 
     public getRequestPasswordResetUseCase(): RequestPasswordResetUseCase {

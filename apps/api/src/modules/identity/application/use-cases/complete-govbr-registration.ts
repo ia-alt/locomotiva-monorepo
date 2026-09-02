@@ -1,7 +1,7 @@
 import { UseCase } from "@core/base-classes";
 import z from "zod";
 import { EmailAddress } from "@core/value-objects";
-import { AuthTokenService } from "src/modules/identity/domain/services";
+import { RefreshTokenService } from "src/modules/identity/domain/services";
 import { GovbrPendingIdentityRepository, UserRepository } from "src/modules/identity/domain/repositories";
 import { User } from "src/modules/identity/domain/entities";
 import {
@@ -28,7 +28,7 @@ class CompleteGovbrRegistrationUseCase implements UseCase<CompleteGovbrRegistrat
     constructor(
         private readonly govbrPendingIdentityRepository: GovbrPendingIdentityRepository,
         private readonly userRepository: UserRepository,
-        private readonly authTokenService: AuthTokenService,
+        private readonly refreshTokenService: RefreshTokenService,
         private readonly integracaoLigada: boolean,
     ) { }
 
@@ -82,10 +82,11 @@ class CompleteGovbrRegistrationUseCase implements UseCase<CompleteGovbrRegistrat
 
         await this.userRepository.save(user);
 
-        const token = await this.authTokenService.generateToken(user);
+        const session = await this.refreshTokenService.issueSession(user);
 
         return {
-            token: token.toJSON(),
+            token: session.token,
+            refreshToken: session.refreshToken,
             redirectTo: pendente.redirectTo,
         };
     }
@@ -102,6 +103,7 @@ namespace CompleteGovbrRegistrationUseCase {
 
     export const OutputSchema = z.object({
         token: z.string(),
+        refreshToken: z.string(),
         redirectTo: z.string().nullable(),
     });
 

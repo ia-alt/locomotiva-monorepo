@@ -1,6 +1,6 @@
 import { UseCase } from "@core/base-classes";
 import z from "zod";
-import { AuthTokenService, GovbrIdentity, GovbrOidcService } from "src/modules/identity/domain/services";
+import { GovbrIdentity, GovbrOidcService, RefreshTokenService } from "src/modules/identity/domain/services";
 import {
     GovbrAuthRequestRepository,
     GovbrPendingIdentityRepository,
@@ -32,7 +32,7 @@ class CompleteGovbrLoginUseCase implements UseCase<CompleteGovbrLoginUseCase.Inp
         private readonly govbrAuthRequestRepository: GovbrAuthRequestRepository,
         private readonly govbrPendingIdentityRepository: GovbrPendingIdentityRepository,
         private readonly userRepository: UserRepository,
-        private readonly authTokenService: AuthTokenService,
+        private readonly refreshTokenService: RefreshTokenService,
         private readonly integracaoLigada: boolean,
     ) { }
 
@@ -82,6 +82,7 @@ class CompleteGovbrLoginUseCase implements UseCase<CompleteGovbrLoginUseCase.Inp
             return {
                 status: "needs_password_link",
                 token: null,
+                refreshToken: null,
                 redirectTo: request.redirectTo,
                 ticket: pendente.ticket,
                 name: pendente.name,
@@ -95,6 +96,7 @@ class CompleteGovbrLoginUseCase implements UseCase<CompleteGovbrLoginUseCase.Inp
         return {
             status: "needs_profile",
             token: null,
+            refreshToken: null,
             redirectTo: request.redirectTo,
             ticket: pendente.ticket,
             name: pendente.name,
@@ -105,11 +107,13 @@ class CompleteGovbrLoginUseCase implements UseCase<CompleteGovbrLoginUseCase.Inp
     private async autenticar(user: User, redirectTo: string | null): Promise<CompleteGovbrLoginUseCase.Output> {
         // Os tokens do gov.br morrem aqui: não são persistidos nem registrados
         // em log. O provedor não expõe endpoint de revogação, então guardá-los
-        // criaria um segredo que não teríamos como invalidar.
-        const token = await this.authTokenService.generateToken(user);
+        // criaria um segredo que não teríamos como invalidar. A sessão nossa é
+        // a mesma do login por senha — persistente e revogável no logout.
+        const session = await this.refreshTokenService.issueSession(user);
         return {
             status: "authenticated",
-            token: token.toJSON(),
+            token: session.token,
+            refreshToken: session.refreshToken,
             redirectTo,
             ticket: null,
             name: null,
@@ -145,8 +149,9 @@ namespace CompleteGovbrLoginUseCase {
 
     export const OutputSchema = z.object({
         status: z.enum(["authenticated", "needs_password_link", "needs_profile"]),
-        /** Preenchido só em `authenticated`. */
+        /** Preenchidos só em `authenticated`. */
         token: z.string().nullable(),
+        refreshToken: z.string().nullable(),
         redirectTo: z.string().nullable(),
         /** Comprovante para concluir o login nos outros dois desfechos. */
         ticket: z.string().nullable(),

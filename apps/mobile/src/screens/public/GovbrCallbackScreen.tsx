@@ -91,8 +91,8 @@ export default function GovbrCallbackScreen({ onConcluir }: { onConcluir: () => 
         orpc.identy.completeGovbrLogin
             .call({ code, state })
             .then(async (r) => {
-                if (r.status === 'authenticated' && r.token) {
-                    await loginWithToken(r.token);
+                if (r.status === 'authenticated' && r.token && r.refreshToken) {
+                    await loginWithToken(r.token, r.refreshToken);
                     onConcluir();
                     return;
                 }
@@ -181,7 +181,7 @@ function FormularioPerfil({ ticket, nome, onErro, onConcluir }: {
                 company: data.company || null,
                 jobTitle: data.jobTitle || null,
             });
-            await loginWithToken(r.token);
+            await loginWithToken(r.token, r.refreshToken);
             onConcluir();
         } catch (e) {
             onErro(mensagemDeErro(e));
@@ -259,7 +259,7 @@ function FormularioSenha({ ticket, emailMascarado, onCancelar, onErro }: {
         setErroSenha(null);
         try {
             const r = await orpc.identy.linkGovbrToAccount.call({ ticket, password: data.password });
-            await loginWithToken(r.token);
+            await loginWithToken(r.token, r.refreshToken);
             onCancelar();
         } catch (e) {
             // Senha errada queima o comprovante, então não adianta oferecer nova

@@ -3,6 +3,13 @@ import z from "zod";
 const envSchema = z.object({
     DATABASE_URL: z.string(),
     AUTH_JWT_SECRET: z.string(),
+    // Sessão persistente ("continuar conectado"). O token de ACESSO (JWT) é
+    // curto e nunca é revogável; quem sustenta a sessão longa é o REFRESH
+    // token, guardado com hash no banco e rotacionado a cada uso — por isso o
+    // logout consegue derrubar a sessão de verdade. Valores em segundos para
+    // permitir testes curtos (ex.: refresh de 20 min) sem tocar em código.
+    AUTH_ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900), // 15 min
+    AUTH_REFRESH_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(2_592_000), // 30 dias
     RESET_PASSWORD_JWT_SECRET: z.string(),
     RESET_PASSWORD_URL_BASE: z.string(),
     PORT: z.coerce.number().optional(),

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { orpc } from '../services/api';
+import { orpc, salvarSessao, encerrarSessao } from '../services/api';
 import { CURRENT_USER_QUERY_KEY } from './useCurrentUser';
 
 const NOT_ADMIN_MESSAGE = 'Esta conta não tem acesso ao painel administrativo.';
@@ -39,13 +39,14 @@ export const useLogin = () => {
         return;
       }
 
-      localStorage.setItem('token', response.token);
+      salvarSessao(response.token, response.refreshToken);
 
       // O login é compartilhado com mobile/tablet e não distingue perfil —
       // só o painel exige administrador.
       const user = await orpc.identy.getMe({});
       if (user.userType !== 'admin') {
-        localStorage.removeItem('token');
+        // A sessão chegou a ser aberta no servidor; revoga em vez de só esquecer.
+        await encerrarSessao();
         setError(NOT_ADMIN_MESSAGE);
         return;
       }
@@ -53,7 +54,7 @@ export const useLogin = () => {
       queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user);
       navigate('/dashboard');
     } catch (err: unknown) {
-      localStorage.removeItem('token');
+      await encerrarSessao();
       console.error('Login error:', err);
       let message = 'Falha ao realizar login. Verifique suas credenciais.';
       if (err instanceof Error) {

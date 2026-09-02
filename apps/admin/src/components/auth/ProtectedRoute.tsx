@@ -1,3 +1,4 @@
+import { encerrarSessao } from '../../services/api';
 import { Box, CircularProgress } from '@mui/material';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
@@ -26,9 +27,10 @@ export const ProtectedRoute = () => {
     );
   }
 
-  // Token inválido/expirado ou conta sem permissão: derruba a sessão.
+  // Token inválido/expirado ou conta sem permissão: derruba a sessão
+  // (revogação no servidor em segundo plano; a navegação não espera).
   if (error || !user || user.userType !== 'admin') {
-    localStorage.removeItem('token');
+    void encerrarSessao();
     return <Navigate to="/login" replace state={{ deniedAdmin: !error && !!user }} />;
   }
 

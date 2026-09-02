@@ -23,6 +23,18 @@ export * from './enums';
  */
 export type User = Prisma.UserModel
 /**
+ * Model RefreshToken
+ * Sessão persistente ("continuar conectado") — padrão refresh token com rotação.
+ * 
+ * O token em si NUNCA é guardado: só o sha256 (`tokenHash`), como no ApiKey.
+ * Cada uso rotaciona — o antigo ganha `usedAt` e um novo nasce na mesma
+ * `familyId` (a família É a sessão, do login ao logout). Apresentar um token
+ * já usado indica vazamento e revoga a família inteira. O logout marca
+ * `revokedAt` em toda a família, matando a sessão no servidor de verdade —
+ * coisa que o JWT de acesso sozinho não permite.
+ */
+export type RefreshToken = Prisma.RefreshTokenModel
+/**
  * Model ApiKey
  * 
  */

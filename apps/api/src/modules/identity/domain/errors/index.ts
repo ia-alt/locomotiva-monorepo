@@ -174,3 +174,13 @@ export class UserNotFoundError extends DomainError {
         );
     }
 }
+
+export class InvalidRefreshTokenError extends DomainError {
+    constructor() {
+        super(
+            "INVALID_REFRESH_TOKEN",
+            "Sessão expirada ou encerrada. Faça login novamente.",
+            ErrorType.UNAUTHORIZED
+        );
+    }
+}

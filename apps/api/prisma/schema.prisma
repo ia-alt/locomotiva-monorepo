@@ -38,9 +38,37 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  files File[]
+  files         File[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
+}
+
+/// Sessão persistente ("continuar conectado") — padrão refresh token com rotação.
+///
+/// O token em si NUNCA é guardado: só o sha256 (`tokenHash`), como no ApiKey.
+/// Cada uso rotaciona — o antigo ganha `usedAt` e um novo nasce na mesma
+/// `familyId` (a família É a sessão, do login ao logout). Apresentar um token
+/// já usado indica vazamento e revoga a família inteira. O logout marca
+/// `revokedAt` em toda a família, matando a sessão no servidor de verdade —
+/// coisa que o JWT de acesso sozinho não permite.
+model RefreshToken {
+  id        String    @id
+  tokenHash String    @unique
+  userId    String
+  familyId  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }
 
 model ApiKey {

@@ -1,6 +1,6 @@
 import { UseCase } from "@core/base-classes";
 import z from "zod";
-import { AuthTokenService, PasswordHashService } from "src/modules/identity/domain/services";
+import { PasswordHashService, RefreshTokenService } from "src/modules/identity/domain/services";
 import { GovbrPendingIdentityRepository, UserRepository } from "src/modules/identity/domain/repositories";
 import {
     GovbrIntegrationDisabledError,
@@ -28,7 +28,7 @@ class LinkGovbrToAccountUseCase implements UseCase<LinkGovbrToAccountUseCase.Inp
         private readonly govbrPendingIdentityRepository: GovbrPendingIdentityRepository,
         private readonly userRepository: UserRepository,
         private readonly passwordHashService: PasswordHashService,
-        private readonly authTokenService: AuthTokenService,
+        private readonly refreshTokenService: RefreshTokenService,
         private readonly integracaoLigada: boolean,
     ) { }
 
@@ -66,10 +66,11 @@ class LinkGovbrToAccountUseCase implements UseCase<LinkGovbrToAccountUseCase.Inp
         user.linkGovbrIdentity(pendente.govbrSub);
         await this.userRepository.save(user);
 
-        const token = await this.authTokenService.generateToken(user);
+        const session = await this.refreshTokenService.issueSession(user);
 
         return {
-            token: token.toJSON(),
+            token: session.token,
+            refreshToken: session.refreshToken,
             redirectTo: pendente.redirectTo,
         };
     }
@@ -83,6 +84,7 @@ namespace LinkGovbrToAccountUseCase {
 
     export const OutputSchema = z.object({
         token: z.string(),
+        refreshToken: z.string(),
         redirectTo: z.string().nullable(),
     });
 
