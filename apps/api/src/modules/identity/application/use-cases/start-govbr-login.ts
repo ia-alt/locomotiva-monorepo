@@ -33,7 +33,11 @@ class StartGovbrLoginUseCase implements UseCase<StartGovbrLoginUseCase.Input, St
 
         const { codeVerifier, codeChallenge } = this.govbrOidcService.createPkcePair();
 
-        const request = GovbrAuthRequest.create({ codeVerifier, redirectTo });
+        const request = GovbrAuthRequest.create({
+            codeVerifier,
+            redirectTo,
+            client: input.client ?? "web",
+        });
         await this.govbrAuthRequestRepository.save(request);
 
         return {
@@ -79,6 +83,12 @@ namespace StartGovbrLoginUseCase {
     export const InputSchema = z.object({
         /** Caminho interno para onde levar o usuário após o login. Ex.: "/reservas". */
         redirectTo: z.string().nullable().optional(),
+        /**
+         * Quem está iniciando: a versão web (padrão) ou o aplicativo instalado.
+         * Vai marcado no `state`, para a página de callback saber a quem
+         * entregar o retorno — ver `GovbrAuthRequest`.
+         */
+        client: GovbrAuthRequest.ClientSchema.optional(),
     });
 
     export const OutputSchema = z.object({

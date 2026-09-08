@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { Text, useTheme, MD3Theme } from 'react-native-paper';
+import * as WebBrowser from 'expo-web-browser';
 import { useORPC } from '../locomotiva-api/context';
+import { entregarRetornoGovbr, linkDoAppParaCallback } from '../govbr/link';
 
 /**
  * Botão "Entrar com gov.br".
@@ -12,6 +14,10 @@ import { useORPC } from '../locomotiva-api/context';
  *
  * A API monta a URL: o `state`, o `nonce` e o `code_verifier` são gerados e
  * guardados no servidor. O cliente só recebe o endereço para onde navegar.
+ *
+ * Na web, a própria página navega até o gov.br. No aplicativo, o login abre
+ * no navegador do sistema (o roteiro do gov.br pede para não usar WebView) e
+ * o retorno volta pelo link do app — ver `govbr/link.ts`.
  */
 export default function BotaoGovbr({ redirectTo, onErro }: {
     redirectTo?: string | null;
@@ -42,10 +48,25 @@ export default function BotaoGovbr({ redirectTo, onErro }: {
         try {
             const { authorizationUrl } = await orpc.identy.startGovbrLogin.call({
                 redirectTo: redirectTo ?? null,
+                client: Platform.OS === 'web' ? 'web' : 'app',
             });
-            // Navegação de página inteira, não fetch: é o navegador que precisa
-            // ir até o gov.br para a pessoa autenticar lá.
-            window.location.assign(authorizationUrl);
+
+            if (Platform.OS === 'web') {
+                // Navegação de página inteira, não fetch: é o navegador que precisa
+                // ir até o gov.br para a pessoa autenticar lá.
+                window.location.assign(authorizationUrl);
+                return;
+            }
+
+            // Custom Tab no Android, sessão de autenticação no iOS. A página de
+            // callback (web) devolve `code` e `state` pelo link do app, o que
+            // fecha o navegador e resolve esta promessa com a URL completa.
+            const resultado = await WebBrowser.openAuthSessionAsync(authorizationUrl, linkDoAppParaCallback());
+            if (resultado.type === 'success') {
+                entregarRetornoGovbr(resultado.url);
+            }
+            // Cancelou, fechou o navegador ou já entregou: libera o botão.
+            setCarregando(false);
         } catch (e) {
             setCarregando(false);
             onErro?.(e instanceof Error ? e.message : 'Não foi possível iniciar o login pelo gov.br.');

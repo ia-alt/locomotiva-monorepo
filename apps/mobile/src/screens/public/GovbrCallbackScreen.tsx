@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { Text, TextInput, Button, Surface, useTheme, HelperText, Icon, MD3Theme } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useORPC } from '../../locomotiva-api/context';
 import { useAuth } from '../../contexts/auth-context';
+import { RetornoGovbr, linkDoAppParaCallback, stateVeioDoApp } from '../../govbr/link';
 
 /** Igual ao CadastroScreen, para a pessoa digitar do mesmo jeito nas duas telas. */
 const formatBirthDate = (text: string) =>
@@ -36,6 +37,7 @@ type SenhaFormValues = z.infer<typeof senhaSchema>;
 
 type Etapa =
     | { tipo: 'processando' }
+    | { tipo: 'abrir-app'; link: string }
     | { tipo: 'perfil'; ticket: string; nome: string | null }
     | { tipo: 'senha'; ticket: string; emailMascarado: string | null }
     | { tipo: 'erro'; mensagem: string };
@@ -47,10 +49,18 @@ type Etapa =
  * navegador tem prefixos fixos que não cobrem o domínio de produção — e sem
  * isso ele descarta a URL e volta para a tela inicial, levando o `code` junto.
  *
+ * Os parâmetros vêm da raiz já interpretados: na web, da URL da página; no
+ * aplicativo, do link do app que o reabriu. Se o login partiu do aplicativo
+ * mas esta tela está rodando na web, ela não conclui nada — só devolve o
+ * retorno ao app (ver `govbr/link.ts`).
+ *
  * O ticket fica em estado do React, nunca em parâmetro de rota: assim não entra
  * na barra de endereço nem no histórico do navegador.
  */
-export default function GovbrCallbackScreen({ onConcluir }: { onConcluir: () => void }) {
+export default function GovbrCallbackScreen({ retorno, onConcluir }: {
+    retorno: RetornoGovbr;
+    onConcluir: () => void;
+}) {
     const theme = useTheme();
     const styles = makeStyles(theme);
     const orpc = useORPC();
@@ -66,12 +76,20 @@ export default function GovbrCallbackScreen({ onConcluir }: { onConcluir: () => 
         if (jaProcessou.current) return;
         jaProcessou.current = true;
 
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        const state = params.get('state');
-        const erroGovbr = params.get('error');
+        const { code, state, error: erroGovbr } = retorno;
 
         limparUrl();
+
+        // Login iniciado pelo aplicativo, mas o gov.br só devolve para a web:
+        // entrega `code` e `state` ao app pelo link dele, sem consumi-los aqui.
+        // O redirecionamento automático pode ser bloqueado (o Chrome no Android
+        // exige um toque para abrir esquema de app), por isso há um botão.
+        if (Platform.OS === 'web' && state && stateVeioDoApp(state)) {
+            const link = linkDoAppParaCallback({ code, state, error: erroGovbr });
+            setEtapa({ tipo: 'abrir-app', link });
+            window.location.replace(link);
+            return;
+        }
 
         if (erroGovbr) {
             setEtapa({
@@ -116,6 +134,22 @@ export default function GovbrCallbackScreen({ onConcluir }: { onConcluir: () => 
             <View style={styles.centro}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
                 <Text variant="bodyLarge" style={styles.processandoTexto}>Confirmando sua identidade…</Text>
+            </View>
+        );
+    }
+
+    if (etapa.tipo === 'abrir-app') {
+        const link = etapa.link;
+        return (
+            <View style={styles.centro}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
+                <Text variant="bodyLarge" style={styles.processandoTexto}>Voltando para o aplicativo…</Text>
+                <Text variant="bodyMedium" style={styles.erroTexto}>
+                    Se o aplicativo não abrir sozinho, toque no botão.
+                </Text>
+                <Button mode="contained" onPress={() => window.location.assign(link)} style={styles.botao}>
+                    Abrir o aplicativo
+                </Button>
             </View>
         );
     }

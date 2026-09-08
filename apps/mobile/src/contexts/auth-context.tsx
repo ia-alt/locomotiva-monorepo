@@ -39,6 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const response = await orpc.identy.getMe.call({})
             setAuthUser(response);
         } catch (error) {
+            // 401 aqui significa que a sessão acabou de verdade: o interceptador
+            // do link já tentou renovar e falhou. A pessoa volta ao login sem
+            // alarde — não é um erro do aplicativo.
+            if (ehNaoAutorizado(error)) {
+                await limparSessao();
+                setAuthUser(null);
+                return;
+            }
             console.error(error);
         } finally {
             setIsUserLoading(false);
@@ -97,23 +105,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         queryClient.clear();
         setAuthUser(null);
 
-        // Sair também encerra a sessão no gov.br — SEMPRE, não importa como a
-        // pessoa entrou. O navegador pode carregar uma sessão gov.br de outro
-        // momento (dela ou de outra pessoa, num computador compartilhado); sem
-        // esta limpeza, o próximo clique em "Entrar com GOV.BR" cairia nessa
-        // conta antiga sem pedir senha. É o que garante o combinado: depois do
-        // "Sair", dá para entrar com OUTRO gov.br ou pelo login normal.
-        if (typeof window !== 'undefined') {
-            try {
-                const { url } = await orpc.identy.getGovbrLogoutUrl.call({});
-                if (url) {
-                    window.location.assign(url);
-                }
-            } catch {
-                // Integração desligada ou sem rede: sessão local já foi
-                // encerrada; a do gov.br (se existir) expira sozinha.
-            }
-        }
+        // O "sair" é só local, por decisão de produto (03/09/2026): encerrar
+        // também a sessão do gov.br exigia navegar até a página de logout dele,
+        // e a pessoa deve voltar direto para a tela inicial. Consequência: se o
+        // navegador ainda tiver uma sessão gov.br viva, o próximo "Entrar com
+        // GOV.BR" pode entrar sem pedir senha. Se isso virar problema, a API
+        // aceita GOVBR_PROMPT=login ou GOVBR_MAX_AGE (ver .env.exemple), e a
+        // rota identy.getGovbrLogoutUrl continua disponível.
     };
 
     const registerMutation = useMutation({
@@ -160,6 +158,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
+}
+
+function ehNaoAutorizado(e: unknown): boolean {
+    return typeof e === 'object' && e !== null && (e as { code?: string }).code === 'UNAUTHORIZED';
 }
 
 export function useAuth() {

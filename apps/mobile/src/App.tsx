@@ -9,6 +9,7 @@ import { CheckinProvider } from './contexts/checkin-context';
 import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
 import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
+import { lerRetornoGovbr, useUrlRetornoGovbr, RetornoGovbr } from './govbr/link';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LayoutProvider, useLayout } from './contexts/layout-context';
 
@@ -120,20 +121,27 @@ export default function Main() {
 
 const MAX_WIDTH = 800;
 
-/** Precisa ser idêntico ao GOVBR_REDIRECT_URI cadastrado no gov.br. */
-const CAMINHO_CALLBACK_GOVBR = '/auth/govbr/callback';
-
 function App() {
   const { width } = useWindowDimensions();
   const { fullBleed } = useLayout();
   const isWide = width > MAX_WIDTH;
 
   // O retorno do gov.br é tratado ANTES do React Navigation. O `linking` dele
-  // tem prefixos fixos que não cobrem o domínio de produção, então ele
-  // descartaria a URL e voltaria para a tela inicial — levando o `code` junto.
-  const [emCallbackGovbr, setEmCallbackGovbr] = React.useState(
-    () => typeof window !== 'undefined' && window.location.pathname === CAMINHO_CALLBACK_GOVBR
+  // tem prefixos fixos que não cobrem o domínio de produção nem o esquema do
+  // app, então ele descartaria a URL e voltaria para a tela inicial — levando
+  // o `code` junto. Na web a URL é a da própria página; no aplicativo é o link
+  // do app que o (re)abriu, ou o resultado da sessão de login.
+  const urlRetorno = useUrlRetornoGovbr();
+  const [retornoGovbr, setRetornoGovbr] = React.useState<RetornoGovbr | null>(
+    () => lerRetornoGovbr(urlRetorno)
   );
+  const ultimaUrlTratada = React.useRef<string | null>(urlRetorno);
+  React.useEffect(() => {
+    if (!urlRetorno || urlRetorno === ultimaUrlTratada.current) return;
+    ultimaUrlTratada.current = urlRetorno;
+    const retorno = lerRetornoGovbr(urlRetorno);
+    if (retorno) setRetornoGovbr(retorno);
+  }, [urlRetorno]);
 
   // Telas "full bleed" (ex.: EntradaScreen) ocupam a viewport inteira e
   // centralizam o próprio conteúdo; as demais ficam limitadas a MAX_WIDTH.
@@ -143,8 +151,14 @@ function App() {
       !fullBleed && { maxWidth: MAX_WIDTH },
       !fullBleed && isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
     ]}>
-      {emCallbackGovbr
-        ? <GovbrCallbackScreen onConcluir={() => setEmCallbackGovbr(false)} />
+      {retornoGovbr
+        ? (
+          <GovbrCallbackScreen
+            key={retornoGovbr.state ?? 'sem-state'}
+            retorno={retornoGovbr}
+            onConcluir={() => setRetornoGovbr(null)}
+          />
+        )
         : <Navigation />}
     </View>
   );
