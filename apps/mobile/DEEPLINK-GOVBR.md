@@ -277,3 +277,58 @@ produção, nos apps de loja.
   identificador, gerado pelo EAS. O Expo Go não serve para deeplink porque não
   tem o seu package name nem o seu scheme.
 - **EAS:** serviço de build da Expo (nuvem). O `eas-cli` já está instalado.
+
+---
+
+## Checklist: subir na `dev` e testar a fase 1 (08/09/2026)
+
+A `dev` está sem os commits desta branch desde o Login Gov (inclui a sessão
+persistente). Depois do merge, três coisas não acontecem sozinhas:
+
+**1. Migrations no banco de dev.** O deploy do Coolify só roda `npm start`;
+nenhuma migration é aplicada. Faltam quatro na dev:
+`20260805180000_govbr_login_unico`, `20260805190000_govbr_auth_requests`,
+`20260805200000_govbr_pending_identities`, `20260831120000_refresh_tokens`.
+Aplicar com `npm run prisma:deploy` (= `prisma migrate deploy`) apontando para
+o `DATABASE_URL` da dev — pelo terminal do container da API no Coolify, ou
+localmente com `DATABASE_URL=<url da dev> npx prisma migrate deploy` em
+`apps/api`. Sem isso, login por senha quebra (tabela `refresh_tokens`) e o
+gov.br quebra (tabelas `govbr_*`).
+
+**2. Variáveis da API dev (Coolify, `locomotiva-api-dev`).** Copiar do `.env`
+local, que já aponta para a credencial de homologação e para a URL de retorno
+da dev:
+
+| Variável | Valor |
+|---|---|
+| `GOVBR_ENABLED` | `true` |
+| `GOVBR_CLIENT_ID` | `h-locomotiva-dev.inova.ma.gov.br` |
+| `GOVBR_CLIENT_SECRET` | o segredo da credencial de homologação (sem espaço no fim) |
+| `GOVBR_ISSUER` | `https://sso.staging.acesso.gov.br` |
+| `GOVBR_REDIRECT_URI` | `https://locomotiva-dev.inova.ma.gov.br/auth/govbr/callback` |
+| `GOVBR_SCOPES` | o mesmo do `.env` local |
+| `GOVBR_POST_LOGOUT_REDIRECT_URI`, `GOVBR_PROMPT`, `GOVBR_MAX_AGE` | deixar sem definir |
+| `AUTH_ACCESS_TOKEN_TTL_SECONDS`, `AUTH_REFRESH_TOKEN_TTL_SECONDS` | deixar sem definir (padrões 15 min / 30 dias) |
+
+Web (`locomotiva-dev`) e admin não ganharam variável nova.
+
+**3. Testar.**
+
+Na web, em `https://locomotiva-dev.inova.ma.gov.br`:
+- Login por senha → fechar a aba → abrir de novo → continua logado.
+- "Entrar com gov.br" → CPF/senha no gov.br → volta logado. Se for CPF novo,
+  aparece "complete seu cadastro"; se o CPF já tem conta, pede a senha dela.
+- Sair → volta à tela inicial.
+
+No celular (build de dev já instalada):
+- No `.env` do mobile, trocar para `EXPO_PUBLIC_API_URL=https://locomotiva-api-dev.inova.ma.gov.br/api`
+  e reiniciar `npx expo start --dev-client`.
+- "Entrar com gov.br" → navegador do sistema → gov.br → página
+  "Voltando para o aplicativo…" no site dev → app volta logado. Se o Chrome
+  não abrir o app sozinho, o botão "Abrir o aplicativo" faz isso.
+- Repetir cancelando no gov.br (mensagem de cancelamento na tela).
+- Repetir fechando o app à força enquanto está no gov.br: ao voltar, o app
+  abre e conclui o login.
+- Fechar e reabrir o app: continua logado. Sair: volta à tela inicial.
+
+Passando tudo isso, a fase 1 está fechada.
