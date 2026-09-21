@@ -23,11 +23,25 @@ const clientSemAuth: RouterClientType = createORPCClient(
     new RPCLink({ url: process.env.EXPO_PUBLIC_API_URL! })
 );
 
-export async function salvarSessao(token: string, refreshToken: string): Promise<void> {
+/**
+ * Como a pessoa entrou. Decide o que o "sair" faz: quem entrou pelo gov.br
+ * também precisa encerrar a sessão lá (o roteiro do gov.br exige); quem entrou
+ * por senha não tem sessão gov.br para encerrar.
+ */
+export type MetodoDeLogin = 'password' | 'govbr';
+
+export async function salvarSessao(token: string, refreshToken: string, metodo?: MetodoDeLogin): Promise<void> {
+    // `metodo` só vem no login. A renovação não o passa, e ele fica como está.
     await AsyncStorage.multiSet([
         ['token', token],
         ['refreshToken', refreshToken],
+        ...(metodo ? [['loginMethod', metodo] as [string, string]] : []),
     ]);
+}
+
+export async function lerMetodoDeLogin(): Promise<MetodoDeLogin | null> {
+    const valor = await AsyncStorage.getItem('loginMethod');
+    return valor === 'password' || valor === 'govbr' ? valor : null;
 }
 
 export async function limparSessao(): Promise<void> {

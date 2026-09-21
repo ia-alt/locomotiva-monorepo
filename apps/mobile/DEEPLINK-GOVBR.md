@@ -13,10 +13,10 @@ Contexto já apurado: `apps/api/src/modules/identity/GOVBR-LOGIN-UNICO.md`
 
 ## Status
 
-| Fase | Situação (02/09/2026) |
+| Fase | Situação (21/09/2026) |
 |---|---|
 | 0 | **Concluída em 03/09.** Build de dev Android (EAS `54fe3324`) instalado num Galaxy S24+; login por senha e telas normais ok; o link do app abre a tela de callback (a 1ª tentativa de build quebrou no `@react-native-community/masked-view`, trocado pelo `@react-native-masked-view/masked-view`). |
-| 1 | Código pronto na API e no mobile, typecheck ok. No celular já foi provado: app abre o navegador do sistema, chega ao gov.br e volta ao domínio; e o link do app entrega `code`/`state` à tela de callback. Falta o deploy em `dev` (página de ponte) para o ciclo completo. Logout passou a ser só local, por decisão de produto (03/09). |
+| 1 | **Concluída em 21/09** no build de preview (EAS `ac8fc707`, Galaxy S24+): login gov.br → app logado; fechar/reabrir mantém a sessão (gov.br e senha); fechado 20 min e reaberto continua logado (renovação automática ok); app morto durante o login conclui ao voltar; cancelar no gov.br não dá erro; sair volta à tela inicial. A falha de persistência vista em 08/09 era o dev launcher do Expo (bug `Set.addAll` ao abrir do zero por deep link), não o código. **Logout federado com ponte implementado em 21/09** (ver seção abaixo) — aguarda deploy em dev + build preview novo para teste. |
 | 2–4 | Não iniciadas. |
 
 Onde está o código da fase 1: `apps/mobile/src/govbr/link.ts` (link do app,
@@ -277,6 +277,59 @@ produção, nos apps de loja.
   identificador, gerado pelo EAS. O Expo Go não serve para deeplink porque não
   tem o seu package name nem o seu scheme.
 - **EAS:** serviço de build da Expo (nuvem). O `eas-cli` já está instalado.
+
+---
+
+## Logout federado com ponte (implementado em 21/09/2026)
+
+Em 03/09 o "sair" passou a ser só local, porque na web e no app ele caía na
+página de CPF do gov.br. Testado em 03/09: o gov.br **ignora** `prompt=login` e
+`max_age=0`. Consequência observada em 21/09: depois de sair, o próximo "Entrar
+com gov.br" entra direto na última conta, sem senha.
+
+Dois fatos pesam a favor de reintroduzir o logout federado:
+
+1. O roteiro técnico do gov.br (passo 12) diz: "Implementação obrigatória a fim
+   de encerrar a sessão do usuário com o Login Único", partindo do front-end.
+   Pode ser cobrado na homologação da credencial de produção.
+2. Em aparelho emprestado, a conta anterior fica acessível sem senha.
+
+Como ficou (mesma ponte do login):
+
+- O app grava como a pessoa entrou (`loginMethod` = `password` | `govbr`,
+  em `locomotiva-api/session.ts`). Só quem entrou pelo gov.br passa pelo
+  logout federado; quem entrou por senha sai direto (era isso que, em 03/09,
+  levava à tela de CPF do gov.br: não havia sessão lá para encerrar).
+- API: `identy.getGovbrLogoutUrl` aceita `client`. Para `web` devolve a URL de
+  logout do gov.br com retorno para a home (a única cadastrada como "URL de Log
+  Out"). Para `app` devolve a **página de saída da web**
+  `<web>/auth/govbr/logout?client=app`.
+- Web (`GovbrSaidaScreen`, montada pela raiz antes do React Navigation):
+  - `/auth/govbr/logout?client=app` (modo `iniciar`): grava a marca
+    `govbr:sair-para-app` no `sessionStorage` (válida 2 min), pede à API a
+    URL de logout e navega para o gov.br.
+  - home aberta com a marca (modo `voltar-ao-app`): limpa a marca e
+    redireciona para `br.gov.ma.inova.locomotiva://auth/govbr/logout`, com
+    botão "Abrir o aplicativo" e "Ir para o início" de reserva.
+- App: `logout()` limpa a sessão local, e se foi gov.br abre a página de saída
+  em `openAuthSessionAsync` (sem aguardar; a tela de login já está por baixo).
+  O navegador fecha ao chegar no link do app.
+- Web: `logout()` navega direto para a URL do gov.br; volta à home deslogada.
+- iOS: `preferEphemeralSession: true` no login e no logout — sessão privada,
+  o gov.br pede senha a cada login e não aparece o aviso do sistema.
+
+Produção: cadastrar `https://locomotiva.inova.ma.gov.br/` como "URL de Log
+Out" da credencial de produção (ou definir `GOVBR_POST_LOGOUT_REDIRECT_URI`).
+
+Testes (web dev + build preview novo):
+- Web: entrar pelo gov.br → sair → cai na home deslogada → "Entrar com gov.br"
+  pede CPF e senha. Entrar por senha → sair → home direto, sem passar pelo gov.br.
+- App: entrar pelo gov.br → sair → navegador pisca e fecha sozinho → tela de
+  login → "Entrar com gov.br" pede CPF e senha. Entrar por senha → sair →
+  tela de login na hora, sem navegador.
+
+Para testes manuais enquanto isso: abrir no Chrome do celular
+`https://sso.staging.acesso.gov.br/logout` encerra a sessão do gov.br.
 
 ---
 

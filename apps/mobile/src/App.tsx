@@ -9,7 +9,8 @@ import { CheckinProvider } from './contexts/checkin-context';
 import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
 import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
-import { lerRetornoGovbr, useUrlRetornoGovbr, RetornoGovbr } from './govbr/link';
+import GovbrSaidaScreen from './screens/public/GovbrSaidaScreen';
+import { lerRetornoGovbr, lerSaidaGovbr, useUrlRetornoGovbr, RetornoGovbr, SaidaGovbr } from './govbr/link';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LayoutProvider, useLayout } from './contexts/layout-context';
 
@@ -143,6 +144,11 @@ function App() {
     if (retorno) setRetornoGovbr(retorno);
   }, [urlRetorno]);
 
+  // Saída do gov.br, só na web: a página que o app abre para encerrar a
+  // sessão lá, ou a home aberta na volta do gov.br com a marca de "voltar ao
+  // app". Também antes do React Navigation, pelo mesmo motivo acima.
+  const [saidaGovbr] = React.useState<SaidaGovbr | null>(() => lerSaidaGovbr(urlRetorno));
+
   // Telas "full bleed" (ex.: EntradaScreen) ocupam a viewport inteira e
   // centralizam o próprio conteúdo; as demais ficam limitadas a MAX_WIDTH.
   return (
@@ -151,15 +157,17 @@ function App() {
       !fullBleed && { maxWidth: MAX_WIDTH },
       !fullBleed && isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
     ]}>
-      {retornoGovbr
-        ? (
-          <GovbrCallbackScreen
-            key={retornoGovbr.state ?? 'sem-state'}
-            retorno={retornoGovbr}
-            onConcluir={() => setRetornoGovbr(null)}
-          />
-        )
-        : <Navigation />}
+      {saidaGovbr
+        ? <GovbrSaidaScreen modo={saidaGovbr} />
+        : retornoGovbr
+          ? (
+            <GovbrCallbackScreen
+              key={retornoGovbr.state ?? 'sem-state'}
+              retorno={retornoGovbr}
+              onConcluir={() => setRetornoGovbr(null)}
+            />
+          )
+          : <Navigation />}
     </View>
   );
 }

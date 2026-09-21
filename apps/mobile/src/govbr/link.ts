@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import appJson from '../../app.json';
 
 /**
- * Retorno do login gov.br nas três plataformas.
+ * Idas e vindas entre o app e o gov.br nas três plataformas.
  *
- * O gov.br só devolve a pessoa para a URL HTTPS cadastrada na credencial, que
- * é a da versão web. Por isso o caminho do callback é um só; o que muda é quem
+ * O gov.br só devolve a pessoa para URLs HTTPS cadastradas na credencial, que
+ * são as da versão web. Por isso os caminhos são um só; o que muda é quem
  * trata o retorno:
  *
  * - Web: a própria página recebe `code` e `state` e conclui o login.
@@ -14,6 +15,8 @@ import appJson from '../../app.json';
  *   aplicativo e o reabre pelo link do app (`br.gov.ma.inova.locomotiva://…`),
  *   entregando `code` e `state` sem consumi-los. O navegador de login fecha
  *   sozinho ao chegar nesse link.
+ *
+ * A saída (logout federado) segue a mesma ideia — ver a seção no fim.
  */
 
 /** Precisa ser idêntico ao caminho do GOVBR_REDIRECT_URI cadastrado no gov.br. */
@@ -88,6 +91,77 @@ export function lerRetornoGovbr(url: string | null | undefined): RetornoGovbr | 
     const parametro = (nome: string): string | null => parametros.get(nome) || null;
 
     return { code: parametro('code'), state: parametro('state'), error: parametro('error') };
+}
+
+// ─────────────────────── saída (logout federado) ───────────────────────
+//
+// O roteiro do gov.br exige que a aplicação encerre a sessão lá ao sair. O
+// gov.br só devolve para a URL cadastrada como "URL de Log Out" — a home da
+// web — e a home, sozinha, não teria como saber que deve reabrir o app. Então
+// o app abre a PÁGINA DE SAÍDA da web, que deixa uma marca no navegador, vai
+// ao gov.br, e na volta a home vê a marca e reabre o app pelo link dele, o que
+// fecha o navegador. Na web não há marca: sair vai ao gov.br e volta à home.
+
+/** Página de saída da web. O app chega aqui com `?client=app`. */
+export const CAMINHO_LOGOUT_GOVBR = '/auth/govbr/logout';
+
+const CHAVE_SAIDA_PARA_APP = 'govbr:sair-para-app';
+
+/** Uma volta pelo gov.br leva segundos; marca mais velha é resto de fluxo interrompido. */
+const VALIDADE_SAIDA_MS = 2 * 60 * 1000;
+
+/** Link do app que encerra o navegador de saída. */
+export function linkDoAppParaLogout(): string {
+    return linkDoApp(CAMINHO_LOGOUT_GOVBR);
+}
+
+export type SaidaGovbr = 'iniciar' | 'voltar-ao-app';
+
+/**
+ * Na web: esta é a página de saída (`iniciar`), ou a home aberta na volta do
+ * gov.br com a marca do app (`voltar-ao-app`)? No nativo nunca é nenhum dos
+ * dois — lá o link `…://auth/govbr/logout` só serve para fechar o navegador.
+ *
+ * Sem efeitos colaterais: a marca é consumida pela tela, não aqui.
+ */
+export function lerSaidaGovbr(url: string | null | undefined): SaidaGovbr | null {
+    if (Platform.OS !== 'web' || !url) return null;
+
+    try {
+        const { pathname, searchParams } = new URL(url);
+        if (pathname.replace(/\/+$/, '') === CAMINHO_LOGOUT_GOVBR && searchParams.get('client') === 'app') {
+            return 'iniciar';
+        }
+    } catch {
+        return null;
+    }
+
+    return temSaidaParaApp() ? 'voltar-ao-app' : null;
+}
+
+export function marcarSaidaParaApp(): void {
+    try {
+        window.sessionStorage.setItem(CHAVE_SAIDA_PARA_APP, String(Date.now()));
+    } catch {
+        // Navegador sem storage: a volta cai na home e a pessoa fecha o navegador.
+    }
+}
+
+export function limparSaidaParaApp(): void {
+    try {
+        window.sessionStorage.removeItem(CHAVE_SAIDA_PARA_APP);
+    } catch {
+        // Nada a limpar.
+    }
+}
+
+function temSaidaParaApp(): boolean {
+    try {
+        const marcadoEm = Number(window.sessionStorage.getItem(CHAVE_SAIDA_PARA_APP));
+        return marcadoEm > 0 && Date.now() - marcadoEm < VALIDADE_SAIDA_MS;
+    } catch {
+        return false;
+    }
 }
 
 // ────────────── URL de retorno vinda da sessão de login (nativo) ──────────────

@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { salvarSessao, limparSessao } from '../locomotiva-api/session';
+import * as WebBrowser from 'expo-web-browser';
+import { salvarSessao, limparSessao, lerMetodoDeLogin } from '../locomotiva-api/session';
+import { linkDoAppParaLogout } from '../govbr/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useORPC } from '../locomotiva-api/context';
 import { ORPCOutputs, ORPCInputs } from '../locomotiva-api/types';
@@ -57,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...orpc.identy.login.mutationOptions(),
         onSuccess: async (data) => {
             if (data?.token) {
-                await salvarSessao(data.token, data.refreshToken);
+                await salvarSessao(data.token, data.refreshToken, 'password');
             }
             getMe();
         },
@@ -83,11 +86,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      * por aqui. Guarda e carrega o usuário, igual ao final do login normal.
      */
     const loginWithToken = async (token: string, refreshToken: string) => {
-        await salvarSessao(token, refreshToken);
+        // Único caminho que chega aqui é o gov.br (callback, cadastro e vínculo).
+        await salvarSessao(token, refreshToken, 'govbr');
         await getMe();
     };
 
     const logout = async () => {
+        // Lido antes de limpar: decide se há sessão gov.br a encerrar.
+        const metodo = await lerMetodoDeLogin();
+
         // Revoga a sessão persistente NO SERVIDOR antes de esquecê-la aqui.
         // Sem isso o "sair" seria só cosmético: o refresh token continuaria
         // válido no banco até expirar.
@@ -105,13 +112,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         queryClient.clear();
         setAuthUser(null);
 
-        // O "sair" é só local, por decisão de produto (03/09/2026): encerrar
-        // também a sessão do gov.br exigia navegar até a página de logout dele,
-        // e a pessoa deve voltar direto para a tela inicial. Consequência: se o
-        // navegador ainda tiver uma sessão gov.br viva, o próximo "Entrar com
-        // GOV.BR" pode entrar sem pedir senha. Se isso virar problema, a API
-        // aceita GOVBR_PROMPT=login ou GOVBR_MAX_AGE (ver .env.exemple), e a
-        // rota identy.getGovbrLogoutUrl continua disponível.
+        // Quem entrou pelo gov.br também sai de lá (roteiro do gov.br, passo 12:
+        // "implementação obrigatória", a partir do front-end). Sem isso, o
+        // próximo "Entrar com GOV.BR" entra sem senha na conta anterior — e o
+        // gov.br ignora `prompt=login`/`max_age`, então não há atalho. Quem
+        // entrou por senha não tem sessão gov.br: abrir o gov.br nesse caso o
+        // fazia mostrar a tela de login dele (03/09/2026).
+        if (metodo !== 'govbr') return;
+
+        try {
+            const { url } = await orpc.identy.getGovbrLogoutUrl.call({
+                client: Platform.OS === 'web' ? 'web' : 'app',
+            });
+            if (!url) return;
+
+            if (Platform.OS === 'web') {
+                // Vai ao gov.br e volta para a home, já deslogada.
+                window.location.assign(url);
+                return;
+            }
+
+            // No app: a URL é a página de saída da web, que passa pelo gov.br e
+            // reabre o app pelo link dele — o navegador fecha sozinho. Não se
+            // espera pela promessa: a tela de login já está por baixo, e se a
+            // pessoa fechar o navegador na mão o resultado é o mesmo.
+            WebBrowser.openAuthSessionAsync(url, linkDoAppParaLogout(), { preferEphemeralSession: true })
+                .catch(() => { /* já está deslogada localmente */ });
+        } catch {
+            // Integração desligada ou sem rede: a sessão do gov.br expira sozinha.
+        }
     };
 
     const registerMutation = useMutation({

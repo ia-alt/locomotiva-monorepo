@@ -61,7 +61,13 @@ export default function BotaoGovbr({ redirectTo, onErro }: {
             // Custom Tab no Android, sessão de autenticação no iOS. A página de
             // callback (web) devolve `code` e `state` pelo link do app, o que
             // fecha o navegador e resolve esta promessa com a URL completa.
-            const resultado = await WebBrowser.openAuthSessionAsync(authorizationUrl, linkDoAppParaCallback());
+            const resultado = await WebBrowser.openAuthSessionAsync(authorizationUrl, linkDoAppParaCallback(), {
+                // Só iOS: sessão privada, sem compartilhar cookies com o Safari.
+                // Assim o gov.br pede senha a cada login e o sistema não exibe o
+                // aviso "deseja permitir que … use acesso.gov.br para entrar".
+                // No Android o Custom Tab sempre compartilha os cookies do Chrome.
+                preferEphemeralSession: true,
+            });
             if (resultado.type === 'success') {
                 entregarRetornoGovbr(resultado.url);
             }
