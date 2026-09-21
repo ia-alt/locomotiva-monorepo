@@ -15,7 +15,10 @@
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://locomotiva-api-dev.inova.ma.gov.br/api"
+      }
     },
     "production": {
       "autoIncrement": true
