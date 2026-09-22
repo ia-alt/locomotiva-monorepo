@@ -321,6 +321,30 @@ Como ficou (mesma ponte do login):
 Produção: cadastrar `https://locomotiva.inova.ma.gov.br/` como "URL de Log
 Out" da credencial de produção (ou definir `GOVBR_POST_LOGOUT_REDIRECT_URI`).
 
+### Achados do teste de 22/09/2026
+
+- **A URL de retorno do logout não pode ter barra no fim.** O gov.br compara
+  por string exata com o valor cadastrado (`https://locomotiva-dev.inova.ma.gov.br`,
+  sem barra). Com barra ele ignora e manda a pessoa para o portal dele, que
+  exibe a tela de CPF. Verificado três vezes cada forma. Corrigido em
+  `get-govbr-logout-url.ts` (usa `origin` puro).
+- **Um retorno do gov.br só pode ser tratado uma vez.** Fechar o app pela lista
+  de recentes e voltar por ali faz o Android recriar a tela com o mesmo atalho
+  que a abriu — o link de retorno já consumido — e o servidor recusa com
+  "sessão de login expirada ou inválida". Era também a causa da tela de erro
+  que piscava num login bem-sucedido. Resolvido em `useRetornoGovbrPendente`
+  (`govbr/link.ts`): marca persistida do último retorno tratado mais
+  `Linking.clearInitialURL()`.
+
+Fora do escopo do deeplink, achados no mesmo teste:
+
+- O nome exibido vem do `social_name` do gov.br quando existe
+  (`GovbrPendingIdentity.create`), e a conta de homologação devolve o texto
+  literal "Nome social". Comportamento aceito; em produção vem o nome real.
+- O leitor de QR Code só existe na web (`camera-view.web.tsx`); no nativo o
+  arquivo de reserva apenas avisa que não está disponível. Adaptar para o
+  celular ficou para depois.
+
 Testes (web dev + build preview novo):
 - Web: entrar pelo gov.br → sair → cai na home deslogada → "Entrar com gov.br"
   pede CPF e senha. Entrar por senha → sair → home direto, sem passar pelo gov.br.

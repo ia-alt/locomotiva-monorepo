@@ -10,7 +10,7 @@ import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
 import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
 import GovbrSaidaScreen from './screens/public/GovbrSaidaScreen';
-import { lerRetornoGovbr, lerSaidaGovbr, useUrlRetornoGovbr, RetornoGovbr, SaidaGovbr } from './govbr/link';
+import { lerSaidaGovbr, useUrlRetornoGovbr, useRetornoGovbrPendente, SaidaGovbr } from './govbr/link';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LayoutProvider, useLayout } from './contexts/layout-context';
 
@@ -132,17 +132,10 @@ function App() {
   // app, então ele descartaria a URL e voltaria para a tela inicial — levando
   // o `code` junto. Na web a URL é a da própria página; no aplicativo é o link
   // do app que o (re)abriu, ou o resultado da sessão de login.
+  // Cada retorno é tratado uma única vez, mesmo entre reaberturas do app —
+  // ver `useRetornoGovbrPendente`, que explica por quê.
   const urlRetorno = useUrlRetornoGovbr();
-  const [retornoGovbr, setRetornoGovbr] = React.useState<RetornoGovbr | null>(
-    () => lerRetornoGovbr(urlRetorno)
-  );
-  const ultimaUrlTratada = React.useRef<string | null>(urlRetorno);
-  React.useEffect(() => {
-    if (!urlRetorno || urlRetorno === ultimaUrlTratada.current) return;
-    ultimaUrlTratada.current = urlRetorno;
-    const retorno = lerRetornoGovbr(urlRetorno);
-    if (retorno) setRetornoGovbr(retorno);
-  }, [urlRetorno]);
+  const [retornoGovbr, concluirRetornoGovbr] = useRetornoGovbrPendente(urlRetorno);
 
   // Saída do gov.br, só na web: a página que o app abre para encerrar a
   // sessão lá, ou a home aberta na volta do gov.br com a marca de "voltar ao
@@ -164,7 +157,7 @@ function App() {
             <GovbrCallbackScreen
               key={retornoGovbr.state ?? 'sem-state'}
               retorno={retornoGovbr}
-              onConcluir={() => setRetornoGovbr(null)}
+              onConcluir={concluirRetornoGovbr}
             />
           )
           : <Navigation />}

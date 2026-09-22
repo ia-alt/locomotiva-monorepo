@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import appJson from '../../app.json';
 
@@ -214,4 +215,87 @@ export function useUrlRetornoGovbr(): string | null {
     }, [doExpo]);
 
     return url;
+}
+
+// ──────────────── um retorno é tratado UMA vez, e só uma ────────────────
+//
+// O `code` do gov.br é de uso único: uma segunda troca sempre falha com
+// "sessão de login expirada ou inválida". Duas situações levavam a isso:
+//
+// 1. Fechar o app pela lista de recentes e voltar por ali. O Android recria a
+//    tela com o MESMO atalho que a abriu, que era o link de retorno do login
+//    anterior — já consumido. Daí a proteção precisar sobreviver ao processo,
+//    e não só à execução (`AsyncStorage`).
+// 2. A mesma URL chegando por mais de um canal (evento do React Native,
+//    `expo-linking`, resultado da sessão de login), às vezes com diferença de
+//    escrita, depois da tela já ter concluído — o que remontava a tela.
+
+const CHAVE_ULTIMO_RETORNO = 'govbr:ultimoRetornoTratado';
+
+/** Retornos já entregues nesta execução. Cobre as entregas quase simultâneas. */
+const tratadosNestaExecucao = new Set<string>();
+
+/** Descarta o link que abriu o app, para ele não voltar numa recriação da tela. */
+function descartarLinkDeEntrada(): void {
+    try {
+        // Só limpa o canal do expo-linking; o do React Native lê o atalho da
+        // própria tela e o sistema o reentrega. Por isso a marca persistida
+        // acima continua sendo necessária.
+        Linking.clearInitialURL();
+    } catch {
+        // Plataforma sem suporte (web): não há atalho a limpar.
+    }
+}
+
+/**
+ * O retorno do gov.br a ser tratado agora, ou `null`. Devolve cada retorno uma
+ * única vez, mesmo entre reaberturas do aplicativo.
+ *
+ * `concluir` some com a tela de retorno quando ela termina o trabalho.
+ */
+export function useRetornoGovbrPendente(url: string | null): [RetornoGovbr | null, () => void] {
+    const [retorno, setRetorno] = useState<RetornoGovbr | null>(null);
+    const concluir = useCallback(() => setRetorno(null), []);
+
+    useEffect(() => {
+        const candidato = lerRetornoGovbr(url);
+        if (!candidato) return;
+
+        // Sem `code` nem `state` não há nada a consumir — é só o gov.br
+        // avisando de um erro (cancelamento, por exemplo). Mostra sempre.
+        const chave = candidato.state ?? candidato.code;
+        if (!chave) {
+            descartarLinkDeEntrada();
+            setRetorno(candidato);
+            return;
+        }
+
+        if (tratadosNestaExecucao.has(chave)) return;
+        tratadosNestaExecucao.add(chave);
+
+        let cancelado = false;
+        (async () => {
+            let ultimo: string | null = null;
+            try {
+                ultimo = await AsyncStorage.getItem(CHAVE_ULTIMO_RETORNO);
+            } catch {
+                // Sem storage: segue e trata. No pior caso o servidor recusa.
+            }
+            if (cancelado) return;
+
+            descartarLinkDeEntrada();
+            if (ultimo === chave) return;
+
+            try {
+                await AsyncStorage.setItem(CHAVE_ULTIMO_RETORNO, chave);
+            } catch {
+                // Idem acima.
+            }
+            if (!cancelado) setRetorno(candidato);
+        })();
+
+        return () => { cancelado = true; };
+    }, [url]);
+
+    return [retorno, concluir];
 }
