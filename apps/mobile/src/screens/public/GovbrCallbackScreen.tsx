@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { Text, TextInput, Button, Surface, useTheme, HelperText, Icon, MD3Theme } from 'react-native-paper';
+import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -223,7 +224,7 @@ function FormularioPerfil({ ticket, nome, onErro, onConcluir }: {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollComTeclado contentContainerStyle={styles.scroll}>
             <Surface style={styles.card} elevation={1}>
                 <View style={styles.selo}>
                     <Icon source="shield-check" size={20} color={theme.colors.primary} />
@@ -265,7 +266,7 @@ function FormularioPerfil({ ticket, nome, onErro, onConcluir }: {
                     Concluir cadastro
                 </Button>
             </Surface>
-        </ScrollView>
+        </ScrollComTeclado>
     );
 }
 
@@ -308,7 +309,7 @@ function FormularioSenha({ ticket, emailMascarado, onCancelar, onErro }: {
     void erroSenha;
 
     return (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollComTeclado contentContainerStyle={styles.scroll}>
             <Surface style={styles.card} elevation={1}>
                 <View style={styles.selo}>
                     <Icon source="shield-check" size={20} color={theme.colors.primary} />
@@ -369,7 +370,7 @@ function FormularioSenha({ ticket, emailMascarado, onCancelar, onErro }: {
                     Cancelar
                 </Button>
             </Surface>
-        </ScrollView>
+        </ScrollComTeclado>
     );
 }
 

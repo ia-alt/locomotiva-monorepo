@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { Text, TextInput, Button, Surface, Icon, useTheme, HelperText } from 'react-native-paper';
+import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useAuth } from '../../contexts/auth-context';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,11 +46,10 @@ export default function LoginScreen() {
     };
 
     return (
-        <ScrollView
+        <ScrollComTeclado
             id='login-scroll'
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
             style={styles.container}
         >
             {/* Logo Section */}
@@ -205,7 +205,7 @@ export default function LoginScreen() {
 
             {/* Footer */}
 
-        </ScrollView>
+        </ScrollComTeclado>
     );
 }
 

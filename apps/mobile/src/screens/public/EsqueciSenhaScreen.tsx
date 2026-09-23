@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text, TextInput, Button, Surface, useTheme, HelperText } from 'react-native-paper';
+import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -48,10 +49,9 @@ export default function EsqueciSenhaScreen() {
     };
 
     return (
-        <ScrollView
+        <ScrollComTeclado
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
             style={styles.container}
         >
             <Surface style={styles.card} elevation={1}>
@@ -122,7 +122,7 @@ export default function EsqueciSenhaScreen() {
                     Voltar para Login
                 </Button>
             </Surface>
-        </ScrollView>
+        </ScrollComTeclado>
     );
 }
 

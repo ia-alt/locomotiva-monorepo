@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, TextInput, Button } from 'react-native-paper';
+import ScrollComTeclado from '../../../components/ScrollComTeclado';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../../contexts/auth-context';
 import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
@@ -56,7 +57,7 @@ export default function PerfilIncompletoScreen() {
     }
 
     return (
-        <View style={styles.container}>
+        <ScrollComTeclado style={styles.container} contentContainerStyle={styles.containerContent}>
             <View style={styles.content}>
                 <View style={styles.iconWrapper}>
                     <Feather name="user-x" size={40} color="#1E88E5" />
@@ -142,7 +143,7 @@ export default function PerfilIncompletoScreen() {
                     <Text style={styles.cancelText}>Cancelar</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollComTeclado>
     );
 }
 
@@ -150,6 +151,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
+    },
+    containerContent: {
+        flexGrow: 1,
         padding: 24,
         justifyContent: 'space-between',
     },

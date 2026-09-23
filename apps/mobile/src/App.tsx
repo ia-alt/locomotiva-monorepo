@@ -12,6 +12,7 @@ import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
 import GovbrSaidaScreen from './screens/public/GovbrSaidaScreen';
 import { lerSaidaGovbr, useUrlRetornoGovbr, useRetornoGovbrPendente, SaidaGovbr } from './govbr/link';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { LayoutProvider, useLayout } from './contexts/layout-context';
 
 // Sistema de Toast Global acessível fora do fluxo do React
@@ -94,25 +95,30 @@ export default function Main() {
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <PaperProvider theme={theme}>
-          <GlobalToastProvider>
-            <QueryClientProvider client={queryClient}>
-              <ORPCProvider>
-                <AuthProvider>
-                  <QRCodeReaderProvider>
+        {/* Acompanha o teclado no aplicativo (na web não faz nada) — ver
+            `components/ScrollComTeclado.tsx`. Fica acima do PaperProvider
+            para valer também nos diálogos, que renderizam no Portal dele. */}
+        <KeyboardProvider>
+          <PaperProvider theme={theme}>
+            <GlobalToastProvider>
+              <QueryClientProvider client={queryClient}>
+                <ORPCProvider>
+                  <AuthProvider>
+                    <QRCodeReaderProvider>
 
-                    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                      <LayoutProvider>
-                        <App />
-                      </LayoutProvider>
-                    </SafeAreaView>
+                      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                        <LayoutProvider>
+                          <App />
+                        </LayoutProvider>
+                      </SafeAreaView>
 
-                  </QRCodeReaderProvider>
-                </AuthProvider>
-              </ORPCProvider>
-            </QueryClientProvider>
-          </GlobalToastProvider>
-        </PaperProvider>
+                    </QRCodeReaderProvider>
+                  </AuthProvider>
+                </ORPCProvider>
+              </QueryClientProvider>
+            </GlobalToastProvider>
+          </PaperProvider>
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

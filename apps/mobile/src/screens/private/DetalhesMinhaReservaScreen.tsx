@@ -1,7 +1,8 @@
 import React, { useLayoutEffect, useCallback, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Modal, StatusBar, Dimensions, Image } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { Text, Surface, Dialog, Portal, Button, TextInput } from 'react-native-paper';
+import { Text, Surface, Dialog, Button, TextInput } from 'react-native-paper';
+import DialogComTeclado from '../../components/DialogComTeclado';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -203,35 +204,33 @@ export default function DetalhesMinhaReservaScreen() {
 
             </Surface>
 
-            <Portal>
-                <Dialog visible={isCancelDialogVisible} onDismiss={() => setIsCancelDialogVisible(false)}>
-                    <Dialog.Title>Cancelar Reserva</Dialog.Title>
-                    <Dialog.Content>
-                        <Text variant="bodyMedium" style={{ marginBottom: 16 }}>
-                            Tem certeza que deseja cancelar esta reserva? Por favor, justifique o motivo.
-                        </Text>
-                        <TextInput
-                            label="Motivo do cancelamento *"
-                            value={cancelReason}
-                            onChangeText={setCancelReason}
-                            mode="outlined"
-                            multiline
-                            numberOfLines={3}
-                            style={{ backgroundColor: '#F9FAFB' }}
-                        />
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={() => setIsCancelDialogVisible(false)}>Voltar</Button>
-                        <Button
-                            onPress={confirmCancel}
-                            textColor="#DC2626"
-                            disabled={!cancelReason.trim()}
-                        >
-                            Sim, cancelar
-                        </Button>
-                    </Dialog.Actions>
-                </Dialog>
-            </Portal>
+            <DialogComTeclado visible={isCancelDialogVisible} onDismiss={() => setIsCancelDialogVisible(false)}>
+                <Dialog.Title>Cancelar Reserva</Dialog.Title>
+                <Dialog.Content>
+                    <Text variant="bodyMedium" style={{ marginBottom: 16 }}>
+                        Tem certeza que deseja cancelar esta reserva? Por favor, justifique o motivo.
+                    </Text>
+                    <TextInput
+                        label="Motivo do cancelamento *"
+                        value={cancelReason}
+                        onChangeText={setCancelReason}
+                        mode="outlined"
+                        multiline
+                        numberOfLines={3}
+                        style={{ backgroundColor: '#F9FAFB' }}
+                    />
+                </Dialog.Content>
+                <Dialog.Actions>
+                    <Button onPress={() => setIsCancelDialogVisible(false)}>Voltar</Button>
+                    <Button
+                        onPress={confirmCancel}
+                        textColor="#DC2626"
+                        disabled={!cancelReason.trim()}
+                    >
+                        Sim, cancelar
+                    </Button>
+                </Dialog.Actions>
+            </DialogComTeclado>
         </ScrollView>
     );
 }

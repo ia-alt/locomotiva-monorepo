@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text, TextInput, Button, HelperText } from 'react-native-paper';
+import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useAuth } from '../../contexts/auth-context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
 
@@ -88,7 +89,7 @@ export default function EditarPerfilScreen() {
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <ScrollComTeclado contentContainerStyle={styles.container}>
             <Text variant="titleMedium" style={styles.sectionTitle}>
                 Dados pessoais
             </Text>
@@ -181,7 +182,7 @@ export default function EditarPerfilScreen() {
                     Salvar
                 </Button>
             </View>
-        </ScrollView>
+        </ScrollComTeclado>
     );
 }
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { Text, TextInput, Button, IconButton, useTheme, HelperText, Icon } from 'react-native-paper';
+import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -101,8 +102,7 @@ export default function CadastroScreen() {
 
     return (
         <View style={styles.container}>
-        <ScrollView
-            keyboardShouldPersistTaps="handled"
+        <ScrollComTeclado
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
         >
@@ -486,7 +486,7 @@ export default function CadastroScreen() {
                     </Text>
                 </Text>
             </View>
-        </ScrollView>
+        </ScrollComTeclado>
         </View>
     );
 }

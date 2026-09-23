@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { Text } from 'react-native-paper';
+import ScrollComTeclado from '../../../components/ScrollComTeclado';
 import { usePrivateStackNavigation } from '../../../navigation/PrivateNavigator';
 import { Feather } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -73,7 +74,7 @@ export default function CriarImpressaoScreen() {
     const canAdvance = !!stlFile && !!gcodeFile && !!material && purposeValid;
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollComTeclado style={styles.container} contentContainerStyle={styles.scrollContent}>
             <View style={styles.stepIndicator}>
                 <View style={styles.stepActive}><Text style={styles.stepTextActive}>1</Text></View>
                 <View style={styles.stepLine} />
@@ -159,7 +160,7 @@ export default function CriarImpressaoScreen() {
                 <Text style={styles.nextButtonText}>Avançar</Text>
                 <Feather name="arrow-right" size={20} color="#FFFFFF" />
             </TouchableOpacity>
-        </ScrollView>
+        </ScrollComTeclado>
     );
 }
 

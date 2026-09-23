@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text, TextInput, Button, HelperText } from 'react-native-paper';
+import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useMutation } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
@@ -49,7 +50,7 @@ export default function AlterarSenhaScreen() {
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <ScrollComTeclado contentContainerStyle={styles.container}>
             <Text variant="titleMedium" style={styles.sectionTitle}>
                 Alterar senha
             </Text>
@@ -128,7 +129,7 @@ export default function AlterarSenhaScreen() {
                     Salvar
                 </Button>
             </View>
-        </ScrollView>
+        </ScrollComTeclado>
     );
 }
 
