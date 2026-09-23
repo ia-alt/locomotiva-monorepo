@@ -10,8 +10,6 @@ const envSchema = z.object({
     // permitir testes curtos (ex.: refresh de 20 min) sem tocar em código.
     AUTH_ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900), // 15 min
     AUTH_REFRESH_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(2_592_000), // 30 dias
-    RESET_PASSWORD_JWT_SECRET: z.string(),
-    RESET_PASSWORD_URL_BASE: z.string(),
     PORT: z.coerce.number().optional(),
     NODEMAILER_EMAIL_USER: z.string(),
     NODEMAILER_EMAIL_PASS: z.string(),

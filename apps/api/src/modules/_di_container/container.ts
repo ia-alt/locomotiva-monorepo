@@ -1,4 +1,4 @@
-import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, OpenIdGovbrOidcService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
+import { BcryptPasswordHashService, JwtAuthTokenService, OpenIdGovbrOidcService } from "src/modules/identity/infra/services";
 import { TemplateStringPasswordResetCodeEmailTemplater } from "src/modules/identity/infra/services/template-string-password-reset-code-email-templater";
 import { TemplateStringWelcomeEmailTemplater } from "src/modules/identity/infra/services/template-string-welcome-email-templater";
 import { AfterPasswordResetCodeRequested } from "src/modules/identity/application/subscribers/after-password-reset-code-requested";
@@ -33,13 +33,11 @@ import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
 import { User, ApiKey } from "src/modules/identity/domain/entities";
-import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, GovbrOidcService, PasswordHashService, PasswordResetTokenService, PasswordService, RefreshTokenService } from "src/modules/identity/domain/services";
+import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, GovbrOidcService, PasswordHashService, PasswordService, RefreshTokenService } from "src/modules/identity/domain/services";
 import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
 import { RefreshSessionUseCase } from "src/modules/identity/application/use-cases/refresh-session";
 import { LogoutUseCase } from "src/modules/identity/application/use-cases/logout";
-import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
-import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
 import { RequestPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/request-password-reset-code";
 import { VerifyPasswordResetCodeUseCase } from "src/modules/identity/application/use-cases/verify-password-reset-code";
 import { ExecutePasswordResetWithCodeUseCase } from "src/modules/identity/application/use-cases/execute-password-reset-with-code";
@@ -82,8 +80,6 @@ import { GetAccessStatsUseCase } from "@coworking/application/use-cases/get-acce
 import { GetYearlyReportUseCase } from "@coworking/application/use-cases/get-yearly-report";
 import { GetRecentActivitiesUseCase } from "@coworking/application/use-cases/get-recent-activities";
 import { AccessService, AccessLogService } from "@coworking/domain/services";
-import { PasswordResetEmailTemplater } from "src/modules/identity/domain/services/password-reset-email-templater";
-import { AfterPasswordResetRequested } from "src/modules/identity/application/subscribers/after-password-reset-requested";
 import { AfterBookingStatusChanged } from "@booking/application/subscribers/after-booking-status-changed";
 import { AfterUserCheckin } from "../coworking/application/subscribers/after-user-checkin";
 import { TotemCheckinNotifier } from "../coworking/application/services/totem-checkin-notifier";
@@ -362,22 +358,6 @@ export class DiContainer {
         return this._passwordHashService;
     }
 
-    private _passwordResetTokenService?: PasswordResetTokenService;
-    public getPasswordResetTokenService(): PasswordResetTokenService {
-        if (!this._passwordResetTokenService) {
-            this._passwordResetTokenService = new JwtPasswordResetTokenService();
-        }
-        return this._passwordResetTokenService;
-    }
-
-    private _passwordResetEmailTemplater?: PasswordResetEmailTemplater;
-    public getPasswordResetEmailTemplater(): PasswordResetEmailTemplater {
-        if (!this._passwordResetEmailTemplater) {
-            this._passwordResetEmailTemplater = new TemplateStringPasswordResetEmailTemplater();
-        }
-        return this._passwordResetEmailTemplater;
-    }
-
     private _passwordResetCodeEmailTemplater?: PasswordResetCodeEmailTemplater;
     public getPasswordResetCodeEmailTemplater(): PasswordResetCodeEmailTemplater {
         if (!this._passwordResetCodeEmailTemplater) {
@@ -505,8 +485,7 @@ export class DiContainer {
         if (!this._passwordService) {
             this._passwordService = new PasswordService(
                 this.getPasswordHashService(),
-                this.getUserRepository(),
-                this.getPasswordResetTokenService()
+                this.getUserRepository()
             );
         }
         return this._passwordService;
@@ -652,20 +631,6 @@ export class DiContainer {
         return new LogoutUseCase(
             this.getRefreshTokenService(),
         );
-    }
-
-    public getRequestPasswordResetUseCase(): RequestPasswordResetUseCase {
-        const requestPasswordResetUseCase = new RequestPasswordResetUseCase(
-            this.getPasswordService(),
-        );
-        return requestPasswordResetUseCase;
-    }
-
-    public getExecutePasswordResetUseCase(): ExecutePasswordResetUseCase {
-        const executePasswordResetUseCase = new ExecutePasswordResetUseCase(
-            this.getPasswordService(),
-        );
-        return executePasswordResetUseCase;
     }
 
     public getRequestPasswordResetCodeUseCase(): RequestPasswordResetCodeUseCase {
@@ -1182,11 +1147,6 @@ export class DiContainer {
 const container = new DiContainer();
 
 //#region Domain Events
-new AfterPasswordResetRequested(
-    container.getSendEmailService(),
-    container.getPasswordResetEmailTemplater()
-);
-
 new AfterPasswordResetCodeRequested(
     container.getSendEmailService(),
     container.getPasswordResetCodeEmailTemplater()

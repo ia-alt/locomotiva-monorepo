@@ -62,16 +62,6 @@ export class UserAlreadyExistsWithEmailOrCpfError extends DomainError {
     }
 }
 
-export class InvalidOrExpiredTokenError extends DomainError {
-    constructor() {
-        super(
-            "INVALID_OR_EXPIRED_TOKEN",
-            "Token inválido ou expirado.",
-            ErrorType.BAD_REQUEST
-        );
-    }
-}
-
 /**
  * Chave geral da integração, controlada por `GOVBR_ENABLED`.
  *

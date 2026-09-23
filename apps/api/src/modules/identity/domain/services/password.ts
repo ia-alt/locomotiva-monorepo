@@ -1,17 +1,14 @@
 import { User } from "../entities";
-import { InvalidCredentialsError, InvalidOrExpiredTokenError, NoLocalPasswordError } from "../errors";
+import { InvalidCredentialsError, NoLocalPasswordError } from "../errors";
 import { Password } from "../value-objects/password";
 import { PasswordHashService } from "./password-hash-service";
 import { UserRepository } from "../repositories";
-import { EmailAddress } from "@core/value-objects";
 import { Cpf } from "src/modules/identity/domain/value-objects/cpf";
-import { PasswordResetTokenService } from "./password-reset-token";
 
 export class PasswordService {
     constructor(
         private readonly passwordHashService: PasswordHashService,
         private readonly userRepository: UserRepository,
-        private readonly passwordResetTokenService: PasswordResetTokenService,
     ) { }
 
     async changePassword(params: { user: User, currentPassword: string, newPassword: Password }) {
@@ -31,44 +28,6 @@ export class PasswordService {
         params.user.updatePassword(newHash);
 
         await this.userRepository.save(params.user);
-    }
-
-    async requestResetPassword(params: { email: EmailAddress }) {
-        const user = await this.userRepository.findByEmailOrCpf(params.email);
-
-        // Conta federada não pode CRIAR senha por este caminho — seria converter
-        // uma conta gov.br em híbrida e reabrir o vetor de senha adivinhável.
-        // Tratada como inexistente, para não revelar que a conta existe.
-        if (!user || !user.hasLocalPassword()) {
-            return;
-        }
-
-        const token = await this.passwordResetTokenService.generate(user);
-
-        user.requestPasswordReset(token);
-        await this.userRepository.save(user);
-    }
-
-    async executeResetPassword(params: { token: string, newPassword: Password }) {
-        const verification = await this.passwordResetTokenService.verify(params.token);
-        if (!verification) {
-            throw new InvalidOrExpiredTokenError();
-        }
-
-        const user = await this.userRepository.findById(verification.userId);
-        if (!user || !user.hasLocalPassword()) {
-            throw new InvalidOrExpiredTokenError();
-        }
-
-        const lastReset = user.getLastPasswordResetDate();
-        if (lastReset > verification.createdAt) {
-            throw new InvalidOrExpiredTokenError();
-        }
-
-        const newHash = await this.passwordHashService.hash(params.newPassword.value);
-
-        user.updatePassword(newHash);
-        await this.userRepository.save(user);
     }
 
     async requestResetPasswordWithCode(params: { cpf: string }): Promise<{ maskedEmail: string } | null> {

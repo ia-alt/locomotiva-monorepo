@@ -1,7 +1,6 @@
 import { AggregateRoot, UniqueId } from "@core/base-classes";
 import { randomInt } from "node:crypto";
 import { UserRegisteredEvent } from "../events/user-registered";
-import { PasswordResetRequestedEvent } from "../events/password-reset-requested";
 import { PasswordResetCodeRequestedEvent } from "../events/password-reset-code-requested";
 import z from "zod";
 import { EmailAddress } from "@core/value-objects";
@@ -159,10 +158,6 @@ class User extends AggregateRoot {
         this._lastPasswordResetDate = new Date();
         this._passwordResetCode = null;
         this._passwordResetCodeExpiry = null;
-    }
-
-    requestPasswordReset(resetToken: string) {
-        this.addDomainEvent(new PasswordResetRequestedEvent(this, resetToken));
     }
 
     getPasswordResetCode(): string | null {
