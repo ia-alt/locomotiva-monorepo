@@ -2,9 +2,8 @@ import { EmailAddress } from "@core/value-objects";
 import { Cpf } from "../value-objects/cpf";
 import { UserRepository } from "../repositories";
 import { InvalidCredentialsError, UserAlreadyExistsWithEmailOrCpfError } from "../errors";
-import { AuthTokenService } from "./auth-token";
 import { PasswordHashService } from "./password-hash-service";
-import { AuthToken } from "../value-objects/auth-token";
+import { RefreshTokenService } from "./refresh-token";
 import { User } from "../entities";
 import { Password } from "../value-objects/password";
 import { BirthDate } from "../value-objects/birth-date";
@@ -13,23 +12,28 @@ class AuthService {
     constructor(
         private readonly userRepository: UserRepository,
         private readonly passwordHashService: PasswordHashService,
-        private readonly authTokenService: AuthTokenService,
+        private readonly refreshTokenService: RefreshTokenService,
     ) { }
 
-    async login(emailOrCpf: EmailAddress | Cpf, password: string): Promise<AuthToken> {
+    async login(emailOrCpf: EmailAddress | Cpf, password: string): Promise<RefreshTokenService.SessionTokens> {
         const user = await this.userRepository.findByEmailOrCpf(emailOrCpf);
         if (!user) {
             throw new InvalidCredentialsError();
         }
 
-        const passwordOk = await this.passwordHashService.check(password, user.getPasswordHash());
+        // Conta federada não tem senha local. Mesmo erro do "usuário inexistente"
+        // e da "senha errada", para não revelar que a conta existe.
+        const passwordHash = user.getPasswordHash();
+        if (!passwordHash) {
+            throw new InvalidCredentialsError();
+        }
+
+        const passwordOk = await this.passwordHashService.check(password, passwordHash);
         if (!passwordOk) {
             throw new InvalidCredentialsError();
         }
 
-        const token = await this.authTokenService.generateToken(user);
-
-        return token;
+        return this.refreshTokenService.issueSession(user);
     }
 
     async register(params: AuthService.RegisterParams): Promise<User> {

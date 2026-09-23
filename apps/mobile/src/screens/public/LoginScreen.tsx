@@ -6,6 +6,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { usePublicStackNavigation } from '../../navigation/PublicNavigator';
+import BotaoGovbr from '../../components/BotaoGovbr';
+import { showToast } from '../../App';
 
 const loginSchema = z.object({
     identifier: z.string().min(1, 'O Email ou CPF é obrigatório.'),
@@ -173,6 +175,8 @@ export default function LoginScreen() {
                 >
                     Entrar
                 </Button>
+
+                <BotaoGovbr onErro={(m) => showToast(m)} />
 
                 <Pressable
                     id='register-link'

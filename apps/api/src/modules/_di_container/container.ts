@@ -1,15 +1,19 @@
-import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
+import { BcryptPasswordHashService, JwtAuthTokenService, JwtPasswordResetTokenService, OpenIdGovbrOidcService, TemplateStringPasswordResetEmailTemplater } from "src/modules/identity/infra/services";
 import { TemplateStringPasswordResetCodeEmailTemplater } from "src/modules/identity/infra/services/template-string-password-reset-code-email-templater";
 import { TemplateStringWelcomeEmailTemplater } from "src/modules/identity/infra/services/template-string-welcome-email-templater";
 import { AfterPasswordResetCodeRequested } from "src/modules/identity/application/subscribers/after-password-reset-code-requested";
 import { AfterUserRegistered } from "src/modules/identity/application/subscribers/after-user-registered";
 import { PasswordResetCodeEmailTemplater } from "src/modules/identity/domain/services/password-reset-code-email-templater";
 import { WelcomeEmailTemplater } from "src/modules/identity/domain/services/welcome-email-templater";
-import { PrismaUserRepository, PrismaApiKeyRepository } from "src/modules/identity/infra/repositories";
-import { UserRepository, ApiKeyRepository } from "src/modules/identity/domain/repositories";
+import { PrismaUserRepository, PrismaApiKeyRepository, PrismaGovbrAuthRequestRepository, PrismaGovbrPendingIdentityRepository, PrismaRefreshTokenRepository } from "src/modules/identity/infra/repositories";
+import { UserRepository, ApiKeyRepository, GovbrAuthRequestRepository, GovbrPendingIdentityRepository, RefreshTokenRepository } from "src/modules/identity/domain/repositories";
 import { PrismaClient } from "@core/infra/database/prisma";
 import { prisma } from "@core/infra/database/prisma/prisma-instance";
 import { RegisterUserUseCase } from "src/modules/identity/application/use-cases/register-user";
+import { StartGovbrLoginUseCase } from "src/modules/identity/application/use-cases/start-govbr-login";
+import { CompleteGovbrLoginUseCase } from "src/modules/identity/application/use-cases/complete-govbr-login";
+import { LinkGovbrToAccountUseCase } from "src/modules/identity/application/use-cases/link-govbr-to-account";
+import { CompleteGovbrRegistrationUseCase } from "src/modules/identity/application/use-cases/complete-govbr-registration";
 import { CreateApiKeyUseCase } from "src/modules/identity/application/use-cases/create-api-key";
 import { ListApiKeysUseCase } from "src/modules/identity/application/use-cases/list-api-keys";
 import { RevokeApiKeyUseCase } from "src/modules/identity/application/use-cases/revoke-api-key";
@@ -29,8 +33,10 @@ import { BookingReminderEmailTemplater } from "@booking/application/services";
 import { TemplateStringBookingReminderEmailTemplater } from "@booking/infra/services/template-string-booking-reminder-email-templater";
 import { GetAuthUserUseCase } from "src/modules/identity/application/use-cases/get-auth-user";
 import { User, ApiKey } from "src/modules/identity/domain/entities";
-import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, PasswordHashService, PasswordResetTokenService, PasswordService } from "src/modules/identity/domain/services";
+import { AuthService, AuthTokenService, AuthUserService, AuthApiKeyService, GovbrOidcService, PasswordHashService, PasswordResetTokenService, PasswordService, RefreshTokenService } from "src/modules/identity/domain/services";
 import { LoginUseCase } from "src/modules/identity/application/use-cases/login";
+import { RefreshSessionUseCase } from "src/modules/identity/application/use-cases/refresh-session";
+import { LogoutUseCase } from "src/modules/identity/application/use-cases/logout";
 import { RequestPasswordResetUseCase } from "src/modules/identity/application/use-cases/request-password-reset";
 import { ChangePasswordUseCase } from "src/modules/identity/application/use-cases/change-password";
 import { ExecutePasswordResetUseCase } from "src/modules/identity/application/use-cases/execute-password-reset";
@@ -238,6 +244,116 @@ export class DiContainer {
         return this._authTokenService;
     }
 
+    /** Chave geral da integração gov.br, vinda de GOVBR_ENABLED. */
+    private _refreshTokenRepository?: RefreshTokenRepository;
+    public getRefreshTokenRepository(): RefreshTokenRepository {
+        if (!this._refreshTokenRepository) {
+            this._refreshTokenRepository = new PrismaRefreshTokenRepository(this.prisma);
+        }
+        return this._refreshTokenRepository;
+    }
+
+    private _refreshTokenService?: RefreshTokenService;
+    public getRefreshTokenService(): RefreshTokenService {
+        if (!this._refreshTokenService) {
+            this._refreshTokenService = new RefreshTokenService(
+                this.getRefreshTokenRepository(),
+                this.getUserRepository(),
+                this.getAuthTokenService(),
+                env.AUTH_REFRESH_TOKEN_TTL_SECONDS,
+            );
+        }
+        return this._refreshTokenService;
+    }
+
+    public isGovbrEnabled(): boolean {
+        return this.govbrLigado;
+    }
+
+    private get govbrLigado(): boolean {
+        return env.GOVBR_ENABLED === "true";
+    }
+
+    private _govbrAuthRequestRepository?: GovbrAuthRequestRepository;
+    public getGovbrAuthRequestRepository(): GovbrAuthRequestRepository {
+        if (!this._govbrAuthRequestRepository) {
+            this._govbrAuthRequestRepository = new PrismaGovbrAuthRequestRepository(this.prisma);
+        }
+        return this._govbrAuthRequestRepository;
+    }
+
+    private _startGovbrLoginUseCase?: StartGovbrLoginUseCase;
+    public getStartGovbrLoginUseCase(): StartGovbrLoginUseCase {
+        if (!this._startGovbrLoginUseCase) {
+            this._startGovbrLoginUseCase = new StartGovbrLoginUseCase(
+                this.getGovbrOidcService(),
+                this.getGovbrAuthRequestRepository(),
+                this.govbrLigado,
+            );
+        }
+        return this._startGovbrLoginUseCase;
+    }
+
+    private _govbrPendingIdentityRepository?: GovbrPendingIdentityRepository;
+    public getGovbrPendingIdentityRepository(): GovbrPendingIdentityRepository {
+        if (!this._govbrPendingIdentityRepository) {
+            this._govbrPendingIdentityRepository = new PrismaGovbrPendingIdentityRepository(this.prisma);
+        }
+        return this._govbrPendingIdentityRepository;
+    }
+
+    private _linkGovbrToAccountUseCase?: LinkGovbrToAccountUseCase;
+    public getLinkGovbrToAccountUseCase(): LinkGovbrToAccountUseCase {
+        if (!this._linkGovbrToAccountUseCase) {
+            this._linkGovbrToAccountUseCase = new LinkGovbrToAccountUseCase(
+                this.getGovbrPendingIdentityRepository(),
+                this.getUserRepository(),
+                this.getPasswordHashService(),
+                this.getRefreshTokenService(),
+                this.govbrLigado,
+            );
+        }
+        return this._linkGovbrToAccountUseCase;
+    }
+
+    private _completeGovbrRegistrationUseCase?: CompleteGovbrRegistrationUseCase;
+    public getCompleteGovbrRegistrationUseCase(): CompleteGovbrRegistrationUseCase {
+        if (!this._completeGovbrRegistrationUseCase) {
+            this._completeGovbrRegistrationUseCase = new CompleteGovbrRegistrationUseCase(
+                this.getGovbrPendingIdentityRepository(),
+                this.getUserRepository(),
+                this.getRefreshTokenService(),
+                this.govbrLigado,
+            );
+        }
+        return this._completeGovbrRegistrationUseCase;
+    }
+
+    private _completeGovbrLoginUseCase?: CompleteGovbrLoginUseCase;
+    public getCompleteGovbrLoginUseCase(): CompleteGovbrLoginUseCase {
+        if (!this._completeGovbrLoginUseCase) {
+            this._completeGovbrLoginUseCase = new CompleteGovbrLoginUseCase(
+                this.getGovbrOidcService(),
+                this.getGovbrAuthRequestRepository(),
+                this.getGovbrPendingIdentityRepository(),
+                this.getUserRepository(),
+                this.getRefreshTokenService(),
+                this.govbrLigado,
+            );
+        }
+        return this._completeGovbrLoginUseCase;
+    }
+
+    // Instanciado sob demanda: sem as variáveis GOVBR_* o construtor lança, mas
+    // só para quem tentar usar a integração — a API sobe normalmente sem elas.
+    private _govbrOidcService?: GovbrOidcService;
+    public getGovbrOidcService(): GovbrOidcService {
+        if (!this._govbrOidcService) {
+            this._govbrOidcService = new OpenIdGovbrOidcService();
+        }
+        return this._govbrOidcService;
+    }
+
     private _passwordHashService?: PasswordHashService;
     public getPasswordHashService(): PasswordHashService {
         if (!this._passwordHashService) {
@@ -402,7 +518,7 @@ export class DiContainer {
             this._authService = new AuthService(
                 this.getUserRepository(),
                 this.getPasswordHashService(),
-                this.getAuthTokenService(),
+                this.getRefreshTokenService(),
             );
         }
         return this._authService;
@@ -524,6 +640,18 @@ export class DiContainer {
             this.getAuthService(),
         );
         return loginUseCase;
+    }
+
+    public getRefreshSessionUseCase(): RefreshSessionUseCase {
+        return new RefreshSessionUseCase(
+            this.getRefreshTokenService(),
+        );
+    }
+
+    public getLogoutUseCase(): LogoutUseCase {
+        return new LogoutUseCase(
+            this.getRefreshTokenService(),
+        );
     }
 
     public getRequestPasswordResetUseCase(): RequestPasswordResetUseCase {

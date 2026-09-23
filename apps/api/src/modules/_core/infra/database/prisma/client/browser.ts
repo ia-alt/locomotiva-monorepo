@@ -23,10 +23,53 @@ export * from './enums';
  */
 export type User = Prisma.UserModel
 /**
+ * Model RefreshToken
+ * Sessão persistente ("continuar conectado") — padrão refresh token com rotação.
+ * 
+ * O token em si NUNCA é guardado: só o sha256 (`tokenHash`), como no ApiKey.
+ * Cada uso rotaciona — o antigo ganha `usedAt` e um novo nasce na mesma
+ * `familyId` (a família É a sessão, do login ao logout). Apresentar um token
+ * já usado indica vazamento e revoga a família inteira. O logout marca
+ * `revokedAt` em toda a família, matando a sessão no servidor de verdade —
+ * coisa que o JWT de acesso sozinho não permite.
+ */
+export type RefreshToken = Prisma.RefreshTokenModel
+/**
  * Model ApiKey
  * 
  */
 export type ApiKey = Prisma.ApiKeyModel
+/**
+ * Model GovbrAuthRequest
+ * Estado de um login gov.br em andamento, entre o /authorize e o /callback.
+ * 
+ * Existe porque o fluxo OIDC é stateful e o projeto não tem sessão nem cookie:
+ * o `state` prova que a resposta corresponde a um pedido nosso (anti-CSRF), o
+ * `nonce` prova que o id_token é desta rodada (anti-replay) e o `codeVerifier`
+ * é o segredo do PKCE, que NUNCA pode ir para o navegador.
+ * 
+ * `usedAt` garante uso único: sem isso, um `code` interceptado poderia ser
+ * trocado de novo. `expiresAt` limita a janela de ataque e permite expurgo.
+ * 
+ * Só o app mobile usa gov.br; o admin continua com login por senha. Por isso
+ * não há coluna de "cliente de origem" — o retorno sempre cai no mesmo lugar.
+ */
+export type GovbrAuthRequest = Prisma.GovbrAuthRequestModel
+/**
+ * Model GovbrPendingIdentity
+ * Identidade já validada no gov.br, aguardando um segundo passo do usuário:
+ * provar posse da conta local existente, ou informar os dados que o gov.br
+ * não fornece (data de nascimento e telefone).
+ * 
+ * Existe porque o `code` do gov.br é de uso único e já foi consumido quando
+ * descobrimos que falta esse passo. Sem este comprovante de curta duração, a
+ * segunda chamada não teria como provar que a pessoa autenticou de verdade —
+ * e aceitar um CPF cru vindo do cliente seria o mesmo que não ter login.
+ * 
+ * Guardado no servidor, e não num token entregue ao navegador, para não
+ * espalhar dado pessoal e para permitir invalidação por uso único.
+ */
+export type GovbrPendingIdentity = Prisma.GovbrPendingIdentityModel
 /**
  * Model Room
  * 

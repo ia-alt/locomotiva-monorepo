@@ -1,3 +1,4 @@
+import { encerrarSessao } from '../../services/api';
 import React from 'react';
 import {
   Box,
@@ -87,8 +88,9 @@ export const AdminLayout: React.FC = () => {
   const { mode, toggleTheme } = useThemeMode();
   const queryClient = useQueryClient();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    // Revoga a sessão persistente no servidor e limpa o storage.
+    await encerrarSessao();
     // Sem isto, os dados do usuário anterior seguem em cache na próxima sessão.
     queryClient.clear();
     navigate('/login');

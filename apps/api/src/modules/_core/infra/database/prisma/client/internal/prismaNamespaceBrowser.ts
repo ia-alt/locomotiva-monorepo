@@ -52,7 +52,10 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  RefreshToken: 'RefreshToken',
   ApiKey: 'ApiKey',
+  GovbrAuthRequest: 'GovbrAuthRequest',
+  GovbrPendingIdentity: 'GovbrPendingIdentity',
   Room: 'Room',
   Booking: 'Booking',
   CalendarEvent: 'CalendarEvent',
@@ -95,11 +98,27 @@ export const UserScalarFieldEnum = {
   company: 'company',
   jobTitle: 'jobTitle',
   phone: 'phone',
+  authProvider: 'authProvider',
+  govbrSub: 'govbrSub',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const RefreshTokenScalarFieldEnum = {
+  id: 'id',
+  tokenHash: 'tokenHash',
+  userId: 'userId',
+  familyId: 'familyId',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
 export const ApiKeyScalarFieldEnum = {
@@ -112,6 +131,35 @@ export const ApiKeyScalarFieldEnum = {
 } as const
 
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+export const GovbrAuthRequestScalarFieldEnum = {
+  state: 'state',
+  nonce: 'nonce',
+  codeVerifier: 'codeVerifier',
+  redirectTo: 'redirectTo',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GovbrAuthRequestScalarFieldEnum = (typeof GovbrAuthRequestScalarFieldEnum)[keyof typeof GovbrAuthRequestScalarFieldEnum]
+
+
+export const GovbrPendingIdentityScalarFieldEnum = {
+  id: 'id',
+  govbrSub: 'govbrSub',
+  cpf: 'cpf',
+  name: 'name',
+  email: 'email',
+  picture: 'picture',
+  redirectTo: 'redirectTo',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GovbrPendingIdentityScalarFieldEnum = (typeof GovbrPendingIdentityScalarFieldEnum)[keyof typeof GovbrPendingIdentityScalarFieldEnum]
 
 
 export const RoomScalarFieldEnum = {

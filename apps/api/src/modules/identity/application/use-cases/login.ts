@@ -16,10 +16,11 @@ class LoginUseCase implements UseCase<LoginUseCase.Input, LoginUseCase.Output> {
             ? new EmailAddress(input.identifier.toLowerCase())
             : Cpf.fromString(input.identifier)!;
 
-        const token = await this.authService.login(emailOrCpf, input.password);
+        const session = await this.authService.login(emailOrCpf, input.password);
 
         return {
-            token: token.toJSON()
+            token: session.token,
+            refreshToken: session.refreshToken,
         };
     }
 }
@@ -31,7 +32,8 @@ namespace LoginUseCase {
     });
 
     export const OutputSchema = z.object({
-        token: z.string()
+        token: z.string(),
+        refreshToken: z.string(),
     });
 
     export type Input = z.infer<typeof InputSchema>;

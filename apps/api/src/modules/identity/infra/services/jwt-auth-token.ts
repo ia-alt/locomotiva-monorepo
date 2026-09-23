@@ -8,13 +8,16 @@ import { env } from "@env";
 
 export class JwtAuthTokenService implements AuthTokenService {
     private readonly secret: string;
-    private readonly expiresIn: string;
+    private readonly expiresInSeconds: number;
 
     constructor(
         private readonly userRepository: UserRepository
     ) {
         this.secret = env.AUTH_JWT_SECRET;
-        this.expiresIn = "1d";
+        // Curto de propósito: este token não é revogável, então a janela em que
+        // um valor vazado funciona precisa ser pequena. A sessão longa fica com
+        // o RefreshTokenService, que sabe revogar.
+        this.expiresInSeconds = env.AUTH_ACCESS_TOKEN_TTL_SECONDS;
     }
 
     async verify(token: AuthToken): Promise<User | null> {
@@ -43,7 +46,7 @@ export class JwtAuthTokenService implements AuthTokenService {
                 email: user.email.toString(),
             },
             this.secret,
-            { expiresIn: this.expiresIn } as jwt.SignOptions
+            { expiresIn: this.expiresInSeconds } as jwt.SignOptions
         ));
     }
 }

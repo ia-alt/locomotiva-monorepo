@@ -8,7 +8,11 @@ import { AuthProvider } from './contexts/auth-context';
 import { CheckinProvider } from './contexts/checkin-context';
 import { QRCodeReaderProvider } from './contexts/qr-code-reader';
 import Navigation from './navigation';
+import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
+import GovbrSaidaScreen from './screens/public/GovbrSaidaScreen';
+import { lerSaidaGovbr, useUrlRetornoGovbr, useRetornoGovbrPendente, SaidaGovbr } from './govbr/link';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { LayoutProvider, useLayout } from './contexts/layout-context';
 
 // Sistema de Toast Global acessível fora do fluxo do React
 type ToastShow = (message: string) => void;
@@ -98,7 +102,9 @@ export default function Main() {
                   <QRCodeReaderProvider>
 
                     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                      <App />
+                      <LayoutProvider>
+                        <App />
+                      </LayoutProvider>
                     </SafeAreaView>
 
                   </QRCodeReaderProvider>
@@ -118,14 +124,43 @@ const MAX_WIDTH = 800;
 
 function App() {
   const { width } = useWindowDimensions();
+  const { fullBleed } = useLayout();
   const isWide = width > MAX_WIDTH;
 
+  // O retorno do gov.br é tratado ANTES do React Navigation. O `linking` dele
+  // tem prefixos fixos que não cobrem o domínio de produção nem o esquema do
+  // app, então ele descartaria a URL e voltaria para a tela inicial — levando
+  // o `code` junto. Na web a URL é a da própria página; no aplicativo é o link
+  // do app que o (re)abriu, ou o resultado da sessão de login.
+  // Cada retorno é tratado uma única vez, mesmo entre reaberturas do app —
+  // ver `useRetornoGovbrPendente`, que explica por quê.
+  const urlRetorno = useUrlRetornoGovbr();
+  const [retornoGovbr, concluirRetornoGovbr] = useRetornoGovbrPendente(urlRetorno);
+
+  // Saída do gov.br, só na web: a página que o app abre para encerrar a
+  // sessão lá, ou a home aberta na volta do gov.br com a marca de "voltar ao
+  // app". Também antes do React Navigation, pelo mesmo motivo acima.
+  const [saidaGovbr] = React.useState<SaidaGovbr | null>(() => lerSaidaGovbr(urlRetorno));
+
+  // Telas "full bleed" (ex.: EntradaScreen) ocupam a viewport inteira e
+  // centralizam o próprio conteúdo; as demais ficam limitadas a MAX_WIDTH.
   return (
     <View style={[
-      { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_WIDTH },
-      isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
+      { flex: 1, alignSelf: 'center', width: '100%' },
+      !fullBleed && { maxWidth: MAX_WIDTH },
+      !fullBleed && isWide && { borderLeftWidth: 1, borderRightWidth: 1, borderColor: 'lightgray' },
     ]}>
-      <Navigation />
+      {saidaGovbr
+        ? <GovbrSaidaScreen modo={saidaGovbr} />
+        : retornoGovbr
+          ? (
+            <GovbrCallbackScreen
+              key={retornoGovbr.state ?? 'sem-state'}
+              retorno={retornoGovbr}
+              onConcluir={concluirRetornoGovbr}
+            />
+          )
+          : <Navigation />}
     </View>
   );
 }

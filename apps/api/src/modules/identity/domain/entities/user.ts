@@ -1,4 +1,5 @@
 import { AggregateRoot, UniqueId } from "@core/base-classes";
+import { randomInt } from "node:crypto";
 import { UserRegisteredEvent } from "../events/user-registered";
 import { PasswordResetRequestedEvent } from "../events/password-reset-requested";
 import { PasswordResetCodeRequestedEvent } from "../events/password-reset-code-requested";
@@ -16,15 +17,31 @@ class User extends AggregateRoot {
         public cpf: Cpf,
         public birthDate: BirthDate,
         private _userType: User.UserType,
-        private _passwordHash: string,
+        private _passwordHash: string | null,
         private _lastPasswordResetDate: Date,
         private _passwordResetCode: string | null = null,
         private _passwordResetCodeExpiry: Date | null = null,
         private _company: string | null = null,
         private _jobTitle: string | null = null,
         private _phone: string | null = null,
+        private _authProvider: User.AuthProvider = User.AuthProvider.LOCAL,
+        private _govbrSub: string | null = null,
     ) {
         super(id);
+    }
+
+    get authProvider() {
+        return this._authProvider;
+    }
+
+    /** `sub` bruto do id_token do gov.br. Nunca expor em resposta de API. */
+    get govbrSub() {
+        return this._govbrSub;
+    }
+
+    /** Conta federada não tem senha nesta aplicação — o gov.br é a fonte de autenticação. */
+    hasLocalPassword(): boolean {
+        return this._passwordHash !== null;
     }
 
     get firstName() {
@@ -63,7 +80,51 @@ class User extends AggregateRoot {
         return user;
     }
 
+    /**
+     * Cria usuário autenticado pelo Login Único gov.br: sem senha local.
+     *
+     * `birthDate` continua obrigatório porque o gov.br não o fornece — o chamador
+     * só invoca este método DEPOIS da etapa "complete seu cadastro". Nunca criar
+     * a linha com data placeholder: `prisma-user.ts` revalida `BirthDate` em toda
+     * leitura, e um valor inválido derruba consultas de todos os usuários.
+     *
+     * `userType` é fixado em USER: privilégio nunca vem de claim do provedor.
+     */
+    static createFederated(props: User.CreateFederatedParams): User {
+        const user = new User(
+            UniqueId.create(),
+            props.name,
+            props.email,
+            props.cpf,
+            props.birthDate,
+            User.UserType.USER,
+            null,
+            new Date(),
+            null,
+            null,
+            props.company ?? null,
+            props.jobTitle ?? null,
+            props.phone ?? null,
+            User.AuthProvider.GOVBR,
+            props.govbrSub,
+        );
+        user.addDomainEvent(new UserRegisteredEvent(user));
+        return user;
+    }
 
+    /**
+     * Vincula uma identidade gov.br a esta conta já existente.
+     *
+     * A senha local PERMANECE: decisão de produto (2026-08-07) — a pessoa
+     * escolhe entrar com senha ou com gov.br, e é isso que permite a um admin
+     * vincular sem se trancar fora do painel, que só aceita senha.
+     *
+     * Quem chama é responsável por já ter exigido prova de posse da conta.
+     */
+    linkGovbrIdentity(govbrSub: string): void {
+        this._govbrSub = govbrSub;
+        this._authProvider = User.AuthProvider.GOVBR;
+    }
 
     update(data: User.UpdateParams): void {
         this._name = data.name;
@@ -113,7 +174,9 @@ class User extends AggregateRoot {
     }
 
     generatePasswordResetCode(validForMinutes: number = 15): string {
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        // CSPRNG: Math.random é previsível o bastante para reduzir o espaço de
+        // busca de um código que autoriza troca de senha.
+        const code = randomInt(100000, 1000000).toString();
         this._passwordResetCode = code;
         this._passwordResetCodeExpiry = new Date(Date.now() + validForMinutes * 60 * 1000);
         this.addDomainEvent(new PasswordResetCodeRequestedEvent(this, code));
@@ -138,6 +201,9 @@ class User extends AggregateRoot {
             company: this._company,
             jobTitle: this._jobTitle,
             phone: this._phone,
+            // Os clientes precisam disto para esconder "alterar senha" em conta gov.br.
+            // `govbrSub` NÃO entra aqui de propósito.
+            authProvider: this._authProvider,
             passwordResetCode: this._passwordResetCode,
             passwordResetCodeExpiry: this._passwordResetCodeExpiry,
         };
@@ -155,6 +221,20 @@ namespace User {
         USER = "user",
         ADMIN = "admin",
     }
+    export enum AuthProvider {
+        LOCAL = "local",
+        GOVBR = "govbr",
+    }
+    export type CreateFederatedParams = {
+        name: string;
+        email: EmailAddress;
+        cpf: Cpf;
+        birthDate: BirthDate;
+        govbrSub: string;
+        company?: string | null;
+        jobTitle?: string | null;
+        phone?: string | null;
+    };
     export type CreateParams = {
         name: string;
         email: EmailAddress;
@@ -192,6 +272,7 @@ namespace User {
         company: z.string().nullable().optional(),
         jobTitle: z.string().nullable().optional(),
         phone: z.string().nullable(),
+        authProvider: z.enum(AuthProvider),
         passwordResetCode: z.string().nullable().optional(),
         passwordResetCodeExpiry: z.date().nullable().optional(),
     });

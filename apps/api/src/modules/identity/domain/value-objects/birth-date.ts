@@ -1,11 +1,15 @@
 import { OnlyDate } from "@core/value-objects";
+import { InvalidBirthDateError } from "../errors";
 
 class BirthDate extends OnlyDate {
     constructor(value: string) {
         super(value);
         const age = this.getDiffInYears();
         if (age < 16) {
-            throw new Error("Idade inválida. A idade mínima é 16 anos!");
+            // Erro de domínio, não `Error` genérico: este caminho é alcançável
+            // pelo formulário de cadastro, e um Error solto vira 500 sem
+            // mensagem útil em vez de um 400 explicando o motivo.
+            throw new InvalidBirthDateError();
         }
     }
 

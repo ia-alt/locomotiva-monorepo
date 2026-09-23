@@ -1,232 +1,121 @@
-import React, { useMemo } from 'react';
-import { Box, Typography, Paper, CircularProgress } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
-import { orpc } from '../../services/api';
-import { getTimePartsInTZ } from '../../utils/timezone';
+import { useMemo } from 'react';
+import {
+  Box,
+  Card,
+  CardActionArea,
+  CircularProgress,
+  Typography,
+} from '@mui/material';
+import { onlyTimeObjToTimeStr } from '../../utils/datetime-formatters';
+import type { ORPCOutputs } from '../../services/types';
+
+type AvailableSlots = ORPCOutputs['booking']['listAvailableSlotsByDay']['slots'];
+export type AvailabilityTimelineSlot = AvailableSlots[0];
 
 interface AvailabilityTimelineProps {
-  roomId: string;
-  date: string; // YYYY-MM-DD
-  onSelectBlock?: (from: Date, to: Date) => void;
+    availableSlots?: AvailableSlots;
+    isLoadingSlots: boolean;
+    selectedSlot: AvailabilityTimelineSlot | null;
+    setSelectedSlot: (slot: AvailabilityTimelineSlot | null) => void;
 }
 
-const START_HOUR = 8;
-const END_HOUR = 18;
-const PIXELS_PER_MINUTE = 2.5; // Width scale (1 hour = 150px)
-const HOUR_WIDTH = 60 * PIXELS_PER_MINUTE;
+export default function AvailabilityTimeline({
+isLoadingSlots: isLoading, selectedSlot, setSelectedSlot, availableSlots
+}: AvailabilityTimelineProps) {
+    const blockWithLabel = useMemo(() => {
+    if (!availableSlots?.length) return [];
 
-type Block = {
-  id: string;
-  type: 'free' | 'occupied';
-  startMin: number;
-  endMin: number;
-  startOrigin?: Date;
-  endOrigin?: Date;
-  label?: string;
-};
-
-export const AvailabilityTimeline: React.FC<AvailabilityTimelineProps> = ({ roomId, date, onSelectBlock }) => {
-  const { data: routeData, isLoading } = useQuery({
-    queryKey: ['booking', 'availableSlots', roomId, date],
-    queryFn: () => orpc.booking.listAvailableSlotsByDay({ roomId, day: date }),
-    enabled: !!roomId && !!date,
-  });
-
-  const blocks = useMemo(() => {
-    if (!routeData?.slots) return [];
-
-    const START_MINS = START_HOUR * 60;
-    const END_MINS = END_HOUR * 60;
-
-    const freeSlots = routeData.slots.map((s: any) => {
-      const startOrigin = new Date(s.from);
-      const endOrigin = new Date(s.to);
-      const startParts = getTimePartsInTZ(startOrigin);
-      const endParts = getTimePartsInTZ(endOrigin);
-      let sMin = startParts.hour * 60 + startParts.minute;
-      let eMin = endParts.hour * 60 + endParts.minute;
-
-      if (eMin === 0 && endOrigin.getTime() > startOrigin.getTime()) {
-        eMin = 24 * 60;
-      }
-
-      return { sMin, eMin, startOrigin, endOrigin };
-    });
-
-    freeSlots.sort((a: any, b: any) => a.sMin - b.sMin);
-
-    const clippedFreeSlots = [];
-    for (const slot of freeSlots) {
-      const sMin = Math.max(START_MINS, slot.sMin);
-      const eMin = Math.min(END_MINS, slot.eMin);
-      if (sMin < eMin) {
-        clippedFreeSlots.push({ sMin, eMin, startOrigin: slot.startOrigin, endOrigin: slot.endOrigin });
-      }
+    function hourToLabel(hour: number): string {
+      if (hour >= 6 && hour < 12) return 'Manhã';
+      if (hour >= 12 && hour <= 18) return 'Tarde';
+      if (hour > 18 && hour < 24) return 'Noite';
+      return '';
     }
 
-    const timelineBlocks: Block[] = [];
-    let curMin = START_MINS;
+    return availableSlots.map((slot) => {
+      const startLabel = hourToLabel(slot.start.hour);
+      const endLabel = hourToLabel(slot.end.hour);
+      const combinedLabel = startLabel === endLabel ? startLabel : `${startLabel} & ${endLabel}`;
 
-    clippedFreeSlots.forEach((slot, idx) => {
-      if (slot.sMin > curMin) {
-        timelineBlocks.push({
-          id: `occupied-${idx}`,
-          type: 'occupied',
-          startMin: curMin,
-          endMin: slot.sMin,
-          label: ''
-        });
-      }
-      timelineBlocks.push({
-        id: `free-${idx}`,
-        type: 'free',
-        startMin: slot.sMin,
-        endMin: slot.eMin,
-        startOrigin: slot.startOrigin,
-        endOrigin: slot.endOrigin,
-        label: 'LIVRE'
-      });
-      curMin = slot.eMin;
+      return {
+        slot,
+        label: combinedLabel,
+      };
     });
-
-    if (curMin < END_MINS) {
-      timelineBlocks.push({
-        id: `occupied-end`,
-        type: 'occupied',
-        startMin: curMin,
-        endMin: END_MINS,
-        label: ''
-      });
-    }
-
-    return timelineBlocks;
-  }, [routeData]);
-
-  const hoursGrid = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
-
-  if (!roomId || !date) {
-    return (
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>Disponibilidade</Typography>
-        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', bgcolor: 'grey.50', borderRadius: 2 }}>
-          <Typography color="text.secondary" variant="body2">Selecione uma sala e uma data primeiro.</Typography>
-        </Paper>
-      </Box>
-    );
-  }
+  }, [availableSlots]);
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Disponibilidade</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Selecione um bloco de tempo disponível para preencher os horários:
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+        1. Escolha um período
       </Typography>
 
-      <Paper 
-        variant="outlined" 
-        sx={{ 
-          height: 140, 
-          position: 'relative', 
-          overflowX: 'auto', 
-          overflowY: 'hidden',
-          borderRadius: 2,
-          bgcolor: 'white'
-        }}
-      >
-        {isLoading && (
-          <Box 
-            sx={{ 
-              position: 'absolute', inset: 0, 
-              bgcolor: 'rgba(255,255,255,0.8)', zIndex: 10,
-              display: 'flex', flexDirection: 'column', 
-              alignItems: 'center', justifyContent: 'center' 
-            }}
-          >
-            <CircularProgress size={24} />
-            <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>Buscando horários...</Typography>
-          </Box>
-        )}
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : (
+        <>
+          {blockWithLabel.length > 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Depois de escolher o período, você poderá ajustar o horário de início e fim da reserva.
+            </Typography>
+          )}
 
-        <Box sx={{ minWidth: (END_HOUR - START_HOUR) * HOUR_WIDTH, height: '100%', position: 'relative' }}>
-          {/* Grid lines */}
-          <Box sx={{ position: 'absolute', inset: 0 }}>
-            {hoursGrid.map((h) => (
-              <Box 
-                key={h} 
-                sx={{ 
-                  position: 'absolute', top: 0, bottom: 0, 
-                  width: 1, bgcolor: 'grey.200', 
-                  left: (h - START_HOUR) * HOUR_WIDTH,
-                  display: 'flex', alignItems: 'flex-end', pb: 1, pl: 0.5
-                }}
-              >
-                <Typography variant="caption" sx={{ fontSize: 10, color: 'grey.500', width: 30 }}>
-                  {h.toString().padStart(2, '0')}H
-                </Typography>
-              </Box>
-            ))}
-          </Box>
+          {blockWithLabel.length === 0 ? (
+            <Box sx={{ bgcolor: 'primary.50', borderRadius: 1, p: 1.5 }}>
+              <Typography variant="body2" color="primary.700" sx={{ fontWeight: 500 }}>
+                Nenhum horário disponível para o dia selecionado.{' '}
+                <Box component="span" sx={{ fontWeight: 700 }}>
+                  Tente outro dia
+                </Box>
+                .
+              </Typography>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+                gap: 1.5,
+              }}
+            >
+              {blockWithLabel.map(({ slot, label }) => {
+                const isSelected =
+                  selectedSlot &&
+                  selectedSlot.start.hour === slot.start.hour &&
+                  selectedSlot.start.minute === slot.start.minute &&
+                  selectedSlot.start.second === slot.start.second;
 
-          {/* Blocks */}
-          <Box sx={{ position: 'absolute', top: 16, height: 80, left: 0, right: 0 }}>
-            {blocks.map((b) => {
-              const leftPos = (b.startMin - (START_HOUR * 60)) * PIXELS_PER_MINUTE;
-              const widthPx = (b.endMin - b.startMin) * PIXELS_PER_MINUTE;
-              const isFree = b.type === 'free';
-
-              return (
-                <Box
-                  key={b.id}
-                  onClick={() => {
-                    if (isFree && onSelectBlock && b.startOrigin && b.endOrigin) {
-                      onSelectBlock(b.startOrigin, b.endOrigin);
-                    }
-                  }}
-                  sx={{
-                    position: 'absolute', top: 0, bottom: 0,
-                    left: leftPos, width: widthPx,
-                    cursor: isFree ? 'pointer' : 'default',
-                    opacity: isFree ? 1 : 0.8,
-                    p: 0.5, // spacing between blocks
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <Paper
-                    elevation={isFree ? 2 : 0}
+                return (
+                  <Card
+                    key={`${slot.start.hour}:${slot.start.minute}-${slot.end.hour}:${slot.end.minute}`}
+                    variant="outlined"
                     sx={{
-                      height: '100%',
-                      bgcolor: isFree ? '#E0F2FE' : '#F3F4F6',
-                      border: 1,
-                      borderColor: isFree ? '#BAE6FD' : 'transparent',
-                      borderRadius: 1.5,
-                      overflow: 'hidden',
-                      display: 'flex', flexDirection: 'column',
-                      justifyContent: 'center',
-                      p: 1,
-                      transition: 'all 0.2s',
-                      '&:hover': isFree ? { bgcolor: '#bae6fd', borderColor: '#7dd3fc' } : {}
+                      borderColor: isSelected ? 'primary.main' : 'divider',
+                      bgcolor: isSelected ? 'primary.50' : 'background.paper',
+                      transition: 'all 0.2s ease',
                     }}
                   >
-                    <Typography 
-                      sx={{ 
-                        fontSize: 10, fontWeight: 'bold', 
-                        color: isFree ? '#0284C7' : 'grey.500' 
-                      }}
-                    >
-                      {b.label}
-                    </Typography>
-                    {isFree && (
-                      <Typography sx={{ fontSize: 11, fontWeight: 'bold', color: '#0284C7' }}>
-                        {(b.endMin - b.startMin) / 60}h
+                    <CardActionArea onClick={() => setSelectedSlot(slot)} sx={{ p: 2, height: '100%' }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                        {label}
                       </Typography>
-                    )}
-                  </Paper>
-                </Box>
-              );
-            })}
-          </Box>
-        </Box>
-      </Paper>
+                      <Typography
+                        variant="h6"
+                        component="div"
+                        sx={{ mt: 0.5, fontWeight: 700, color: isSelected ? 'primary.main' : 'text.primary' }}
+                      >
+                        {onlyTimeObjToTimeStr(slot.start)} - {onlyTimeObjToTimeStr(slot.end)}
+                      </Typography>
+                    </CardActionArea>
+                  </Card>
+                );
+              })}
+            </Box>
+          )}
+        </>
+      )}
     </Box>
   );
-};
+}

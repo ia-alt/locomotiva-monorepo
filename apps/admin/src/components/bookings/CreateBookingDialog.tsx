@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, TextField, Box, CircularProgress, Alert,
@@ -8,9 +8,10 @@ import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../services/api';
 import { BOOKINGS_ADMIN_QUERY_KEY } from '../../hooks/useBookingsAdmin';
-import { AvailabilityTimeline } from './AvailabilityTimeline';
+import AvailabilityTimeline, { type AvailabilityTimelineSlot } from './AvailabilityTimeline';
 import type { ORPCInputs } from 'src/services/types';
-import { toTimeStringInTZ } from '../../utils/timezone';
+import { add, format } from 'date-fns';
+import TimeSelector from './TimeSelector';
 
 
 interface CreateBookingDialogProps {
@@ -26,13 +27,20 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
   const [userInputValue, setUserInputValue] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
   const [roomId, setRoomId] = useState('');
-  const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [day, setDay] = useState(format(add(new Date(), { days: 1 }), 'yyyy-MM-dd'));
+  const [startTime, setStartTime] = useState<string | null>(null);
+  const [endTime, setEndTime] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [numberOfPeople, setNumberOfPeople] = useState(0);
+  const [selectedSlot, setSelectedSlot] = useState<AvailabilityTimelineSlot | null>(null);
 
+  useEffect(() => {
+      setSelectedSlot(null);
+      setStartTime("");
+      setEndTime("");
+  }, [day]);
+      
   const { data: usersData } = useQuery({
     queryKey: ['users', 'search', userInputValue],
     queryFn: () =>
@@ -72,7 +80,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
     setSelectedUser(null);
     setRoomId('');
     setTitle('');
-    setDate('');
+    setDay('');
     setStartTime('');
     setEndTime('');
     setDescription('');
@@ -82,7 +90,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUser || !roomId || !date || !startTime || !endTime) return;
+    if (!selectedUser || !roomId || !day || !startTime || !endTime) return;
 
     const [startHour, startMinute] = startTime.split(':').map(Number);
     const [endHour, endMinute] = endTime.split(':').map(Number);
@@ -91,7 +99,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
       userId: selectedUser.id,
       roomId,
       title,
-      day: date,
+      day: day,
       timeInterval: {
         start: { hour: startHour, minute: startMinute, second: 0 },
         end: { hour: endHour, minute: endMinute, second: 0 },
@@ -102,6 +110,14 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
   };
 
   const error = mutation.error instanceof Error ? mutation.error.message : null;
+  console.log('formattedDay', 'date', day, 'roomId', roomId);
+  
+  const { data: availableSlots, isLoading: isLoadingSlots } = useQuery({
+    queryKey: ['booking', 'available-slots', roomId, day],
+    queryFn: () =>
+      orpc.booking.listAvailableSlotsByDay({ roomId, day }),
+    enabled: !!roomId && !!day,
+  });
 
   return (
     <Dialog
@@ -159,43 +175,28 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
               type="date"
               fullWidth
               required
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
             />
 
             <AvailabilityTimeline
-              roomId={roomId}
-              date={date}
-              onSelectBlock={(from, to) => {
-                setStartTime(toTimeStringInTZ(from));
-
-                const calculatedEndTime = new Date(from.getTime() + 4 * 60 * 60_000);
-                const end = calculatedEndTime > to ? to : calculatedEndTime;
-                setEndTime(toTimeStringInTZ(end));
+              isLoadingSlots={isLoadingSlots}
+              availableSlots={availableSlots?.slots}
+              selectedSlot={selectedSlot}
+              setSelectedSlot={(slot) => {
+                  setSelectedSlot(slot);
               }}
             />
 
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="Horário de início"
-                type="time"
-                fullWidth
-                required
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-              <TextField
-                label="Horário de término"
-                type="time"
-                fullWidth
-                required
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-            </Box>
+            <TimeSelector
+              timeSlot={selectedSlot}
+              isLoading={isLoadingSlots}
+              startTime={startTime}
+              endTime={endTime}
+              onChangeStart={setStartTime}
+              onChangeEnd={setEndTime}
+            />
 
             <TextField
               label="Título"
@@ -267,7 +268,7 @@ export const CreateBookingDialog: React.FC<CreateBookingDialogProps> = ({ open, 
           <Button
             type="submit"
             variant="contained"
-            disabled={mutation.isPending || !selectedUser || !title || !roomId || !date || !startTime || !endTime || numberOfPeople <= 0}
+            disabled={mutation.isPending || !selectedUser || !title || !roomId || !day || !startTime || !endTime || numberOfPeople <= 0}
             startIcon={mutation.isPending ? <CircularProgress size={18} /> : null}
           >
             {mutation.isPending ? 'Criando...' : 'Criar Reserva'}

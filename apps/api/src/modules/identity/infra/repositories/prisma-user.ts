@@ -29,6 +29,8 @@ export class PrismaUserRepository implements UserRepository {
                 jobTitle: json.jobTitle ?? null,
                 phone: json.phone ?? null,
                 passwordHash: user.getPasswordHash(),
+                authProvider: user.authProvider,
+                govbrSub: user.govbrSub,
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
                 passwordResetCode: user.getPasswordResetCode(),
                 passwordResetCodeExpiry: user.getPasswordResetCodeExpiry(),
@@ -44,6 +46,8 @@ export class PrismaUserRepository implements UserRepository {
                 jobTitle: json.jobTitle ?? null,
                 phone: json.phone ?? null,
                 passwordHash: user.getPasswordHash(),
+                authProvider: user.authProvider,
+                govbrSub: user.govbrSub,
                 lastPasswordResetDate: user.getLastPasswordResetDate(),
                 passwordResetCode: user.getPasswordResetCode(),
                 passwordResetCodeExpiry: user.getPasswordResetCodeExpiry(),
@@ -71,6 +75,12 @@ export class PrismaUserRepository implements UserRepository {
         }
 
         const user = await this.prisma.user.findFirst({ where });
+        if (!user) return null;
+        return this.userDbToEntity(user);
+    }
+
+    async findByGovbrSub(govbrSub: string): Promise<User | null> {
+        const user = await this.prisma.user.findUnique({ where: { govbrSub } });
         if (!user) return null;
         return this.userDbToEntity(user);
     }
@@ -116,9 +126,11 @@ export class PrismaUserRepository implements UserRepository {
             user.lastPasswordResetDate,
             user.passwordResetCode,
             user.passwordResetCodeExpiry,
-            (user as any).company ?? null,
-            (user as any).jobTitle ?? null,
-            (user as any).phone ?? null,
+            user.company,
+            user.jobTitle,
+            user.phone,
+            user.authProvider as User.AuthProvider,
+            user.govbrSub,
         );
     }
 }

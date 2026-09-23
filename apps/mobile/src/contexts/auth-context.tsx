@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+import { salvarSessao, limparSessao, lerMetodoDeLogin } from '../locomotiva-api/session';
+import { linkDoAppParaLogout } from '../govbr/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useORPC } from '../locomotiva-api/context';
 import { ORPCOutputs, ORPCInputs } from '../locomotiva-api/types';
@@ -13,6 +17,8 @@ type AuthContextType = {
     authUser: User | null;
     isAuthenticated: boolean;
     login: (credentials: LoginInput) => Promise<void>;
+    /** Cria a sessão a partir de tokens já emitidos — usado pelo login gov.br. */
+    loginWithToken: (token: string, refreshToken: string) => Promise<void>;
     logout: () => Promise<void>;
     register: (newUserData: RegisterUserInput) => Promise<void>;
     updateMe: (data: UpdateMeInput) => Promise<void>;
@@ -36,6 +42,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const response = await orpc.identy.getMe.call({})
             setAuthUser(response);
         } catch (error) {
+            // 401 aqui significa que a sessão acabou de verdade: o interceptador
+            // do link já tentou renovar e falhou. A pessoa volta ao login sem
+            // alarde — não é um erro do aplicativo.
+            if (ehNaoAutorizado(error)) {
+                await limparSessao();
+                setAuthUser(null);
+                return;
+            }
             console.error(error);
         } finally {
             setIsUserLoading(false);
@@ -46,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...orpc.identy.login.mutationOptions(),
         onSuccess: async (data) => {
             if (data?.token) {
-                await AsyncStorage.setItem('token', data.token);
+                await salvarSessao(data.token, data.refreshToken, 'password');
             }
             getMe();
         },
@@ -67,10 +81,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await loginMutation.mutateAsync(credentials);
     };
 
+    /**
+     * No fluxo gov.br os tokens já vêm emitidos pela API — a senha nunca passa
+     * por aqui. Guarda e carrega o usuário, igual ao final do login normal.
+     */
+    const loginWithToken = async (token: string, refreshToken: string) => {
+        // Único caminho que chega aqui é o gov.br (callback, cadastro e vínculo).
+        await salvarSessao(token, refreshToken, 'govbr');
+        await getMe();
+    };
+
     const logout = async () => {
-        await AsyncStorage.removeItem('token');
+        // Lido antes de limpar: decide se há sessão gov.br a encerrar.
+        const metodo = await lerMetodoDeLogin();
+
+        // Revoga a sessão persistente NO SERVIDOR antes de esquecê-la aqui.
+        // Sem isso o "sair" seria só cosmético: o refresh token continuaria
+        // válido no banco até expirar.
+        try {
+            const refreshToken = await AsyncStorage.getItem('refreshToken');
+            if (refreshToken) {
+                await orpc.identy.logout.call({ refreshToken });
+            }
+        } catch {
+            // Sem rede, sai mesmo assim: a sessão local morre agora e a do
+            // servidor expira sozinha.
+        }
+
+        await limparSessao();
         queryClient.clear();
         setAuthUser(null);
+
+        // Quem entrou pelo gov.br também sai de lá (roteiro do gov.br, passo 12:
+        // "implementação obrigatória", a partir do front-end). Sem isso, o
+        // próximo "Entrar com GOV.BR" entra sem senha na conta anterior — e o
+        // gov.br ignora `prompt=login`/`max_age`, então não há atalho. Quem
+        // entrou por senha não tem sessão gov.br: abrir o gov.br nesse caso o
+        // fazia mostrar a tela de login dele (03/09/2026).
+        if (metodo !== 'govbr') return;
+
+        try {
+            const { url } = await orpc.identy.getGovbrLogoutUrl.call({
+                client: Platform.OS === 'web' ? 'web' : 'app',
+            });
+            if (!url) return;
+
+            if (Platform.OS === 'web') {
+                // Vai ao gov.br e volta para a home, já deslogada.
+                window.location.assign(url);
+                return;
+            }
+
+            // No app: a URL é a página de saída da web, que passa pelo gov.br e
+            // reabre o app pelo link dele — o navegador fecha sozinho. Não se
+            // espera pela promessa: a tela de login já está por baixo, e se a
+            // pessoa fechar o navegador na mão o resultado é o mesmo.
+            WebBrowser.openAuthSessionAsync(url, linkDoAppParaLogout(), { preferEphemeralSession: true })
+                .catch(() => { /* já está deslogada localmente */ });
+        } catch {
+            // Integração desligada ou sem rede: a sessão do gov.br expira sozinha.
+        }
     };
 
     const registerMutation = useMutation({
@@ -107,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             authUser: (authUser as any) || null,
             isAuthenticated,
             login,
+            loginWithToken,
             logout,
             register,
             updateMe,
@@ -116,6 +187,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
+}
+
+function ehNaoAutorizado(e: unknown): boolean {
+    return typeof e === 'object' && e !== null && (e as { code?: string }).code === 'UNAUTHORIZED';
 }
 
 export function useAuth() {

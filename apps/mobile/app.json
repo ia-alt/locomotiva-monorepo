@@ -2,6 +2,7 @@
   "expo": {
     "name": "locomotiva",
     "slug": "locomotiva-mobile-app",
+    "scheme": "br.gov.ma.inova.locomotiva",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,9 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "br.gov.ma.inova.locomotiva"
     },
     "android": {
+      "package": "br.gov.ma.inova.locomotiva",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -25,6 +28,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b5279359-b327-42ff-b060-4ef6e11c4748"
+      }
     }
   }
 }
