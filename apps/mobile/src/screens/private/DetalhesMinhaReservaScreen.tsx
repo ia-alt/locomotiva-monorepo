@@ -1,33 +1,18 @@
-import React, { useLayoutEffect, useCallback, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Modal, StatusBar, Dimensions, Image } from 'react-native';
-import Animated from 'react-native-reanimated';
-import { Text, Surface, Dialog, Button, TextInput } from 'react-native-paper';
-import DialogComTeclado from '../../components/DialogComTeclado';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import { PrivateStackParamList } from '../../navigation/PrivateNavigator';
-import { Feather, Ionicons } from '@expo/vector-icons';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import DialogComTeclado from '../../components/DialogComTeclado';
+import { usePrivateStackRoute } from '../../navigation/PrivateNavigator';
 import { useORPC } from '../../locomotiva-api/context';
 import { onlyDateStrToLongBrDate, onlyTimeObjToTimeStr } from '../../utils/datetime-formaters';
 import { HorarioFuncionamentoCard } from '../../components/HorarioFuncionamentoCard';
-import { fonteImagemSala } from '../../constants/imagens';
-
-type Props = RouteProp<PrivateStackParamList, 'DetalhesMinhaReserva'>;
-
-const statusConfig = {
-    pending: { label: 'Aguardando aprovação', color: '#D97706', bg: '#FEF3C7', dot: true },
-    confirmed: { label: 'Agendada', color: '#059669', bg: '#D1FAE5', dot: true },
-    attended: { label: 'Concluída', color: '#4B5563', bg: '#F3F4F6', dot: false },
-    cancelled: { label: 'Cancelada', color: '#a87373ff', bg: '#FEE2E2', dot: true },
-    rejected: { label: 'Rejeitada', color: '#DC2626', bg: '#FEE2E2', dot: true },
-    no_show: { label: 'Não compareceu', color: '#4B5563', bg: '#F3F4F6', dot: false }
-};
+import { BilheteDaReserva } from '../../components/reservas/BilheteDaReserva';
+import { CartaoDaSala } from '../../components/reservas/CartaoDaSala';
+import { Aviso, Botao, Campo, Cartao, FalhaAoCarregar, LinhaDeInformacao, Texto, cores, espaco, raio } from '../../ui';
+import { reservaEstaDePe } from '../../components/reservas/situacao-da-reserva';
 
 export default function DetalhesMinhaReservaScreen() {
-    const route = useRoute<Props>();
-    const navigation = useNavigation();
+    const route = usePrivateStackRoute<'DetalhesMinhaReserva'>();
     const queryClient = useQueryClient();
     const { bookingId } = route.params;
     const orpc = useORPC();
@@ -35,7 +20,7 @@ export default function DetalhesMinhaReservaScreen() {
     const [isCancelDialogVisible, setIsCancelDialogVisible] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
 
-    const { data: booking, isLoading: isLoadingBooking } = useQuery(
+    const { data: booking, isLoading: isLoadingBooking, isError, refetch, isRefetching } = useQuery(
         orpc.booking.getBookingById.queryOptions({ input: { id: bookingId } })
     );
 
@@ -43,9 +28,6 @@ export default function DetalhesMinhaReservaScreen() {
         ...orpc.booking.getRoomById.queryOptions({ input: { id: booking?.roomId as string } }),
         enabled: !!booking?.roomId
     });
-
-    const roomImageSource = fonteImagemSala(room?.photoUrl);
-    const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
 
     const { mutateAsync: cancelBooking, isPending: isCanceling } = useMutation({
         mutationFn: orpc.booking.cancelBooking.mutationOptions().mutationFn,
@@ -74,301 +56,117 @@ export default function DetalhesMinhaReservaScreen() {
         }
     };
 
-    useLayoutEffect(() => {
-        if (!booking) {
-            navigation.setOptions({ headerRight: undefined });
-            return;
-        }
-        if (booking.status === 'pending' || booking.status === 'confirmed') {
-            navigation.setOptions({
-                headerRight: () => (
-                    <TouchableOpacity
-                        onPress={handleCancel}
-                        disabled={isCanceling}
-                        style={{ marginRight: 8, padding: 8 }}
-                    >
-                        {isCanceling ? (
-                            <ActivityIndicator size="small" color="#DC2626" />
-                        ) : (
-                            <Text style={{ color: '#DC2626', fontWeight: 'bold' }}>Cancelar Reserva</Text>
-                        )}
-                    </TouchableOpacity>
-                ),
-            });
-        } else {
-            navigation.setOptions({ headerRight: undefined });
-        }
-    }, [navigation, booking?.status, isCanceling, handleCancel]);
-
-    if (isLoadingBooking || !booking) {
+    if (isError && !booking) {
         return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color="#DC2626" />
+            <View style={[estilos.tela, estilos.carregando]}>
+                <FalhaAoCarregar mensagem="Não foi possível carregar a reserva." aoTentarDeNovo={refetch} tentando={isRefetching} />
             </View>
         );
     }
 
-    const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending;
+    if (isLoadingBooking || !booking) {
+        return (
+            <View style={[estilos.tela, estilos.carregando]}>
+                <ActivityIndicator size="large" color={cores.azul} accessibilityLabel="Carregando a reserva" />
+            </View>
+        );
+    }
+
+    // Só dá para cancelar o que ainda vai acontecer (aguardando ou confirmada).
+    const podeCancelar = reservaEstaDePe(booking);
+    const motivo = (booking.status === 'cancelled' || booking.status === 'rejected') && !!booking.rejectionCancelReason
+        ? booking.rejectionCancelReason
+        : null;
+    const pessoas = booking.numberOfPeople
+        ? `Reserva para ${booking.numberOfPeople} ${booking.numberOfPeople === 1 ? 'pessoa' : 'pessoas'}`
+        : 'Quantidade de pessoas não informada';
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
-            <TouchableOpacity activeOpacity={0.85} onPress={() => setImagePreviewVisible(true)}>
-                <Animated.Image
-                    source={roomImageSource}
-                    style={styles.headerImage}
-                    sharedTransitionTag={`room-image-${booking.id}`}
+        <ScrollView style={estilos.tela} contentContainerStyle={estilos.conteudo}>
+            <BilheteDaReserva reserva={booking} />
+
+            {motivo ? (
+                <Aviso tom="erro" titulo={booking.status === 'rejected' ? 'Motivo da rejeição' : 'Motivo do cancelamento'}>
+                    {motivo}
+                </Aviso>
+            ) : null}
+
+            <Cartao titulo="Sobre a reserva">
+                <View style={estilos.atividade}>
+                    <Texto variante="destaque">{booking.title}</Texto>
+                    {!!booking.description && (
+                        <Texto variante="corpo" cor={cores.textoSecundario}>{booking.description}</Texto>
+                    )}
+                </View>
+                <LinhaDeInformacao icone="pessoas" rotulo="Pessoas" valor={pessoas} />
+                <LinhaDeInformacao icone="calendario" rotulo="Data" valor={onlyDateStrToLongBrDate(booking.day)} />
+                <LinhaDeInformacao
+                    icone="relogio"
+                    rotulo="Horário"
+                    valor={`${onlyTimeObjToTimeStr(booking.timeInterval.start)} às ${onlyTimeObjToTimeStr(booking.timeInterval.end)}`}
                 />
-                <View style={styles.expandBadge}>
-                    <Ionicons name="expand-outline" size={14} color="#fff" />
-                </View>
-            </TouchableOpacity>
+            </Cartao>
 
-            <Modal visible={imagePreviewVisible} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setImagePreviewVisible(false)}>
-                <View style={styles.fullscreenOverlay}>
-                    <StatusBar hidden />
-                    <TouchableOpacity style={styles.fullscreenClose} onPress={() => setImagePreviewVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                        <Ionicons name="close-circle" size={36} color="#fff" />
-                    </TouchableOpacity>
-                    <Image source={roomImageSource} style={styles.fullscreenImage} resizeMode="contain" />
-                </View>
-            </Modal>
-            <Surface style={styles.card} elevation={0}>
-                <View style={[styles.statusPill, { backgroundColor: config.bg, borderColor: config.bg, borderWidth: 1, alignSelf: 'flex-start' }]}>
-                    {config.dot && <View style={[styles.statusDot, { backgroundColor: config.color }]} />}
-                    <Text style={[styles.statusText, { color: config.color }]}>{config.label}</Text>
-                </View>
+            {isLoadingRoom ? (
+                <Cartao titulo="Local">
+                    <Texto variante="apoio" cor={cores.textoSecundario}>Carregando sala...</Texto>
+                </Cartao>
+            ) : (
+                <CartaoDaSala
+                    nome={room?.name || 'Sala não encontrada'}
+                    capacidade={room?.capacity || undefined}
+                    descricao={room?.description}
+                    photoUrl={room?.photoUrl}
+                >
+                    <HorarioFuncionamentoCard />
+                </CartaoDaSala>
+            )}
 
-                <Text style={styles.title}>{booking.title}</Text>
-                {!!booking.description && (
-                    <Text style={styles.description}>{booking.description}</Text>
-                )}
+            {podeCancelar ? (
+                <Botao titulo="Cancelar reserva" variante="perigo" onPress={handleCancel} carregando={isCanceling} />
+            ) : null}
 
-                <View style={styles.infoRow}>
-                    <Feather name="users" size={16} color="#6B7280" />
-                    <Text style={styles.infoText}>
-                        {booking.numberOfPeople
-                            ? `Reserva para ${booking.numberOfPeople} ${booking.numberOfPeople === 1 ? 'pessoa' : 'pessoas'}`
-                            : 'Quantidade de pessoas não informada'}
-                    </Text>
-                </View>
-
-                {(booking.status === 'cancelled' || booking.status === 'rejected') && !!booking.rejectionCancelReason && (
-                    <View style={styles.reasonBox}>
-                        <Feather name="info" size={16} color="#DC2626" />
-                        <View style={styles.reasonContent}>
-                            <Text style={styles.reasonTitle}>Motivo do cancelamento/rejeição:</Text>
-                            <Text style={styles.reasonText}>{booking.rejectionCancelReason}</Text>
-                        </View>
-                    </View>
-                )}
-
-                <View style={styles.divider} />
-
-                <Text style={styles.sectionTitle}>Data e Horário</Text>
-                <View style={styles.infoRow}>
-                    <Feather name="calendar" size={16} color="#6B7280" />
-                    <Text style={styles.infoText}>{onlyDateStrToLongBrDate(booking.day)}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Feather name="clock" size={16} color="#6B7280" />
-                    <Text style={styles.infoText}>{onlyTimeObjToTimeStr(booking.timeInterval.start)} - {onlyTimeObjToTimeStr(booking.timeInterval.end)}</Text>
-                </View>
-
-                <View style={styles.divider} />
-
-                <Text style={styles.sectionTitle}>Local</Text>
-
-                {isLoadingRoom ? (
-                    <Text style={styles.infoText}>Carregando sala...</Text>
-                ) : (
-                    <>
-                        <View style={styles.infoRow}>
-                            <Feather name="map-pin" size={16} color="#6B7280" />
-                            <Text style={styles.infoText}>{room?.name || 'Sala não encontrada'}</Text>
-                        </View>
-                        {!!room?.capacity && (
-                            <View style={styles.infoRow}>
-                                <Feather name="users" size={16} color="#6B7280" />
-                                <Text style={styles.infoText}>Capacidade: {room.capacity} pessoas</Text>
-                            </View>
-                        )}
-                        {!!room?.description && (
-                            <View style={styles.roomDescriptionBox}>
-                                <Feather name="info" size={16} color="#6B7280" />
-                                <Text style={styles.roomDescriptionText}>{room.description}</Text>
-                            </View>
-                        )}
-                        <HorarioFuncionamentoCard style={styles.horario} />
-                    </>
-                )}
-
-            </Surface>
-
-            <DialogComTeclado visible={isCancelDialogVisible} onDismiss={() => setIsCancelDialogVisible(false)}>
-                <Dialog.Title>Cancelar Reserva</Dialog.Title>
-                <Dialog.Content>
-                    <Text variant="bodyMedium" style={{ marginBottom: 16 }}>
+            <DialogComTeclado
+                visible={isCancelDialogVisible}
+                onDismiss={() => setIsCancelDialogVisible(false)}
+                style={estilos.dialogo}
+            >
+                <View style={estilos.conteudoDoDialogo}>
+                    <Texto variante="secao" accessibilityRole="header">Cancelar reserva</Texto>
+                    <Texto variante="explicacao" cor={cores.textoSecundario}>
                         Tem certeza que deseja cancelar esta reserva? Por favor, justifique o motivo.
-                    </Text>
-                    <TextInput
-                        label="Motivo do cancelamento *"
+                    </Texto>
+                    <Campo
+                        rotulo="Motivo do cancelamento"
                         value={cancelReason}
                         onChangeText={setCancelReason}
-                        mode="outlined"
                         multiline
                         numberOfLines={3}
-                        style={{ backgroundColor: '#F9FAFB' }}
                     />
-                </Dialog.Content>
-                <Dialog.Actions>
-                    <Button onPress={() => setIsCancelDialogVisible(false)}>Voltar</Button>
-                    <Button
-                        onPress={confirmCancel}
-                        textColor="#DC2626"
-                        disabled={!cancelReason.trim()}
-                    >
-                        Sim, cancelar
-                    </Button>
-                </Dialog.Actions>
+                    <View style={estilos.acoesDoDialogo}>
+                        <Botao titulo="Sim, cancelar" onPress={confirmCancel} desabilitado={!cancelReason.trim()} />
+                        <Botao titulo="Voltar" variante="contorno" onPress={() => setIsCancelDialogVisible(false)} />
+                    </View>
+                </View>
             </DialogComTeclado>
         </ScrollView>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9FAFB',
+const estilos = StyleSheet.create({
+    tela: { flex: 1, backgroundColor: cores.chao },
+    carregando: { alignItems: 'center', justifyContent: 'center' },
+    // Folga em cima para a sombra e os entalhes do bilhete não serem cortados pela rolagem.
+    conteudo: {
+        gap: espaco.xl,
+        paddingHorizontal: espaco.l,
+        paddingTop: espaco.l,
+        paddingBottom: espaco.xxl,
     },
-    scroll: {
-        padding: 20,
-    },
-    headerImage: {
-        width: '100%',
-        height: 200,
-        borderRadius: 16,
-        marginBottom: -30,
-    },
-    card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 20,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    statusPill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 16,
-        marginBottom: 16,
-    },
-    statusDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        marginRight: 6,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#111827',
-        marginBottom: 8,
-    },
-    description: {
-        fontSize: 14,
-        color: '#4B5563',
-        marginBottom: 8,
-        lineHeight: 20,
-    },
-    reasonBox: {
-        flexDirection: 'row',
-        backgroundColor: '#FEF2F2',
-        padding: 12,
-        borderRadius: 8,
-        marginTop: 12,
-        alignItems: 'flex-start',
-    },
-    reasonContent: {
-        marginLeft: 8,
-        flex: 1,
-    },
-    reasonTitle: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#991B1B',
-        marginBottom: 2,
-    },
-    reasonText: {
-        fontSize: 13,
-        color: '#B91C1C',
-        lineHeight: 18,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#F3F4F6',
-        marginVertical: 16,
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 12,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-    },
-    infoRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    infoText: {
-        fontSize: 16,
-        color: '#374151',
-        marginLeft: 8,
-    },
-    roomDescriptionBox: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginBottom: 12,
-    },
-    roomDescriptionText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#4B5563',
-        marginLeft: 8,
-        lineHeight: 20,
-    },
-    horario: {
-        marginTop: 4,
-    },
-    expandBadge: {
-        position: 'absolute',
-        bottom: 36,
-        right: 12,
-        backgroundColor: 'rgba(0,0,0,0.55)',
-        borderRadius: 6,
-        padding: 6,
-    },
-    fullscreenOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.95)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    fullscreenClose: {
-        position: 'absolute',
-        top: 48,
-        right: 20,
-        zIndex: 10,
-    },
-    fullscreenImage: {
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT * 0.75,
-    },
+    atividade: { gap: espaco.xs },
+    // O Dialog do Paper usaria a superfície lilás do tema padrão (MD3).
+    dialogo: { borderRadius: raio.cartao, backgroundColor: cores.papel },
+    // O Dialog do Paper põe margem em cima do primeiro filho; aqui o espaço vem do padding.
+    conteudoDoDialogo: { marginTop: 0, gap: espaco.l, padding: espaco.xxl },
+    acoesDoDialogo: { gap: espaco.m, marginTop: espaco.xs },
 });

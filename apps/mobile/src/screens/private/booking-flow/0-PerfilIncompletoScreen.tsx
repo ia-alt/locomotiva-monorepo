@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, TextInput, Button } from 'react-native-paper';
+import { View, StyleSheet } from 'react-native';
 import ScrollComTeclado from '../../../components/ScrollComTeclado';
-import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../../contexts/auth-context';
 import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
+import { Aviso, Botao, Campo, Icone, Texto, cores, espaco, raio } from '../../../ui';
+import { MENSAGENS, dataDeNascimentoValida, dataParaApi, mascaraDeData } from '../../../utils/validacoes';
+
+const SELO = 56;
 
 export default function PerfilIncompletoScreen() {
     const { authUser, updateMe } = useAuth();
@@ -15,21 +17,26 @@ export default function PerfilIncompletoScreen() {
     const existingCompany = authUser?.company;
     const existingJobTitle = authUser?.jobTitle;
     const existingPhone = authUser?.phone;
+    const existingBirthDate = authUser?.birthDate;
 
     const needsCompany = !existingCompany;
     const needsJobTitle = !existingJobTitle;
     const needsPhone = !existingPhone;
+    // Contas antigas podem ter ficado sem data de nascimento, que é obrigatória.
+    const needsBirthDate = !existingBirthDate;
 
     const [company, setCompany] = useState(existingCompany ?? '');
     const [jobTitle, setJobTitle] = useState(existingJobTitle ?? '');
     const [phone, setPhone] = useState(existingPhone ?? '');
+    const [birthDate, setBirthDate] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const canProceed =
         (!needsCompany || company.trim().length > 0) &&
         (!needsJobTitle || jobTitle.trim().length > 0) &&
-        (!needsPhone || phone.trim().length > 0);
+        (!needsPhone || phone.trim().length > 0) &&
+        (!needsBirthDate || dataDeNascimentoValida(birthDate));
 
     async function handleProceed() {
         if (!canProceed) return;
@@ -39,7 +46,7 @@ export default function PerfilIncompletoScreen() {
             await updateMe({
                 name: authUser?.name ?? '',
                 email: authUser?.email ?? '',
-                birthDate: (authUser as any)?.birthDate ?? '',
+                birthDate: needsBirthDate ? dataParaApi(birthDate) : String(existingBirthDate),
                 company: company.trim(),
                 jobTitle: jobTitle.trim(),
                 phone: phone.trim(),
@@ -57,183 +64,102 @@ export default function PerfilIncompletoScreen() {
     }
 
     return (
-        <ScrollComTeclado style={styles.container} contentContainerStyle={styles.containerContent}>
-            <View style={styles.content}>
-                <View style={styles.iconWrapper}>
-                    <Feather name="user-x" size={40} color="#1E88E5" />
+        <ScrollComTeclado style={estilos.tela} contentContainerStyle={estilos.conteudo}>
+            <View style={estilos.cabecalho}>
+                <View style={estilos.selo}>
+                    <Icone nome="perfil" cor={cores.azul} tamanho={28} />
                 </View>
-
-                <Text style={styles.title}>Só mais um passo!</Text>
-                <Text style={styles.subtitle}>
+                <Texto variante="titulo" accessibilityRole="header">Só mais um passo!</Texto>
+                <Texto variante="corpo" cor={cores.textoSecundario}>
                     {nextScreen === 'CriarImpressao'
                         ? 'Preencha seus dados profissionais para podermos prosseguir com o seu pedido de impressão.'
                         : 'Preencha seus dados profissionais para podermos prosseguir com a sua reserva.'}
-                </Text>
-
-                <View style={styles.fields}>
-                    {needsCompany && (
-                        <View style={styles.fieldGroup}>
-                            <Text style={styles.fieldLabel}>Empresa/Instituição</Text>
-                            <TextInput
-                                value={company}
-                                onChangeText={setCompany}
-                                mode="outlined"
-                                placeholder="Nome da empresa ou instituição"
-                                style={styles.input}
-                                outlineStyle={styles.inputOutline}
-                                right={<TextInput.Icon icon="office-building-outline" color="#9CA3AF" />}
-                            />
-                        </View>
-                    )}
-                    {needsJobTitle && (
-                        <View style={styles.fieldGroup}>
-                            <Text style={styles.fieldLabel}>Cargo</Text>
-                            <TextInput
-                                value={jobTitle}
-                                onChangeText={setJobTitle}
-                                mode="outlined"
-                                placeholder="Seu cargo ou função"
-                                style={styles.input}
-                                outlineStyle={styles.inputOutline}
-                                right={<TextInput.Icon icon="briefcase-outline" color="#9CA3AF" />}
-                            />
-                        </View>
-                    )}
-                    {needsPhone && (
-                        <View style={styles.fieldGroup}>
-                            <Text style={styles.fieldLabel}>Telefone</Text>
-                            <TextInput
-                                value={phone}
-                                onChangeText={(v) => {
-                                const digits = v.replace(/\D/g, '').slice(0, 11);
-                                let masked = digits;
-                                if (digits.length > 2) masked = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-                                if (digits.length > 7) masked = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-                                setPhone(masked);
-                            }}
-                                keyboardType="phone-pad"
-                                mode="outlined"
-                                placeholder="Seu telefone"
-                                style={styles.input}
-                                outlineStyle={styles.inputOutline}
-                                right={<TextInput.Icon icon="phone-outline" color="#9CA3AF" />}
-                            />
-                        </View>
-                    )}
-                    {error && (
-                        <Text style={styles.errorText}>{error}</Text>
-                    )}
-                </View>
+                </Texto>
             </View>
 
-            <View style={styles.footer}>
-                <Button
-                    mode="contained"
-                    onPress={handleProceed}
-                    disabled={!canProceed || loading}
-                    loading={loading}
-                    style={styles.proceedButton}
-                    contentStyle={styles.proceedButtonContent}
-                    labelStyle={styles.proceedButtonLabel}
-                >
-                    Prosseguir
-                </Button>
+            <View style={estilos.campos}>
+                {needsCompany && (
+                    <Campo
+                        rotulo="Empresa/Instituição"
+                        icone="empresa"
+                        value={company}
+                        onChangeText={setCompany}
+                        placeholder="Nome da empresa ou instituição"
+                    />
+                )}
+                {needsJobTitle && (
+                    <Campo
+                        rotulo="Cargo"
+                        icone="perfil"
+                        value={jobTitle}
+                        onChangeText={setJobTitle}
+                        placeholder="Seu cargo ou função"
+                    />
+                )}
+                {needsPhone && (
+                    <Campo
+                        rotulo="Telefone"
+                        icone="telefone"
+                        value={phone}
+                        onChangeText={(v) => {
+                            const digits = v.replace(/\D/g, '').slice(0, 11);
+                            let masked = digits;
+                            if (digits.length > 2) masked = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+                            if (digits.length > 7) masked = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+                            setPhone(masked);
+                        }}
+                        keyboardType="phone-pad"
+                        placeholder="Seu telefone"
+                    />
+                )}
+                {needsBirthDate && (
+                    <Campo
+                        rotulo="Data de nascimento"
+                        icone="calendario"
+                        value={birthDate}
+                        onChangeText={(texto) => setBirthDate(mascaraDeData(texto))}
+                        keyboardType="numeric"
+                        placeholder="DD/MM/AAAA"
+                        erro={birthDate.length === 10 && !dataDeNascimentoValida(birthDate) ? MENSAGENS.dataDeNascimento : undefined}
+                    />
+                )}
+                {error ? <Aviso tom="erro">{error}</Aviso> : null}
+            </View>
 
-                <TouchableOpacity onPress={handleCancel} activeOpacity={0.7} style={styles.cancelWrapper}>
-                    <Text style={styles.cancelText}>Cancelar</Text>
-                </TouchableOpacity>
+            <View style={estilos.acoes}>
+                <Botao
+                    titulo="Prosseguir"
+                    tamanho="alto"
+                    onPress={handleProceed}
+                    desabilitado={!canProceed}
+                    carregando={loading}
+                />
+                <Botao titulo="Cancelar" variante="contorno" onPress={handleCancel} />
             </View>
         </ScrollComTeclado>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    containerContent: {
+const estilos = StyleSheet.create({
+    tela: { flex: 1, backgroundColor: cores.chao },
+    conteudo: {
         flexGrow: 1,
-        padding: 24,
-        justifyContent: 'space-between',
+        gap: espaco.xxl,
+        paddingHorizontal: espaco.l,
+        paddingTop: espaco.xxl,
+        paddingBottom: espaco.l,
     },
-    content: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#111827',
-        marginTop: 24,
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#6B7280',
-        textAlign: 'center',
-        lineHeight: 24,
-        paddingHorizontal: 8,
-        marginBottom: 32,
-    },
-    iconWrapper: {
-        width: 88,
-        height: 88,
-        borderRadius: 44,
-        backgroundColor: '#EFF6FF',
+    cabecalho: { gap: espaco.s },
+    selo: {
+        width: SELO,
+        height: SELO,
+        borderRadius: raio.bilhete,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 8,
+        marginBottom: espaco.s,
+        backgroundColor: cores.azulSuave,
     },
-    fields: {
-        width: '100%',
-        gap: 16,
-    },
-    fieldGroup: {
-        gap: 6,
-    },
-    fieldLabel: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#374151',
-    },
-    input: {
-        backgroundColor: '#F9FAFB',
-    },
-    inputOutline: {
-        borderRadius: 8,
-        borderColor: '#E5E7EB',
-    },
-    errorText: {
-        color: '#EF4444',
-        fontSize: 14,
-        marginTop: 4,
-        textAlign: 'center',
-    },
-    footer: {
-        gap: 16,
-        marginBottom: 8,
-    },
-    proceedButton: {
-        borderRadius: 12,
-        backgroundColor: '#1E88E5',
-    },
-    proceedButtonContent: {
-        paddingVertical: 8,
-    },
-    proceedButtonLabel: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    cancelWrapper: {
-        alignItems: 'center',
-        paddingVertical: 4,
-    },
-    cancelText: {
-        fontSize: 16,
-        color: '#6B7280',
-        textDecorationLine: 'underline',
-    },
+    campos: { gap: espaco.l },
+    // Com pouco conteúdo, os botões descem até o pé da tela.
+    acoes: { marginTop: 'auto', gap: espaco.m },
 });

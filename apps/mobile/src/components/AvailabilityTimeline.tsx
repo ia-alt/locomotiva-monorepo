@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { View, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { ORPCOutputs } from '../locomotiva-api/types';
 import { onlyTimeObjToTimeStr } from '../utils/datetime-formaters';
+import { Aviso, Icone, Texto, cores, espaco, raio } from '../ui';
 
 type AvailableSlots = ORPCOutputs["booking"]["listAvailableSlotsByDay"]["slots"]
 export type AvailabilityTimelineSlot = AvailableSlots[0]
@@ -14,10 +14,10 @@ interface AvailabilityTimelineProps {
     setSelectedSlot: (slot: AvailabilityTimelineSlot | null) => void;
 }
 
-
-export default function AvailabilityTimeline({ isLoadingSlots: isLoading, selectedSlot, setSelectedSlot, availableSlots  
+/** Períodos livres do dia como opções lado a lado; o escolhido ganha a borda azul e o check. */
+export default function AvailabilityTimeline({ isLoadingSlots: isLoading, selectedSlot, setSelectedSlot, availableSlots
  }: AvailabilityTimelineProps) {
-    
+
     const blockWithLabel = useMemo(() => {
         if (!availableSlots) return [];
 
@@ -42,83 +42,75 @@ export default function AvailabilityTimeline({ isLoadingSlots: isLoading, select
 
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>1. Escolha um período</Text>
+        <View style={estilos.secao}>
+            <Texto variante="destaque" accessibilityRole="header">1. Escolha um período</Texto>
             {isLoading ? (
-                <ActivityIndicator size="small" color="#6B7280" />
-            ) : (<>
-                    {blockWithLabel.length > 0 && (
-                        <Text style={[styles.instructionText, styles.instructionText]}>Depois de escolher o período você ajustar o horário de início e fim da sua reserva.</Text>
-                    )}
-                    <FlatList
-                        data={blockWithLabel}
-                        numColumns={2}
-                        columnWrapperStyle={styles.columnWrapper}
-                        scrollEnabled={false}
-                        ListEmptyComponent={<Text style={styles.highlightText}>Nenhum horário disponível para o dia selecionado. <Text style={{fontWeight: 'bold', color: '#1D4ED8'}}>Tente outro dia</Text>.</Text>}
-                        
-                        renderItem={({ item }) => {
-                            const isSelected = selectedSlot && selectedSlot.start.hour === item.slot.start.hour && selectedSlot.start.minute === item.slot.start.minute;
+                <ActivityIndicator color={cores.azul} accessibilityLabel="Carregando os horários livres" />
+            ) : blockWithLabel.length === 0 ? (
+                <Aviso>Nenhum horário disponível para o dia selecionado. Tente outro dia.</Aviso>
+            ) : (
+                <>
+                    <Texto variante="explicacao" cor={cores.textoSecundario}>
+                        Depois de escolher o período, você ajusta o horário de início e fim da sua reserva.
+                    </Texto>
+                    <View style={estilos.opcoes} accessibilityRole="radiogroup">
+                        {blockWithLabel.map((item) => {
+                            const isSelected = !!selectedSlot && selectedSlot.start.hour === item.slot.start.hour && selectedSlot.start.minute === item.slot.start.minute;
+                            const inicio = onlyTimeObjToTimeStr(item.slot.start);
+                            const fim = onlyTimeObjToTimeStr(item.slot.end);
                             return (
-                            <TouchableOpacity key={JSON.stringify(item)} onPress={() => {
-                                setSelectedSlot(item.slot);
-                            }} style={styles.itemContainer}>
-                                <Surface style={[styles.surface, isSelected && styles.selectedSurface]}>
-                                    <Text variant="bodySmall" style={isSelected && styles.selectedText}>{item.label}</Text>
-                                    <Text variant="titleLarge" style={isSelected && styles.selectedText}>{onlyTimeObjToTimeStr(item.slot.start)} - {onlyTimeObjToTimeStr(item.slot.end)}</Text>
-                                </Surface>
-                            </TouchableOpacity>
-                        );
-                        }}
-                    />
-                    </>
-                )}
+                                <Pressable
+                                    key={`${inicio}-${fim}`}
+                                    onPress={() => {
+                                        setSelectedSlot(item.slot);
+                                    }}
+                                    accessibilityRole="radio"
+                                    accessibilityState={{ checked: isSelected }}
+                                    accessibilityLabel={`${item.label}, das ${inicio} às ${fim}`}
+                                    style={({ pressed }) => [
+                                        estilos.opcao,
+                                        isSelected && estilos.opcaoEscolhida,
+                                        pressed && estilos.opcaoPressionada,
+                                    ]}
+                                >
+                                    <View style={estilos.linhaDoRotulo}>
+                                        <Texto variante="apoioForte" cor={isSelected ? cores.azulTexto : cores.textoSecundario}>
+                                            {item.label}
+                                        </Texto>
+                                        {isSelected ? <Icone nome="check" cor={cores.azul} tamanho={18} /> : null}
+                                    </View>
+                                    <Texto variante="destaque">{`${inicio} às ${fim}`}</Texto>
+                                </Pressable>
+                            );
+                        })}
+                    </View>
+                </>
+            )}
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        marginBottom: 24,
+const estilos = StyleSheet.create({
+    secao: { gap: espaco.m },
+    // Duas opções por linha; se sobrar uma sozinha, ela ocupa a linha toda.
+    opcoes: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.m },
+    opcao: {
+        flexGrow: 1,
+        flexBasis: '40%',
+        gap: espaco.xs,
+        paddingVertical: espaco.m,
+        paddingHorizontal: espaco.l,
+        borderRadius: raio.controle,
+        borderWidth: 1.5,
+        borderColor: cores.linha,
+        backgroundColor: cores.papel,
     },
-    title: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#374151',
-        marginBottom: 4,
-    },
-    instructionText: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginBottom: 12,
-        fontWeight: '500',
-    },
-    highlightText: {
-        backgroundColor: '#EFF6FF',
-        color: '#1D4ED8',
-        borderRadius: 8,
-        padding: 10,
-        marginBottom: 12,
-    },
-    columnWrapper: {
+    opcaoEscolhida: { borderColor: cores.azul, backgroundColor: cores.azulSuave },
+    opcaoPressionada: { transform: [{ scale: 0.98 }] },
+    linhaDoRotulo: {
+        flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 12,
-        paddingHorizontal: 0,
-    },
-    itemContainer: {
-        flexBasis: '50%',
-        marginBottom: 12,
-    },
-    surface: {
-        padding: 12,
-        backgroundColor: '#F3F4F6',
-    },
-    selectedSurface: {
-        backgroundColor: '#3B82F6',
-        borderWidth: 2,
-        borderColor: '#1E40AF',
-    },
-    selectedText: {
-        color: '#FFFFFF',
+        gap: espaco.s,
     },
 });

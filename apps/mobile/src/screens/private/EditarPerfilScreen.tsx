@@ -1,39 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, TextInput, Button, HelperText } from 'react-native-paper';
 import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useAuth } from '../../contexts/auth-context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
-
-// Converte YYYY-MM-DD (API) → DD/MM/AAAA (exibição)
-function toDisplayDate(value: string | Date | undefined): string {
-    if (!value) return '';
-    const d = new Date(value);
-    if (isNaN(d.getTime())) return '';
-    const [yyyy, mm, dd] = d.toISOString().split('T')[0].split('-');
-    return `${dd}/${mm}/${yyyy}`;
-}
-
-// Converte DD/MM/AAAA → YYYY-MM-DD (API)
-function toApiDate(value: string): string {
-    const [dd, mm, yyyy] = value.split('/');
-    return `${yyyy}-${mm}-${dd}`;
-}
-
-function isValidDisplayDate(value: string): boolean {
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return false;
-    const [dd, mm, yyyy] = value.split('/').map(Number);
-    const d = new Date(yyyy, mm - 1, dd);
-    return d.getFullYear() === yyyy && d.getMonth() === mm - 1 && d.getDate() === dd;
-}
-
-// Aplica máscara automática enquanto o usuário digita
-function applyDateMask(raw: string): string {
-    const digits = raw.replace(/\D/g, '').slice(0, 8);
-    if (digits.length <= 2) return digits;
-    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-}
+import { Aviso, Botao, Campo, Texto, cores, espaco } from '../../ui';
+import { MENSAGENS, dataDeNascimentoValida, dataParaApi, dataParaExibir, mascaraDeData, telefoneCompleto } from '../../utils/validacoes';
 
 function applyPhoneMask(raw: string): string {
     const digits = raw.replace(/\D/g, '').slice(0, 11);
@@ -52,7 +23,7 @@ export default function EditarPerfilScreen() {
     const navigation = usePrivateStackNavigation();
 
     const [name, setName] = useState(authUser?.name ?? '');
-    const [birthDate, setBirthDate] = useState(toDisplayDate(authUser?.birthDate));
+    const [birthDate, setBirthDate] = useState(dataParaExibir(authUser?.birthDate));
     const [email, setEmail] = useState(authUser?.email ?? '');
     const [phone, setPhone] = useState(applyPhoneMask(authUser?.phone ?? ''));
     const [company, setCompany] = useState(authUser?.company ?? '');
@@ -62,8 +33,12 @@ export default function EditarPerfilScreen() {
 
     const nameError = name.trim().length === 0 ? 'Nome é obrigatório' : null;
     const emailError = !email.includes('@') ? 'E-mail inválido' : null;
-    const birthDateError = birthDate && !isValidDisplayDate(birthDate) ? 'Data inválida' : null;
-    const phoneError = phone.replace(/\D/g, '').length < 10 ? 'Telefone é obrigatório' : null;
+    // A data de nascimento é obrigatória no cadastro: sem ela o salvar ficaria
+    // mandando uma data vazia (inválida) para a API.
+    const birthDateError = !birthDate
+        ? MENSAGENS.dataDeNascimentoObrigatoria
+        : !dataDeNascimentoValida(birthDate) ? MENSAGENS.dataDeNascimento : null;
+    const phoneError = !telefoneCompleto(phone) ? MENSAGENS.telefone : null;
 
     const canSubmit = !nameError && !emailError && !birthDateError && !phoneError && !loading;
 
@@ -75,7 +50,7 @@ export default function EditarPerfilScreen() {
             await updateMe({
                 name: name.trim(),
                 email,
-                birthDate: toApiDate(birthDate),
+                birthDate: dataParaApi(birthDate),
                 phone,
                 company: company || null,
                 jobTitle: jobTitle || null
@@ -89,128 +64,88 @@ export default function EditarPerfilScreen() {
     }
 
     return (
-        <ScrollComTeclado contentContainerStyle={styles.container}>
-            <Text variant="titleMedium" style={styles.sectionTitle}>
-                Dados pessoais
-            </Text>
+        <ScrollComTeclado style={estilos.tela} contentContainerStyle={estilos.conteudo}>
+            <Texto variante="secao" accessibilityRole="header">Dados pessoais</Texto>
 
-            <TextInput
-                label="Nome completo"
+            <Campo
+                rotulo="Nome completo"
                 value={name}
                 onChangeText={setName}
-                mode="outlined"
-                error={!!nameError}
-                style={styles.input}
+                erro={nameError ?? undefined}
             />
-            {nameError && <HelperText type="error">{nameError}</HelperText>}
 
-            <TextInput
-                label="Data de nascimento"
+            <Campo
+                rotulo="Data de nascimento"
                 value={birthDate}
-                onChangeText={(v) => setBirthDate(applyDateMask(v))}
-                mode="outlined"
+                onChangeText={(v) => setBirthDate(mascaraDeData(v))}
                 placeholder="DD/MM/AAAA"
                 keyboardType="numeric"
-                error={!!birthDateError}
-                style={styles.input}
+                erro={birthDateError ?? undefined}
             />
-            {birthDateError && <HelperText type="error">{birthDateError}</HelperText>}
 
-            <TextInput
-                label="E-mail"
+            <Campo
+                rotulo="E-mail"
                 value={email}
                 onChangeText={setEmail}
-                mode="outlined"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                error={!!emailError}
-                style={styles.input}
+                erro={emailError ?? undefined}
             />
-            {emailError && <HelperText type="error">{emailError}</HelperText>}
 
-            <TextInput
-                label="Telefone"
+            <Campo
+                rotulo="Telefone"
                 value={phone}
                 onChangeText={(v) => setPhone(applyPhoneMask(v))}
-                mode="outlined"
                 placeholder="(00) 00000-0000"
                 keyboardType="phone-pad"
                 maxLength={15}
-                error={!!phoneError}
-                style={styles.input}
+                erro={phoneError ?? undefined}
             />
-            {phoneError && <HelperText type="error">{phoneError}</HelperText>}
 
-            <TextInput
-                label="Empresa/Instituição (opcional)"
+            <Campo
+                rotulo="Empresa/Instituição (opcional)"
                 value={company}
                 onChangeText={setCompany}
-                mode="outlined"
-                style={styles.input}
             />
 
-            <TextInput
-                label="Cargo (opcional)"
+            <Campo
+                rotulo="Cargo (opcional)"
                 value={jobTitle}
                 onChangeText={setJobTitle}
-                mode="outlined"
-                style={styles.input}
             />
 
-            {error && (
-                <HelperText type="error" style={styles.globalError}>
-                    {error}
-                </HelperText>
-            )}
+            {error ? <Aviso tom="erro">{error}</Aviso> : null}
 
-            <View style={styles.actions}>
-                <Button
-                    mode="outlined"
-                    onPress={() => navigation.goBack()}
-                    style={styles.cancelButton}
-                    disabled={loading}
-                >
-                    Cancelar
-                </Button>
-                <Button
-                    mode="contained"
-                    onPress={handleSave}
-                    loading={loading}
-                    disabled={!canSubmit}
-                    style={styles.saveButton}
-                >
-                    Salvar
-                </Button>
+            <View style={estilos.acoes}>
+                <View style={estilos.acao}>
+                    <Botao
+                        titulo="Cancelar"
+                        variante="contorno"
+                        onPress={() => navigation.goBack()}
+                        desabilitado={loading}
+                    />
+                </View>
+                <View style={estilos.acao}>
+                    <Botao
+                        titulo="Salvar"
+                        onPress={handleSave}
+                        carregando={loading}
+                        desabilitado={!canSubmit}
+                    />
+                </View>
             </View>
         </ScrollComTeclado>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        padding: 24,
-        gap: 4,
+const estilos = StyleSheet.create({
+    tela: { flex: 1, backgroundColor: cores.chao },
+    conteudo: {
+        gap: espaco.l,
+        paddingHorizontal: espaco.l,
+        paddingTop: espaco.s,
+        paddingBottom: espaco.xxl,
     },
-    sectionTitle: {
-        marginBottom: 12,
-        opacity: 0.7,
-    },
-    input: {
-        marginBottom: 2,
-    },
-    globalError: {
-        marginTop: 8,
-        fontSize: 14,
-    },
-    actions: {
-        flexDirection: 'row',
-        gap: 12,
-        marginTop: 24,
-    },
-    cancelButton: {
-        flex: 1,
-    },
-    saveButton: {
-        flex: 1,
-    },
+    acoes: { flexDirection: 'row', gap: espaco.m, marginTop: espaco.s },
+    acao: { flex: 1 },
 });

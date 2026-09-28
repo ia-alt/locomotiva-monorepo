@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
-import { Feather } from '@expo/vector-icons';
+import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import TimePickerModal, { TimePickerModalTimeValue, TimeToSeconds } from './TimePickerModal';
 import { AvailabilityTimelineSlot } from './AvailabilityTimeline';
 import { onlyTimeObjToTimeStr } from '../utils/datetime-formaters';
+import { Icone, Texto, cores, espaco, raio, variantesDeTexto } from '../ui';
 
 
 interface TimeSelectorProps {
@@ -17,6 +16,7 @@ interface TimeSelectorProps {
     onChangeEnd: (time: TimePickerModalTimeValue | null) => void;
 }
 
+/** Horário de início e de fim, lado a lado. Cada caixa abre a lista de horários do período escolhido. */
 export default function TimeSelector({ baseDate, startTime, endTime, onChangeStart, onChangeEnd, isLoading, timeSlot }: TimeSelectorProps) {
     const [activePicker, setActivePicker] = useState<'none' | 'start' | 'end'>('none');
     const enabled = !!timeSlot;
@@ -28,71 +28,96 @@ export default function TimeSelector({ baseDate, startTime, endTime, onChangeSta
     }, [timeSlot]);
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>2. Ajuste o Horário da Reserva</Text>
-            <View style={styles.row}>
-                <TouchableOpacity style={[styles.touchableCard, !enabled && styles.touchableCardDisabled]} onPress={() => setActivePicker('start')} activeOpacity={0.7} disabled={!enabled}>
-                    <Surface style={[styles.timeCard, startTime ? styles.timeCardActive : {}, !enabled && styles.timeCardDisabled]} elevation={0}>
-                        <Text style={[styles.label, !enabled && styles.labelDisabled]}>Início</Text>
-                        {isLoading ? (
-                            <ActivityIndicator size="small" color="#6B7280" />
-                        ): (
-                            <View style={styles.timeDisplay}>
-                            <Feather name="clock" size={16} color={startTime ? "#1E88E5" : "#9CA3AF"} />
-                            <Text style={[styles.timeText, !startTime && styles.placeholder]}>
-                                {startTime ? onlyTimeObjToTimeStr(startTime) : '--:--'}
-                            </Text>
-                        </View>
-                        )}
-                    </Surface>
-                </TouchableOpacity>
+        <View style={estilos.secao}>
+            <Texto variante="destaque" accessibilityRole="header">2. Ajuste o horário da reserva</Texto>
+            <View style={estilos.linha}>
+                <CaixaDeHorario
+                    rotulo="Início"
+                    horario={startTime}
+                    carregando={isLoading}
+                    desabilitada={!enabled}
+                    onPress={() => setActivePicker('start')}
+                />
 
-                <View style={styles.divider}>
-                    <Feather name="arrow-right" size={20} color="#D1D5DB" />
-                </View>
+                <Icone nome="seguir" cor={cores.seta} tamanho={20} />
 
-                <TouchableOpacity style={[styles.touchableCard, (!enabled || !startTime) && styles.touchableCardDisabled]} onPress={() => setActivePicker('end')} activeOpacity={0.7} disabled={!enabled || !startTime}>
-                    <Surface style={[styles.timeCard, endTime ? styles.timeCardActive : {}, hasError ? styles.timeCardError : {}, (!enabled || !startTime) && styles.timeCardDisabled]} elevation={0}>
-                        <Text style={[styles.label, hasError && styles.labelError, (!enabled || !startTime) && styles.labelDisabled]}>Fim</Text>
-                        {isLoading ? (
-                            <ActivityIndicator size="small" color="#6B7280" />
-                        ) : (
-                            <View style={styles.timeDisplay}>
-                                <Feather name="clock" size={16} color={hasError ? "#EF4444" : (endTime ? "#1E88E5" : "#9CA3AF")} />
-                                <Text style={[styles.timeText, !endTime && styles.placeholder, hasError && styles.textError]}>
-                                    {endTime ? onlyTimeObjToTimeStr(endTime) : '--:--'}
-                                </Text>
-                            </View>
-                        )}
-                    </Surface>
-                </TouchableOpacity>
+                <CaixaDeHorario
+                    rotulo="Fim"
+                    horario={endTime}
+                    carregando={isLoading}
+                    desabilitada={!enabled || !startTime}
+                    comErro={hasError}
+                    onPress={() => setActivePicker('end')}
+                />
             </View>
 
             <TimePickerModal
                 visible={activePicker !== 'none'}
                 onClose={() => setActivePicker('none')}
                 initialTime={activePicker === 'start' ? startTime : endTime}
-                title={activePicker === 'start' ? 'Horário de Início' : 'Horário de Fim'}
+                title={activePicker === 'start' ? 'Horário de início' : 'Horário de fim'}
                 minTime={
-                    activePicker === 'start' 
-                        ? (timeSlot?.start || undefined) 
+                    activePicker === 'start'
+                        ? (timeSlot?.start || undefined)
                         : (startTime ? add30Minutes(startTime) : undefined)
                 }
                 maxTime={
-                    activePicker === 'start' 
+                    activePicker === 'start'
                         ? (timeSlot?.end ? sub30Minutes(timeSlot.end) : undefined)
                         : (timeSlot?.end || undefined)
                 }
                 onConfirm={(time) => {
                     if (activePicker === 'start') {
                         onChangeStart(time);
-                        onChangeEnd(null); // reset end time when start time changes
+                        onChangeEnd(null); // com outro início, o fim escolhido deixa de valer
                     } else if (activePicker === 'end') {
                         onChangeEnd(time);
                     }
                 }}
             />
         </View>
+    );
+}
+
+type PropsDaCaixa = {
+    rotulo: string;
+    horario: TimePickerModalTimeValue | null;
+    carregando: boolean;
+    desabilitada: boolean;
+    comErro?: boolean;
+    onPress: () => void;
+};
+
+function CaixaDeHorario({ rotulo, horario, carregando, desabilitada, comErro = false, onPress }: PropsDaCaixa) {
+    const corDoDestaque = comErro ? cores.erro : horario ? cores.azulTexto : cores.textoSecundario;
+
+    return (
+        <Pressable
+            onPress={onPress}
+            disabled={desabilitada}
+            accessibilityRole="button"
+            accessibilityLabel={`${rotulo}: ${horario ? onlyTimeObjToTimeStr(horario) : 'não escolhido'}`}
+            accessibilityState={{ disabled: desabilitada }}
+            style={({ pressed }) => [
+                estilos.caixa,
+                !!horario && estilos.caixaPreenchida,
+                comErro && estilos.caixaComErro,
+                desabilitada && estilos.caixaDesabilitada,
+                pressed && estilos.caixaPressionada,
+            ]}
+        >
+            <View style={estilos.rotulo}>
+                <Icone nome="relogio" cor={corDoDestaque} tamanho={16} />
+                <Texto variante="apoioForte" cor={corDoDestaque}>{rotulo}</Texto>
+            </View>
+            {carregando ? (
+                <ActivityIndicator color={cores.textoSecundario} style={estilos.carregando} />
+            ) : (
+                <Texto variante="titulo" cor={comErro ? cores.erro : horario ? cores.grafite : cores.textoApagado}>
+                    {horario ? onlyTimeObjToTimeStr(horario) : '--:--'}
+                </Texto>
+            )}
+        </Pressable>
     );
 }
 
@@ -116,76 +141,28 @@ function sub30Minutes(time: TimePickerModalTimeValue): TimePickerModalTimeValue 
     return { hour, minute, second: 0 };
 }
 
-const styles = StyleSheet.create({
-    container: {
-        marginBottom: 24,
-    },
-    title: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#374151',
-        marginBottom: 12,
-    },
-    row: {
+const estilos = StyleSheet.create({
+    secao: { gap: espaco.m },
+    linha: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        gap: espaco.s,
     },
-    touchableCard: {
+    caixa: {
         flex: 1,
-    },
-    timeCard: {
-        borderRadius: 16,
-        backgroundColor: '#FFFFFF',
-        padding: 16,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
         alignItems: 'center',
+        gap: espaco.xs,
+        paddingVertical: espaco.m,
+        borderRadius: raio.controle,
+        borderWidth: 1.5,
+        borderColor: cores.linha,
+        backgroundColor: cores.papel,
     },
-    timeCardActive: {
-        borderColor: '#93C5FD',
-        backgroundColor: '#EFF6FF',
-    },
-    timeCardError: {
-        borderColor: '#FECACA',
-        backgroundColor: '#FEF2F2',
-    },
-    label: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginBottom: 4,
-        fontWeight: '500',
-    },
-    labelError: {
-        color: '#EF4444',
-    },
-    labelDisabled: {
-        color: '#9CA3AF',
-    },
-    timeCardDisabled: {
-        backgroundColor: '#F3F4F6',
-        borderColor: '#D1D5DB',
-    },
-    touchableCardDisabled: {
-        opacity: 0.65,
-    },
-    timeDisplay: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    timeText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#111827',
-    },
-    textError: {
-        color: '#EF4444',
-    },
-    placeholder: {
-        color: '#9CA3AF',
-    },
-    divider: {
-        paddingHorizontal: 12,
-    }
+    caixaPreenchida: { borderColor: cores.azul },
+    caixaComErro: { borderColor: cores.erro, backgroundColor: cores.erroSuave },
+    caixaDesabilitada: { opacity: 0.5 },
+    caixaPressionada: { transform: [{ scale: 0.97 }] },
+    rotulo: { flexDirection: 'row', alignItems: 'center', gap: espaco.xs },
+    // Mesma altura da linha do horário, para a caixa não mudar de tamanho ao carregar.
+    carregando: { height: variantesDeTexto.titulo.lineHeight },
 });

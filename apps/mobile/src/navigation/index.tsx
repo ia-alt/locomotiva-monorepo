@@ -10,13 +10,9 @@ const linking: LinkingOptions<any> = {
     prefixes: ['locomotiva://', 'http://192.168.1.12:8081/', 'https://192.168.1.12:8081/'],
     config: {
         screens: {
-            Drawer: {
+            Abas: {
                 screens: {
-                    'Menu principal': {
-                        screens: {
-                            'Início': 'checkin',
-                        }
-                    }
+                    'Início': 'checkin',
                 }
             }
         }

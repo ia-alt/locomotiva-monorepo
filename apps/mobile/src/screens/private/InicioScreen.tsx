@@ -1,78 +1,79 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text } from 'react-native-paper';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import { CheckinCard } from '../../components/CheckinCard';
-import { HorarioFuncionamentoCard } from '../../components/HorarioFuncionamentoCard';
-import { CheckinProvider } from '../../contexts/checkin-context';
+import React, { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { useQueryClient } from '@tanstack/react-query';
+import { useORPC } from '../../locomotiva-api/context';
 import { useAuth } from '../../contexts/auth-context';
-
-type InicioScreenRouteProp = RouteProp<{ Início: { code?: string } }, 'Início'>;
+import { CheckinProvider } from '../../contexts/checkin-context';
+import { useMolduraDaTela } from '../../contexts/layout-context';
+import { useCheckinPorCodigo } from '../../hooks/useCheckinPorCodigo';
+import type { AbasParamList } from '../../navigation/PrivateNavigator';
+import { CabecalhoDaMarca, cores, espaco } from '../../ui';
+import { AtalhosDoInicio } from '../../components/inicio/AtalhosDoInicio';
+import { PainelDoInicio } from '../../components/inicio/PainelDoInicio';
+import { Saudacao } from '../../components/inicio/Saudacao';
+import { SecaoDeCheckin } from '../../components/inicio/SecaoDeCheckin';
+import { StatusDoHub } from '../../components/inicio/StatusDoHub';
 
 export default function InicioScreen() {
-    const { authUser } = useAuth();
-    const route = useRoute<InicioScreenRouteProp>();
-    const navigation = useNavigation<any>();
+    useMolduraDaTela({ corDoTopo: cores.chao });
+    const route = useRoute<RouteProp<AbasParamList, 'Início'>>();
+    const navigation = useNavigation<BottomTabNavigationProp<AbasParamList, 'Início'>>();
 
-    const rawCode = route.params?.code;
-    const cleanCode = rawCode ? rawCode.replace(/['"]/g, '') : undefined;
-
-    const handleCodeProcessed = () => {
-        navigation.setParams({ code: undefined });
-    };
-
-    useEffect(() => {
-        if (cleanCode) {
-            console.log("\n=============================");
-            console.log("🔥 FAKE CHECKIN CHAMADO 🔥");
-            console.log("CÓDIGO RECEBIDO:", cleanCode);
-            console.log("=============================\n");
-        }
-    }, [cleanCode]);
-
-    // Fallback to "Visitante" if name is not available, but user wants "Mariana" as example or the actual name from context
-    const firstName = authUser?.name ? authUser.name.split(' ')[0] : 'Mariana';
+    // O link do QR code pode chegar com aspas em volta do código.
+    const codigo = route.params?.code?.replace(/['"]/g, '');
+    const limparCodigo = useCallback(() => navigation.setParams({ code: undefined }), [navigation]);
 
     return (
         <CheckinProvider>
-            <View style={styles.container}>
-                <View style={styles.headerContainer}>
-                    <Text variant="headlineMedium" style={styles.title}>
-                        Olá, {firstName}!
-                    </Text>
-                    <Text variant="bodyLarge" style={styles.subtitle}>
-                        Bem-vindo de volta ao seu espaço de inovação.
-                    </Text>
-                </View>
-
-                <HorarioFuncionamentoCard style={styles.horario} />
-
-                <CheckinCard accessCode={cleanCode} onCodeProcessed={handleCodeProcessed} />
-            </View>
+            <ConteudoDoInicio codigo={codigo} aoUsarCodigo={limparCodigo} />
         </CheckinProvider>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        padding: 20,
-    },
-    headerContainer: {
-        width: '100%',
-        marginBottom: 20,
-    },
-    horario: {
-        marginBottom: 24,
-    },
-    title: {
-        fontWeight: 'bold',
-        color: '#0F172A',
-        marginBottom: 4,
-    },
-    subtitle: {
-        color: '#64748B',
-        fontSize: 16,
-    },
+function ConteudoDoInicio({ codigo, aoUsarCodigo }: { codigo?: string; aoUsarCodigo: () => void }) {
+    const { authUser } = useAuth();
+    const orpc = useORPC();
+    const queryClient = useQueryClient();
+    const [atualizando, setAtualizando] = useState(false);
+
+    useCheckinPorCodigo(codigo, aoUsarCodigo);
+
+    const atualizar = async () => {
+        setAtualizando(true);
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: orpc.booking.findMyBookings.key() }),
+            queryClient.invalidateQueries({ queryKey: orpc.coworking.getMyCheckinStatus.key() }),
+        ]);
+        setAtualizando(false);
+    };
+
+    return (
+        <ScrollView
+            style={estilos.tela}
+            contentContainerStyle={estilos.conteudo}
+            refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} />}
+        >
+            <CabecalhoDaMarca direita={<StatusDoHub />} />
+            <View style={estilos.miolo}>
+                <Saudacao nome={authUser?.name} />
+                <PainelDoInicio style={estilos.painel} />
+                <View style={estilos.secao}>
+                    <SecaoDeCheckin />
+                </View>
+                <View style={estilos.secao}>
+                    <AtalhosDoInicio />
+                </View>
+            </View>
+        </ScrollView>
+    );
+}
+
+const estilos = StyleSheet.create({
+    tela: { flex: 1, backgroundColor: cores.chao },
+    conteudo: { paddingBottom: espaco.xxl },
+    miolo: { paddingHorizontal: espaco.l, paddingTop: espaco.s },
+    painel: { marginTop: espaco.l },
+    secao: { marginTop: espaco.xl },
 });

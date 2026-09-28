@@ -14,6 +14,19 @@ function weekdayIndex(year: number, month: number, day: number): number {
     return (y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) + t[month - 1] + day) % 7;
 }
 
+const WEEKDAYS_SHORT_UPPER = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+const MONTHS_SHORT_UPPER = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+
+// "2026-09-28" -> { diaDaSemana: "SEG", dia: "28", mes: "SET" } (canhoto do bilhete)
+export function onlyDateStrToTicketParts(onlyDateStr: string): { diaDaSemana: string; dia: string; mes: string } {
+    const { year, month, day } = parseOnlyDate(onlyDateStr);
+    return {
+        diaDaSemana: WEEKDAYS_SHORT_UPPER[weekdayIndex(year, month, day)],
+        dia: day.toString().padStart(2, '0'),
+        mes: MONTHS_SHORT_UPPER[month - 1],
+    };
+}
+
 export function onlyDateStrToBrDate(onlyDateStr: string): string {
     return onlyDateStr.split('-').reverse().join('/');
 }

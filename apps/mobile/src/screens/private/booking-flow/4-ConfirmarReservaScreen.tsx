@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { StyleSheet, View } from 'react-native';
 import { usePrivateStackNavigation, usePrivateStackRoute } from '../../../navigation/PrivateNavigator';
-import { Feather } from '@expo/vector-icons';
 import { useMutation } from '@tanstack/react-query';
 import { useORPC } from '../../../locomotiva-api/context';
 import { onlyDateStrToLongBrDate, onlyTimeObjToTimeStr } from '../../../utils/datetime-formaters';
+import { EtapaDaReserva } from '../../../components/reservas/EtapaDaReserva';
+import { PreviaDoBilhete } from '../../../components/reservas/PreviaDoBilhete';
+import { Aviso, Botao, Cartao, LinhaDeInformacao, Texto, cores, espaco } from '../../../ui';
 
 
 export default function ConfirmarReservaScreen() {
@@ -30,7 +31,6 @@ export default function ConfirmarReservaScreen() {
     const handleFinalConfirm = async () => {
         setIsSubmitting(true);
         try {
-            // Here you'll call the actual API
             console.log("Saving reservation", {
                 room,
                 day,
@@ -62,160 +62,64 @@ export default function ConfirmarReservaScreen() {
     };
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <EtapaDaReserva
+            etapa={3}
+            acao={
+                <Botao
+                    titulo="Confirmar reserva"
+                    icone="check"
+                    tamanho="alto"
+                    carregando={isSubmitting}
+                    onPress={handleFinalConfirm}
+                />
+            }
+        >
+            <Texto variante="explicacao" cor={cores.textoSecundario}>
+                Revise os dados abaixo. Se tudo estiver correto, confirme para finalizar sua reserva.
+            </Texto>
 
-            <View style={styles.headerInfo}>
-                <Feather name="check-circle" size={24} color="#1E88E5" />
-                <Text style={styles.headerText}>
-                    Revise os dados abaixo. Se tudo estiver correto, confirme para finalizar sua reserva.
-                </Text>
-            </View>
+            <PreviaDoBilhete
+                titulo={title}
+                sala={room.name}
+                dia={day}
+                inicio={startTime}
+                fim={endTime}
+                pessoas={numberOfPeople}
+            />
 
-            <Surface style={styles.card} elevation={0}>
-                <Text style={styles.cardTitle}>Informações da Atividade</Text>
+            <Aviso>Depois de confirmar, a reserva fica aguardando a aprovação da nossa equipe.</Aviso>
 
-                <View style={styles.row}>
-                    <Text style={styles.label}>Título:</Text>
-                    <Text style={styles.value}>{title}</Text>
+            <Cartao titulo="Detalhes da reserva">
+                <View style={estilos.atividade}>
+                    <Texto variante="destaque">{title}</Texto>
+                    <Texto variante="corpo" cor={cores.textoSecundario}>{description}</Texto>
                 </View>
-
-                <View style={styles.row}>
-                    <Text style={styles.label}>Pessoas:</Text>
-                    <Text style={styles.value}>{numberOfPeople}</Text>
-                </View>
-
-                <View style={[styles.row, { borderBottomWidth: 0, paddingBottom: 0, flexDirection: 'column', alignItems: 'flex-start' }]}>
-                    <Text style={styles.label}>Descrição:</Text>
-                    <Text style={[styles.value, { marginTop: 4 }]}>{description}</Text>
-                </View>
-            </Surface>
-
-            <Surface style={styles.card} elevation={0}>
-                <Text style={styles.cardTitle}>Data e Horário</Text>
-
-                <View style={styles.row}>
-                    <Text style={styles.label}>Data:</Text>
-                    <Text style={styles.value}>
-                        {onlyDateStrToLongBrDate(day)}
-                    </Text>
-                </View>
-
-                <View style={styles.row}>
-                    <Text style={styles.label}>Início:</Text>
-                    <Text style={styles.value}>{onlyTimeObjToTimeStr(startTime)}</Text>
-                </View>
-
-                <View style={[styles.row, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-                    <Text style={styles.label}>Fim:</Text>
-                    <Text style={styles.value}>{onlyTimeObjToTimeStr(endTime)}</Text>
-                </View>
-            </Surface>
-
-            {/* If we had room name we could show it nicely, here we just show ID or "Sala Selecionada" */}
-            <Surface style={styles.card} elevation={0}>
-                <Text style={styles.cardTitle}>Local</Text>
-                <View style={[styles.row, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-                    <Text style={styles.label}>Sala:</Text>
-                    <Text style={styles.value}>{room?.name}</Text>
-                </View>
-                <View style={[styles.row, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-                    <Text style={styles.label}>Capacidade:</Text>
-                    <Text style={styles.value}>{room?.capacity}</Text>
-                </View>
-            </Surface>
-
-            <TouchableOpacity
-                style={[styles.confirmButton, isSubmitting && styles.confirmButtonDisabled]}
-                disabled={isSubmitting}
-                onPress={handleFinalConfirm}
-                activeOpacity={0.7}
-            >
-                <Feather name="check" size={20} color="#FFFFFF" />
-                <Text style={styles.confirmButtonText}>
-                    {isSubmitting ? "Salvando..." : "Confirmar e Agendar"}
-                </Text>
-            </TouchableOpacity>
-
-        </ScrollView>
+                <LinhaDeInformacao
+                    icone="pessoas"
+                    rotulo="Pessoas"
+                    valor={`${numberOfPeople} ${numberOfPeople === 1 ? 'pessoa' : 'pessoas'}`}
+                />
+                <LinhaDeInformacao icone="calendario" rotulo="Data" valor={onlyDateStrToLongBrDate(day)} />
+                <LinhaDeInformacao
+                    icone="relogio"
+                    rotulo="Horário"
+                    valor={`${onlyTimeObjToTimeStr(startTime)} às ${onlyTimeObjToTimeStr(endTime)}`}
+                />
+                <LinhaDeInformacao
+                    icone="local"
+                    rotulo="Sala"
+                    valor={
+                        <View>
+                            <Texto variante="destaqueMedio">{room.name}</Texto>
+                            <Texto variante="apoio" cor={cores.textoSecundario}>Capacidade: {room.capacity} pessoas</Texto>
+                        </View>
+                    }
+                />
+            </Cartao>
+        </EtapaDaReserva>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9FAFB'
-    },
-    scrollContent: {
-        padding: 20,
-        paddingBottom: 40,
-    },
-    headerInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#EFF6FF',
-        padding: 16,
-        borderRadius: 12,
-        marginBottom: 24,
-        gap: 12,
-    },
-    headerText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#1E40AF',
-        lineHeight: 20,
-    },
-    card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    cardTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#111827',
-        marginBottom: 16,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-        paddingBottom: 12,
-        marginBottom: 12,
-    },
-    label: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#6B7280',
-    },
-    value: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#374151',
-        textAlign: 'right',
-        flexShrink: 1,
-        paddingLeft: 16,
-    },
-    confirmButton: {
-        backgroundColor: '#10B981', // green for confirm
-        borderRadius: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        paddingVertical: 16,
-        marginTop: 16,
-    },
-    confirmButtonDisabled: {
-        backgroundColor: '#D1D5DB',
-    },
-    confirmButtonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-    }
+const estilos = StyleSheet.create({
+    atividade: { gap: espaco.xs },
 });

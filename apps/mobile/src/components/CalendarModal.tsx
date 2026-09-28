@@ -1,7 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Modal, View, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions } from 'react-native';
-import { Text, Button } from 'react-native-paper';
-import { Feather } from '@expo/vector-icons';
+import { View, StyleSheet, Pressable } from 'react-native';
 import {
     format,
     addMonths,
@@ -18,6 +16,8 @@ import {
     startOfDay
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { FolhaDeEscolha } from './reservas/FolhaDeEscolha';
+import { ALVO_DE_TOQUE, Icone, NomeDoIcone, Texto, cores, espaco } from '../ui';
 
 interface CalendarModalProps {
     visible: boolean;
@@ -26,15 +26,18 @@ interface CalendarModalProps {
     onConfirm: (date: Date) => void;
 }
 
-const MAX_WIDTH = 800;
+const DIAS_DA_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+const ALTURA_DA_SEMANA = 48;
+const DIA = 40;
+const PONTO_DE_HOJE = 4;
+/** Um mês ocupa até seis semanas; a folha reserva as seis para não mudar de altura entre os meses. */
+const SEMANAS_NO_MAXIMO = 6;
 
 export default function CalendarModal({ visible, onClose, initialDate, onConfirm }: CalendarModalProps) {
-    const { width } = useWindowDimensions();
-    const modalWidth = Math.min(width, MAX_WIDTH);
     const [currentMonth, setCurrentMonth] = useState(initialDate);
     const [selectedDate, setSelectedDate] = useState(initialDate);
 
-    // Reset focused date when modal opens
+    // Ao abrir, volta para o mês e o dia escolhidos na tela.
     useEffect(() => {
         if (visible) {
             setCurrentMonth(initialDate);
@@ -46,13 +49,13 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
     const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
     const weeks = useMemo(() => {
-        const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 }); // Sunday as first day
+        const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 }); // semana começa no domingo
         const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
 
         const days = [];
         let day = start;
-        // avoid infinite loops just in case, use strict date comparison
-        const MAX_DAYS = 42; // Up to 6 weeks
+        // Trava contra laço infinito: um mês nunca passa de seis semanas.
+        const MAX_DAYS = 42;
         let cnt = 0;
         while (day <= end && cnt < MAX_DAYS) {
             days.push(day);
@@ -67,263 +70,149 @@ export default function CalendarModal({ visible, onClose, initialDate, onConfirm
         return weeksArray;
     }, [currentMonth]);
 
-    const renderHeader = () => {
-        const title = format(currentMonth, 'MMMM yyyy', { locale: ptBR });
-        return (
-            <View style={styles.header}>
-                <TouchableOpacity onPress={handlePreviousMonth} style={styles.navButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                    <Feather name="chevron-left" size={24} color="#1E88E5" />
-                </TouchableOpacity>
-                <Text style={styles.monthTitle}>{title.charAt(0).toUpperCase() + title.slice(1)}</Text>
-                <TouchableOpacity onPress={handleNextMonth} style={styles.navButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                    <Feather name="chevron-right" size={24} color="#1E88E5" />
-                </TouchableOpacity>
-            </View>
-        );
-    };
-
-    const renderDaysOfWeek = () => {
-        const days = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-        return (
-            <View style={styles.daysOfWeekContainer}>
-                {days.map((day) => (
-                    <Text key={day} style={styles.dayOfWeekText}>{day}</Text>
-                ))}
-            </View>
-        );
-    };
+    const monthTitle = format(currentMonth, 'MMMM yyyy', { locale: ptBR });
 
     return (
-        <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-            <View style={styles.modalOverlay}>
-                <TouchableOpacity style={styles.touchableOverlay} activeOpacity={1} onPress={onClose} />
-                <View style={[styles.modalContent, { width: modalWidth, alignSelf: 'center' }]}>
+        <FolhaDeEscolha
+            visivel={visible}
+            titulo="Selecionar data"
+            aoFechar={onClose}
+            aoConfirmar={() => {
+                onConfirm(selectedDate);
+                onClose();
+            }}
+        >
+            <View style={estilos.navegacao}>
+                <BotaoDoMes icone="voltar" rotulo="Mês anterior" onPress={handlePreviousMonth} />
+                <Texto variante="destaque" accessibilityRole="header">
+                    {monthTitle.charAt(0).toUpperCase() + monthTitle.slice(1)}
+                </Texto>
+                <BotaoDoMes icone="seguir" rotulo="Próximo mês" onPress={handleNextMonth} />
+            </View>
 
-                    <View style={styles.dragHandleContainer}>
-                        <View style={styles.dragHandle} />
-                    </View>
+            <View>
+                <View style={estilos.semana}>
+                    {DIAS_DA_SEMANA.map((dia) => (
+                        <Texto key={dia} variante="rotulo" cor={cores.textoSecundario} style={estilos.diaDaSemana}>
+                            {dia}
+                        </Texto>
+                    ))}
+                </View>
 
-                    <Text style={styles.modalTitle}>Selecionar Data</Text>
+                <View style={estilos.mes}>
+                    {weeks.map((week, idx) => (
+                        <View key={idx} style={estilos.semana}>
+                            {week.map((date, dayIdx) => {
+                                const isCurrentMonth = isSameMonth(date, currentMonth);
+                                const isSelected = isSameDay(date, selectedDate);
+                                const isDateToday = isToday(date);
 
-                    {renderHeader()}
-                    {renderDaysOfWeek()}
+                                const minValidDate = startOfDay(addDays(new Date(), 1));
+                                const isDisabled = isBefore(startOfDay(date), minValidDate);
 
-                    <View style={styles.calendarBody}>
-                        {weeks.map((week, idx) => (
-                            <View key={idx} style={styles.weekRow}>
-                                {week.map((date, dayIdx) => {
-                                    const isCurrentMonth = isSameMonth(date, currentMonth);
-                                    const isSelected = isSameDay(date, selectedDate);
-                                    const isDateToday = isToday(date);
-
-                                    const minValidDate = startOfDay(addDays(new Date(), 1));
-                                    const isDisabled = isBefore(startOfDay(date), minValidDate);
-
-                                    return (
-                                        <TouchableOpacity
-                                            key={dayIdx}
-                                            style={styles.dayCellContainer}
-                                            onPress={() => setSelectedDate(date)}
-                                            activeOpacity={0.7}
-                                            disabled={isDisabled}
-                                        >
-                                            <View style={[
-                                                styles.dayCell,
-                                                isSelected && styles.dayCellSelected,
-                                                !isSelected && isDateToday && styles.dayCellToday
-                                            ]}>
-                                                <Text style={[
-                                                    styles.dayText,
-                                                    !isCurrentMonth && styles.dayTextOutside,
-                                                    isDisabled && styles.dayTextDisabled,
-                                                    isSelected && styles.dayTextSelected,
-                                                    !isSelected && isDateToday && styles.dayTextToday
-                                                ]}>
-                                                    {format(date, 'd')}
-                                                </Text>
-                                                {!isSelected && isDateToday && (
-                                                    <View style={styles.todayDot} />
-                                                )}
-                                            </View>
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </View>
-                        ))}
-                    </View>
-
-                    <View style={styles.footer}>
-                        <TouchableOpacity onPress={onClose} style={styles.cancelButton} activeOpacity={0.7}>
-                            <Text style={styles.cancelButtonText}>Cancelar</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={() => {
-                            onConfirm(selectedDate);
-                            onClose();
-                        }} style={styles.confirmButton} activeOpacity={0.7}>
-                            <Text style={styles.confirmButtonText}>Confirmar</Text>
-                        </TouchableOpacity>
-                    </View>
+                                return (
+                                    <Pressable
+                                        key={dayIdx}
+                                        style={estilos.celula}
+                                        onPress={() => setSelectedDate(date)}
+                                        disabled={isDisabled}
+                                        accessibilityRole="button"
+                                        accessibilityLabel={format(date, "d 'de' MMMM", { locale: ptBR })}
+                                        accessibilityState={{ selected: isSelected, disabled: isDisabled }}
+                                    >
+                                        <View style={[
+                                            estilos.dia,
+                                            isSelected && estilos.diaEscolhido,
+                                            !isSelected && isDateToday && estilos.diaDeHoje,
+                                        ]}>
+                                            <Texto
+                                                variante={isSelected ? 'destaque' : 'destaqueMedio'}
+                                                cor={corDoDia({ isSelected, isDisabled, isDateToday, isCurrentMonth })}
+                                                style={isDisabled && estilos.diaRiscado}
+                                            >
+                                                {format(date, 'd')}
+                                            </Texto>
+                                            {!isSelected && isDateToday && (
+                                                <View style={estilos.pontoDeHoje} />
+                                            )}
+                                        </View>
+                                    </Pressable>
+                                );
+                            })}
+                        </View>
+                    ))}
                 </View>
             </View>
-        </Modal>
+        </FolhaDeEscolha>
     );
 }
 
-const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'flex-end',
-    },
-    touchableOverlay: {
-        flex: 1,
-    },
-    modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingHorizontal: 20,
-        paddingBottom: 32, // Safe area padding theoretically
-        paddingTop: 12,
-        minHeight: Dimensions.get('window').height * 0.7,
-    },
-    dragHandleContainer: {
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    dragHandle: {
-        width: 40,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: '#E5E7EB',
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#111827',
-        textAlign: 'center',
-        marginBottom: 32,
-    },
-    header: {
+/** Mesma prioridade das cores de antes: escolhido, hoje, dia que já passou, dia de outro mês. */
+function corDoDia({ isSelected, isDisabled, isDateToday, isCurrentMonth }: {
+    isSelected: boolean;
+    isDisabled: boolean;
+    isDateToday: boolean;
+    isCurrentMonth: boolean;
+}) {
+    if (isSelected) return cores.papel;
+    if (isDateToday) return cores.azulTexto;
+    if (isDisabled) return cores.perfuracao;
+    if (!isCurrentMonth) return cores.seta;
+    return cores.grafite;
+}
+
+function BotaoDoMes({ icone, rotulo, onPress }: { icone: NomeDoIcone; rotulo: string; onPress: () => void }) {
+    return (
+        <Pressable
+            onPress={onPress}
+            accessibilityRole="button"
+            accessibilityLabel={rotulo}
+            style={({ pressed }) => [estilos.botaoDoMes, pressed && estilos.botaoDoMesPressionado]}
+        >
+            <Icone nome={icone} cor={cores.azulTexto} tamanho={22} />
+        </Pressable>
+    );
+}
+
+const estilos = StyleSheet.create({
+    navegacao: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 24,
-        paddingHorizontal: 12,
     },
-    navButton: {
-        padding: 4,
-    },
-    monthTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#111827',
-    },
-    daysOfWeekContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 16,
-    },
-    dayOfWeekText: {
-        width: 40,
-        textAlign: 'center',
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    calendarBody: {
-        marginBottom: 24,
-    },
-    weekRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 8,
-    },
-    dayCellContainer: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
+    botaoDoMes: {
+        width: ALVO_DE_TOQUE,
+        height: ALVO_DE_TOQUE,
+        borderRadius: ALVO_DE_TOQUE / 2,
         alignItems: 'center',
-    },
-    dayCell: {
-        width: 36,
-        height: 36,
         justifyContent: 'center',
+    },
+    botaoDoMesPressionado: { backgroundColor: cores.pressionadoSobrePapel },
+    semana: { flexDirection: 'row' },
+    diaDaSemana: { flex: 1, textAlign: 'center', paddingBottom: espaco.s },
+    mes: { minHeight: SEMANAS_NO_MAXIMO * ALTURA_DA_SEMANA },
+    celula: {
+        flex: 1,
+        height: ALTURA_DA_SEMANA,
         alignItems: 'center',
-        borderRadius: 18, // Make it a circle
+        justifyContent: 'center',
     },
-    dayCellSelected: {
-        backgroundColor: '#1E88E5',
-        shadowColor: "#1E88E5",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 4.65,
-        elevation: 8,
+    dia: {
+        width: DIA,
+        height: DIA,
+        borderRadius: DIA / 2,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    dayCellToday: {
-        borderWidth: 1,
-        borderColor: '#93C5FD',
-        backgroundColor: '#FFFFFF',
-    },
-    dayText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#111827',
-    },
-    dayTextSelected: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-    },
-    dayTextOutside: {
-        color: '#D1D5DB',
-    },
-    dayTextDisabled: {
-        color: '#E5E7EB',
-        textDecorationLine: 'line-through',
-    },
-    dayTextToday: {
-        color: '#1E88E5',
-    },
-    todayDot: {
-        width: 4,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: '#1E88E5',
+    diaEscolhido: { backgroundColor: cores.azul },
+    diaDeHoje: { borderWidth: 1.5, borderColor: cores.azul },
+    diaRiscado: { textDecorationLine: 'line-through' },
+    pontoDeHoje: {
         position: 'absolute',
-        bottom: 4,
+        bottom: espaco.xs,
+        width: PONTO_DE_HOJE,
+        height: PONTO_DE_HOJE,
+        borderRadius: PONTO_DE_HOJE / 2,
+        backgroundColor: cores.azul,
     },
-    footer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 'auto',
-        paddingTop: 16,
-    },
-    cancelButton: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 14,
-    },
-    cancelButtonText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    confirmButton: {
-        flex: 1,
-        backgroundColor: '#1E88E5',
-        borderRadius: 12,
-        alignItems: 'center',
-        paddingVertical: 14,
-        marginLeft: 12, // Space between buttons
-    },
-    confirmButtonText: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-    }
 });

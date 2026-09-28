@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { Text, Button, useTheme, MD3Theme } from 'react-native-paper';
 import { useORPC } from '../../locomotiva-api/context';
 import { SaidaGovbr, linkDoAppParaLogout, marcarSaidaParaApp, limparSaidaParaApp } from '../../govbr/link';
+import { Aguardando, TelaDePassagem } from '../../components/acesso/TelaDePassagem';
+import { Botao } from '../../ui';
 
 /**
  * Saída do gov.br quando o login partiu do aplicativo. Roda só na web, dentro
@@ -18,8 +18,6 @@ import { SaidaGovbr, linkDoAppParaLogout, marcarSaidaParaApp, limparSaidaParaApp
  * sessão do gov.br — e o caminho é voltar ao app do mesmo jeito.
  */
 export default function GovbrSaidaScreen({ modo }: { modo: SaidaGovbr }) {
-    const theme = useTheme();
-    const styles = makeStyles(theme);
     const orpc = useORPC();
     const [linkApp] = useState(() => linkDoAppParaLogout());
     const jaRodou = useRef(false);
@@ -52,31 +50,18 @@ export default function GovbrSaidaScreen({ modo }: { modo: SaidaGovbr }) {
     const voltando = modo === 'voltar-ao-app';
 
     return (
-        <View style={styles.centro}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text variant="bodyLarge" style={styles.texto}>
-                {voltando ? 'Voltando para o aplicativo…' : 'Saindo da sua conta gov.br…'}
-            </Text>
-            {voltando && (
+        <TelaDePassagem
+            acoes={voltando ? (
                 <>
-                    <Text variant="bodyMedium" style={styles.ajuda}>
-                        Se o aplicativo não abrir sozinho, toque no botão.
-                    </Text>
-                    <Button mode="contained" onPress={() => window.location.assign(linkApp)} style={styles.botao}>
-                        Abrir o aplicativo
-                    </Button>
-                    <Button mode="text" onPress={() => window.location.replace('/')}>
-                        Ir para o início
-                    </Button>
+                    <Botao titulo="Abrir o aplicativo" onPress={() => window.location.assign(linkApp)} />
+                    <Botao titulo="Ir para o início" variante="contorno" onPress={() => window.location.replace('/')} />
                 </>
-            )}
-        </View>
+            ) : null}
+        >
+            <Aguardando
+                mensagem={voltando ? 'Voltando para o aplicativo…' : 'Saindo da sua conta gov.br…'}
+                explicacao={voltando ? 'Se o aplicativo não abrir sozinho, toque no botão.' : undefined}
+            />
+        </TelaDePassagem>
     );
 }
-
-const makeStyles = (theme: MD3Theme) => StyleSheet.create({
-    centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
-    texto: { color: theme.colors.onSurfaceVariant },
-    ajuda: { color: theme.colors.onSurfaceVariant, textAlign: 'center' },
-    botao: { marginTop: 16, borderRadius: 12 },
-});

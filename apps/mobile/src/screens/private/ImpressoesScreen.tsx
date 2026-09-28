@@ -1,12 +1,23 @@
 import React from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
-import { Text, FAB } from 'react-native-paper';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { ImpressoesProvider, useImpressoes } from '../../contexts/ImpressoesContext';
-import PrintRequestCard from '../../components/PrintRequestCard';
-import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
 import { useAuth } from '../../contexts/auth-context';
+import { useMolduraDaTela } from '../../contexts/layout-context';
+import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { Botao, Texto, cores, espaco } from '../../ui';
+import { CartaoDaImpressao } from '../../components/impressoes/CartaoDaImpressao';
+import { perfilEstaCompleto } from '../../utils/perfil';
 
-function ImpressoesList() {
+export default function ImpressoesScreen() {
+    return (
+        <ImpressoesProvider>
+            <ListaDeImpressoes />
+        </ImpressoesProvider>
+    );
+}
+
+function ListaDeImpressoes() {
+    useMolduraDaTela({ corDoTopo: cores.chao });
     const navigation = usePrivateStackNavigation();
     const { authUser } = useAuth();
     const {
@@ -19,81 +30,82 @@ function ImpressoesList() {
         isRefetching,
     } = useImpressoes();
 
-    const renderFooter = () => {
-        if (!isFetchingNextPage) return <View style={{ height: 60 }} />;
-        return (
-            <View style={styles.loadingFooter}>
-                <ActivityIndicator size="small" color="#3B82F6" />
-            </View>
-        );
+    const novaImpressao = () => {
+        if (perfilEstaCompleto(authUser)) navigation.navigate('CriarImpressao');
+        else navigation.navigate('PerfilIncompleto', { next: 'CriarImpressao' });
     };
 
-    if (isLoading && !isRefetching && printRequests.length === 0) {
-        return (
-            <View style={styles.centerContainer}>
-                <ActivityIndicator size="large" color="#3B82F6" />
-            </View>
-        );
-    }
-
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text variant="headlineMedium" style={styles.title}>Minhas Impressões</Text>
+        <View style={estilos.tela}>
+            <View style={estilos.cabecalho}>
+                <Texto variante="titulo" accessibilityRole="header">Impressões</Texto>
+                {/* "Nova impressão" inteiro não cabe ao lado do título em telas de 360 a 412 dp. */}
+                <Botao
+                    titulo="Nova"
+                    accessibilityLabel="Nova impressão"
+                    icone="mais"
+                    tamanho="compacto"
+                    onPress={novaImpressao}
+                    accessibilityHint="Faz um novo pedido de impressão 3D"
+                />
             </View>
 
             <FlatList
                 data={printRequests}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <PrintRequestCard
-                        printRequest={item}
-                        onPressDetails={() => navigation.navigate('DetalhesMinhaImpressao', { printRequestId: item.id })}
+                    <CartaoDaImpressao
+                        pedido={item}
+                        onPress={() => navigation.navigate('DetalhesMinhaImpressao', { printRequestId: item.id })}
                     />
                 )}
-                contentContainerStyle={styles.listContent}
-                onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
+                ItemSeparatorComponent={Separador}
+                contentContainerStyle={estilos.lista}
+                onEndReached={() => {
+                    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+                }}
                 onEndReachedThreshold={0.5}
-                ListFooterComponent={renderFooter}
                 refreshControl={<RefreshControl refreshing={isRefetching && !isLoading} onRefresh={refetch} />}
                 ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>Você ainda não fez nenhum pedido de impressão.</Text>
-                    </View>
+                    isLoading
+                        ? <ActivityIndicator style={estilos.carregando} color={cores.azul} />
+                        : <ListaVazia />
                 }
-            />
-
-            <FAB
-                icon="plus"
-                color="#FFFFFF"
-                style={styles.fab}
-                onPress={() => {
-                    const profileComplete = !!(authUser as any)?.company && !!(authUser as any)?.jobTitle && !!(authUser as any)?.phone;
-                    if (profileComplete) navigation.navigate('CriarImpressao');
-                    else navigation.navigate('PerfilIncompleto', { next: 'CriarImpressao' });
-                }}
-                label="Nova impressão"
+                ListFooterComponent={isFetchingNextPage ? <ActivityIndicator style={estilos.carregando} color={cores.azul} /> : null}
             />
         </View>
     );
 }
 
-export default function ImpressoesScreen() {
+function Separador() {
+    return <View style={estilos.separador} />;
+}
+
+function ListaVazia() {
     return (
-        <ImpressoesProvider>
-            <ImpressoesList />
-        </ImpressoesProvider>
+        <View style={estilos.vazia}>
+            <Texto variante="destaque">Nenhum pedido por aqui</Texto>
+            <Texto variante="explicacao" cor={cores.textoSecundario} style={estilos.centralizado}>
+                Você ainda não fez nenhum pedido de impressão.
+            </Texto>
+        </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F9FAFB' },
-    header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 16, backgroundColor: '#F9FAFB' },
-    title: { fontWeight: 'bold', color: '#111827' },
-    centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9FAFB' },
-    listContent: { paddingHorizontal: 20, paddingBottom: 100 },
-    loadingFooter: { paddingVertical: 20, alignItems: 'center', height: 60 },
-    emptyContainer: { paddingVertical: 40, alignItems: 'center' },
-    emptyText: { fontSize: 16, color: '#6B7280', textAlign: 'center' },
-    fab: { position: 'absolute', margin: 16, right: 0, bottom: 0, backgroundColor: '#1E88E5' },
+const estilos = StyleSheet.create({
+    tela: { flex: 1, backgroundColor: cores.chao },
+    cabecalho: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: espaco.m,
+        paddingHorizontal: espaco.l,
+        paddingTop: espaco.s,
+    },
+    lista: { paddingHorizontal: espaco.l, paddingTop: espaco.xl, paddingBottom: espaco.xxl, flexGrow: 1 },
+    separador: { height: espaco.m },
+    carregando: { marginTop: espaco.xxl },
+    vazia: { alignItems: 'center', gap: 6, paddingTop: 48, paddingHorizontal: espaco.xxl },
+    centralizado: { textAlign: 'center' },
 });

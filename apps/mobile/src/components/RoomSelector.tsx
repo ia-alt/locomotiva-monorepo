@@ -1,13 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Modal, FlatList, ActivityIndicator, StatusBar, Dimensions, useWindowDimensions, ImageSourcePropType } from 'react-native';
-import { Text, Surface, Divider } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import { useORPC } from '../locomotiva-api/context';
+import React, { useMemo } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useORPC } from '../locomotiva-api/context';
 import { ORPCOutputs } from '../locomotiva-api/types';
-import { fonteImagemSala } from '../constants/imagens';
+import { Aviso, cores, espaco } from '../ui';
+import { CartaoDaSala } from './reservas/CartaoDaSala';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 type RoomFromList = ORPCOutputs["booking"]["listRooms"][0]
 
 interface RoomSelectorProps {
@@ -15,256 +13,42 @@ interface RoomSelectorProps {
     setSelectedRoom: (room: RoomFromList) => void;
 }
 
-const MAX_WIDTH = 800;
-
-
+/** Salas ativas, uma embaixo da outra, como cartões com foto. Tocar no cartão escolhe a sala. */
 export default function RoomSelector({ selectedRoom, setSelectedRoom }: RoomSelectorProps) {
     const orpc = useORPC();
     const { data: rooms, isLoading } = useQuery(orpc.booking.listRooms.queryOptions({ input: {} }));
-    const { width } = useWindowDimensions();
-    const modalWidth = Math.min(width, MAX_WIDTH);
-
-    const [modalVisible, setModalVisible] = useState(false);
-    const [previewImage, setPreviewImage] = useState<ImageSourcePropType | null>(null);
 
     const availableRooms = useMemo(
         () => rooms?.filter(r => r.enabled) || [],
         [rooms]
     );
 
+    if (isLoading) {
+        return <ActivityIndicator style={estilos.carregando} color={cores.azul} accessibilityLabel="Carregando as salas" />;
+    }
+
+    if (availableRooms.length === 0) {
+        return <Aviso>Nenhuma sala disponível no momento.</Aviso>;
+    }
+
     return (
-        <View style={styles.container}>
-            <Text variant="titleMedium" style={styles.label}>Selecionar Sala</Text>
-
-            <TouchableOpacity onPress={() => setModalVisible(true)} activeOpacity={0.7} disabled={isLoading}>
-                <Surface style={styles.selectorCard} elevation={0}>
-                    {isLoading ? (
-                        <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="small" color="#4F46E5" />
-                        </View>
-                    ) : (
-                        <>
-                            <Image
-                                source={fonteImagemSala(selectedRoom?.photoUrl)}
-                                style={styles.image}
-                            />
-                            <View style={styles.textContainer}>
-                                <Text variant="titleMedium" style={styles.roomName}>
-                                    {selectedRoom ? selectedRoom.name : 'Selecione uma sala...'}
-                                </Text>
-                                {selectedRoom && (
-                                    <>
-                                        <Text variant="bodyMedium" style={styles.roomCapacity}>
-                                            Capacidade: {selectedRoom.capacity} pessoas
-                                        </Text>
-                                        {!!selectedRoom.description && (
-                                            <Text variant="bodySmall" style={styles.roomDescription} numberOfLines={2}>
-                                                {selectedRoom.description}
-                                            </Text>
-                                        )}
-                                    </>
-                                )}
-                            </View>
-                            <Ionicons name="chevron-down" size={24} color="#6B7280" />
-                        </>
-                    )}
-                </Surface>
-            </TouchableOpacity>
-
-            <Modal visible={modalVisible} transparent={true} animationType="slide">
-                <View style={styles.modalOverlay}>
-                    <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setModalVisible(false)} />
-                    <Surface style={[styles.modalContent, { width: modalWidth, alignSelf: 'center' }]}>
-                        <View style={styles.modalHeader}>
-                            <Text variant="titleLarge" style={{ fontWeight: 'bold' }}>Salas Disponíveis</Text>
-                            <TouchableOpacity onPress={() => setModalVisible(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                                <Ionicons name="close" size={24} color="#000" />
-                            </TouchableOpacity>
-                        </View>
-                        <Divider />
-                        {availableRooms.length === 0 ? (
-                            <View style={{ padding: 20, alignItems: 'center' }}>
-                                <Text>Nenhuma sala disponível no momento.</Text>
-                            </View>
-                        ) : (
-                            <FlatList
-                                data={availableRooms}
-                                keyExtractor={(item) => item.id}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.modalItem}
-                                        onPress={() => {
-                                            setSelectedRoom(item);
-                                            setModalVisible(false);
-                                        }}
-                                    >
-                                        <TouchableOpacity
-                                            onPress={(e) => {
-                                                e.stopPropagation();
-                                                setPreviewImage(fonteImagemSala(item.photoUrl));
-                                            }}
-                                            activeOpacity={0.8}
-                                        >
-                                            <View>
-                                                <Image
-                                                    source={fonteImagemSala(item.photoUrl)}
-                                                    style={styles.modalItemImage}
-                                                />
-                                                <View style={styles.previewBadge}>
-                                                    <Ionicons name="expand-outline" size={10} color="#fff" />
-                                                </View>
-                                            </View>
-                                        </TouchableOpacity>
-                                        <View style={styles.modalItemText}>
-                                            <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{item.name}</Text>
-                                            <Text variant="bodyMedium" style={{ color: '#6B7280' }}>Capacidade: {item.capacity} pessoas</Text>
-                                            {!!item.description && (
-                                                <Text variant="bodySmall" style={styles.modalItemDescription}>
-                                                    {item.description}
-                                                </Text>
-                                            )}
-                                        </View>
-                                        {selectedRoom === item && (
-                                            <Ionicons name="checkmark-circle" size={24} color="#0D9488" />
-                                        )}
-                                    </TouchableOpacity>
-                                )}
-                                ItemSeparatorComponent={() => <Divider />}
-                                contentContainerStyle={{ paddingBottom: 20 }}
-                            />
-                        )}
-                    </Surface>
-                </View>
-            </Modal>
-
-            {/* Modal visualização em tela cheia */}
-            <Modal visible={previewImage !== null} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setPreviewImage(null)}>
-                <View style={styles.fullscreenOverlay}>
-                    <StatusBar hidden />
-                    <TouchableOpacity style={styles.fullscreenClose} onPress={() => setPreviewImage(null)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                        <Ionicons name="close-circle" size={36} color="#fff" />
-                    </TouchableOpacity>
-                    {previewImage !== null && (
-                        <Image
-                            source={previewImage}
-                            style={styles.fullscreenImage}
-                            resizeMode="contain"
-                        />
-                    )}
-                </View>
-            </Modal>
+        <View style={estilos.lista} accessibilityRole="radiogroup" accessibilityLabel="Salas">
+            {availableRooms.map((sala) => (
+                <CartaoDaSala
+                    key={sala.id}
+                    nome={sala.name}
+                    capacidade={sala.capacity}
+                    descricao={sala.description}
+                    photoUrl={sala.photoUrl}
+                    escolhida={selectedRoom?.id === sala.id}
+                    aoEscolher={() => setSelectedRoom(sala)}
+                />
+            ))}
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        marginBottom: 16,
-    },
-    label: {
-        color: '#374151',
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    selectorCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        backgroundColor: '#FFFFFF',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 50,
-    },
-    image: {
-        width: 48,
-        height: 48,
-        borderRadius: 8,
-        marginRight: 12,
-        backgroundColor: '#F3F4F6',
-    },
-    textContainer: {
-        flex: 1,
-    },
-    roomName: {
-        fontWeight: 'bold',
-        color: '#1F2937',
-    },
-    roomCapacity: {
-        color: '#6B7280',
-    },
-    roomDescription: {
-        color: '#6B7280',
-        marginTop: 2,
-        lineHeight: 18,
-    },
-    modalItemDescription: {
-        color: '#6B7280',
-        marginTop: 4,
-        lineHeight: 18,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        justifyContent: 'flex-end',
-    },
-    modalBackdrop: {
-        flex: 1,
-    },
-    modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        padding: 20,
-        maxHeight: '80%',
-    },
-    modalHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    modalItem: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        paddingVertical: 12,
-    },
-    modalItemImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        marginRight: 12,
-    },
-    modalItemText: {
-        flex: 1,
-    },
-    previewBadge: {
-        position: 'absolute',
-        bottom: 2,
-        right: 2,
-        backgroundColor: 'rgba(0,0,0,0.55)',
-        borderRadius: 4,
-        padding: 2,
-    },
-    fullscreenOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.95)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    fullscreenClose: {
-        position: 'absolute',
-        top: 48,
-        right: 20,
-        zIndex: 10,
-    },
-    fullscreenImage: {
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT * 0.75,
-    },
+const estilos = StyleSheet.create({
+    carregando: { marginTop: espaco.xxl },
+    lista: { gap: espaco.m },
 });

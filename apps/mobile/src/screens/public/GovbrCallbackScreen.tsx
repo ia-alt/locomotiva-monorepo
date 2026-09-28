@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ActivityIndicator, Platform } from 'react-native';
-import { Text, TextInput, Button, Surface, useTheme, HelperText, Icon, MD3Theme } from 'react-native-paper';
-import ScrollComTeclado from '../../components/ScrollComTeclado';
-import { useForm, Controller } from 'react-hook-form';
+import { StyleSheet, View, Platform } from 'react-native';
+import { useForm, Controller, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { MENSAGENS, dataDeNascimentoValida, telefoneCompleto } from '../../utils/validacoes';
 import { useORPC } from '../../locomotiva-api/context';
 import { useAuth } from '../../contexts/auth-context';
 import { RetornoGovbr, linkDoAppParaCallback, stateVeioDoApp } from '../../govbr/link';
+import { TelaDeAcesso, TituloDaTela } from '../../components/acesso/TelaDeAcesso';
+import { Aguardando, TelaDePassagem } from '../../components/acesso/TelaDePassagem';
+import { SeloDoGovbr } from '../../components/acesso/SeloDoGovbr';
+import { Aviso, Botao, Campo, espaco } from '../../ui';
 
 /** Igual ao CadastroScreen, para a pessoa digitar do mesmo jeito nas duas telas. */
 const formatBirthDate = (text: string) =>
@@ -24,8 +27,8 @@ const formatPhone = (text: string) => {
 };
 
 const perfilSchema = z.object({
-    birthDate: z.string().min(10, 'Informe a data completa.'),
-    phone: z.string().min(14, 'Digite um telefone válido.'),
+    birthDate: z.string().refine(dataDeNascimentoValida, MENSAGENS.dataDeNascimento),
+    phone: z.string().refine(telefoneCompleto, MENSAGENS.telefone),
     company: z.string().optional(),
     jobTitle: z.string().optional(),
 });
@@ -62,8 +65,6 @@ export default function GovbrCallbackScreen({ retorno, onConcluir }: {
     retorno: RetornoGovbr;
     onConcluir: () => void;
 }) {
-    const theme = useTheme();
-    const styles = makeStyles(theme);
     const orpc = useORPC();
     const { loginWithToken } = useAuth();
 
@@ -132,39 +133,29 @@ export default function GovbrCallbackScreen({ retorno, onConcluir }: {
 
     if (etapa.tipo === 'processando') {
         return (
-            <View style={styles.centro}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-                <Text variant="bodyLarge" style={styles.processandoTexto}>Confirmando sua identidade…</Text>
-            </View>
+            <TelaDePassagem>
+                <Aguardando mensagem="Confirmando sua identidade…" />
+            </TelaDePassagem>
         );
     }
 
     if (etapa.tipo === 'abrir-app') {
         const link = etapa.link;
         return (
-            <View style={styles.centro}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-                <Text variant="bodyLarge" style={styles.processandoTexto}>Voltando para o aplicativo…</Text>
-                <Text variant="bodyMedium" style={styles.erroTexto}>
-                    Se o aplicativo não abrir sozinho, toque no botão.
-                </Text>
-                <Button mode="contained" onPress={() => window.location.assign(link)} style={styles.botao}>
-                    Abrir o aplicativo
-                </Button>
-            </View>
+            <TelaDePassagem acoes={<Botao titulo="Abrir o aplicativo" onPress={() => window.location.assign(link)} />}>
+                <Aguardando
+                    mensagem="Voltando para o aplicativo…"
+                    explicacao="Se o aplicativo não abrir sozinho, toque no botão."
+                />
+            </TelaDePassagem>
         );
     }
 
     if (etapa.tipo === 'erro') {
         return (
-            <View style={styles.centro}>
-                <Icon source="alert-circle-outline" size={56} color={theme.colors.error} />
-                <Text variant="titleMedium" style={styles.erroTitulo}>Não foi possível entrar</Text>
-                <Text variant="bodyMedium" style={styles.erroTexto}>{etapa.mensagem}</Text>
-                <Button mode="contained" onPress={onConcluir} style={styles.botao}>
-                    Voltar para o início
-                </Button>
-            </View>
+            <TelaDePassagem acoes={<Botao titulo="Voltar para o início" onPress={onConcluir} />}>
+                <Aviso tom="erro" titulo="Não foi possível entrar">{etapa.mensagem}</Aviso>
+            </TelaDePassagem>
         );
     }
 
@@ -197,8 +188,6 @@ function FormularioPerfil({ ticket, nome, onErro, onConcluir }: {
     onErro: (m: string) => void;
     onConcluir: () => void;
 }) {
-    const theme = useTheme();
-    const styles = makeStyles(theme);
     const orpc = useORPC();
     const { loginWithToken } = useAuth();
 
@@ -224,49 +213,45 @@ function FormularioPerfil({ ticket, nome, onErro, onConcluir }: {
     };
 
     return (
-        <ScrollComTeclado contentContainerStyle={styles.scroll}>
-            <Surface style={styles.card} elevation={1}>
-                <View style={styles.selo}>
-                    <Icon source="shield-check" size={20} color={theme.colors.primary} />
-                    <Text variant="labelMedium" style={styles.seloTexto}>Identidade confirmada pelo gov.br</Text>
-                </View>
+        <TelaDeAcesso>
+            <View style={estilos.abertura}>
+                <SeloDoGovbr />
+                <TituloDaTela
+                    variante="saudacao"
+                    titulo={nome ? `Olá, ${primeiroNome(nome)}!` : 'Quase lá!'}
+                    explicacao="Seu nome, CPF e e-mail já vieram do gov.br. Falta só isto:"
+                />
+            </View>
 
-                <Text variant="headlineSmall" style={styles.titulo}>
-                    {nome ? `Olá, ${primeiroNome(nome)}!` : 'Quase lá!'}
-                </Text>
-                <Text variant="bodyMedium" style={styles.subtitulo}>
-                    Seu nome, CPF e e-mail já vieram do gov.br. Falta só isto:
-                </Text>
-
-                <Campo
-                    control={control} name="birthDate" label="Data de nascimento"
+            <View style={estilos.campos}>
+                <CampoDoPerfil
+                    control={control} name="birthDate" rotulo="Data de nascimento"
                     placeholder="DD/MM/AAAA" formatar={formatBirthDate} maxLength={10}
-                    keyboardType="numeric" erro={errors.birthDate?.message} icone="calendar"
+                    keyboardType="numeric" erro={errors.birthDate?.message}
                     ajuda="Usada junto com seu CPF para o check-in no totem."
                 />
-                <Campo
-                    control={control} name="phone" label="Telefone"
+                <CampoDoPerfil
+                    control={control} name="phone" rotulo="Telefone"
                     placeholder="(00) 00000-0000" formatar={formatPhone} maxLength={15}
-                    keyboardType="phone-pad" erro={errors.phone?.message} icone="phone"
+                    keyboardType="phone-pad" erro={errors.phone?.message}
                 />
-                <Campo
-                    control={control} name="company" label="Empresa/Instituição (opcional)"
-                    placeholder="Nome da empresa ou instituição" erro={errors.company?.message} icone="domain"
+                <CampoDoPerfil
+                    control={control} name="company" rotulo="Empresa/Instituição (opcional)"
+                    placeholder="Nome da empresa ou instituição" erro={errors.company?.message}
                 />
-                <Campo
-                    control={control} name="jobTitle" label="Cargo (opcional)"
-                    placeholder="Seu cargo ou função" erro={errors.jobTitle?.message} icone="badge-account"
+                <CampoDoPerfil
+                    control={control} name="jobTitle" rotulo="Cargo (opcional)"
+                    placeholder="Seu cargo ou função" erro={errors.jobTitle?.message}
                 />
+            </View>
 
-                <Button
-                    mode="contained" onPress={handleSubmit(enviar)}
-                    loading={isSubmitting} disabled={isSubmitting}
-                    style={styles.botao} contentStyle={styles.botaoConteudo}
-                >
-                    Concluir cadastro
-                </Button>
-            </Surface>
-        </ScrollComTeclado>
+            <Botao
+                titulo="Concluir cadastro"
+                tamanho="alto"
+                carregando={isSubmitting}
+                onPress={handleSubmit(enviar)}
+            />
+        </TelaDeAcesso>
     );
 }
 
@@ -278,11 +263,8 @@ function FormularioSenha({ ticket, emailMascarado, onCancelar, onErro }: {
     onCancelar: () => void;
     onErro: (m: string) => void;
 }) {
-    const theme = useTheme();
-    const styles = makeStyles(theme);
     const orpc = useORPC();
     const { loginWithToken } = useAuth();
-    const [mostrarSenha, setMostrarSenha] = useState(false);
     const [erroSenha, setErroSenha] = useState<string | null>(null);
 
     const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<SenhaFormValues>({
@@ -309,108 +291,80 @@ function FormularioSenha({ ticket, emailMascarado, onCancelar, onErro }: {
     void erroSenha;
 
     return (
-        <ScrollComTeclado contentContainerStyle={styles.scroll}>
-            <Surface style={styles.card} elevation={1}>
-                <View style={styles.selo}>
-                    <Icon source="shield-check" size={20} color={theme.colors.primary} />
-                    <Text variant="labelMedium" style={styles.seloTexto}>Identidade confirmada pelo gov.br</Text>
-                </View>
-
-                <Text variant="headlineSmall" style={styles.titulo}>Você já tem uma conta aqui</Text>
-                <Text variant="bodyMedium" style={styles.subtitulo}>
-                    Encontramos um cadastro com o seu CPF
-                    {emailMascarado ? `, no e-mail ${emailMascarado}` : ''}.
-                    Confirme a senha dessa conta para vinculá-la ao gov.br.
-                </Text>
-
-                <View style={styles.aviso}>
-                    <Icon source="information-outline" size={18} color={theme.colors.onSurfaceVariant} />
-                    <Text variant="bodySmall" style={styles.avisoTexto}>
-                        Depois de vincular, você escolhe como entrar: com sua senha de sempre ou pelo gov.br.
-                    </Text>
-                </View>
-
-                <Controller
-                    control={control}
-                    name="password"
-                    render={({ field: { onChange, onBlur, value } }) => (
-                        <View style={styles.campo}>
-                            <Text variant="labelMedium" style={styles.rotulo}>Senha da conta existente</Text>
-                            <TextInput
-                                mode="outlined"
-                                placeholder="Sua senha"
-                                value={value}
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                secureTextEntry={!mostrarSenha}
-                                error={!!errors.password}
-                                left={<TextInput.Icon icon="lock" />}
-                                right={
-                                    <TextInput.Icon
-                                        icon={mostrarSenha ? 'eye-off' : 'eye'}
-                                        onPress={() => setMostrarSenha(v => !v)}
-                                    />
-                                }
-                            />
-                            {errors.password && (
-                                <HelperText type="error" visible>{errors.password.message}</HelperText>
-                            )}
-                        </View>
-                    )}
+        <TelaDeAcesso>
+            <View style={estilos.abertura}>
+                <SeloDoGovbr />
+                <TituloDaTela
+                    titulo="Você já tem uma conta aqui"
+                    explicacao={
+                        `Encontramos um cadastro com o seu CPF${emailMascarado ? `, no e-mail ${emailMascarado}` : ''}. `
+                        + 'Confirme a senha dessa conta para vinculá-la ao gov.br.'
+                    }
                 />
+            </View>
 
-                <Button
-                    mode="contained" onPress={handleSubmit(enviar)}
-                    loading={isSubmitting} disabled={isSubmitting}
-                    style={styles.botao} contentStyle={styles.botaoConteudo}
-                >
-                    Vincular e entrar
-                </Button>
-                <Button mode="text" onPress={onCancelar} disabled={isSubmitting}>
-                    Cancelar
-                </Button>
-            </Surface>
-        </ScrollComTeclado>
+            <Aviso tom="info">
+                Depois de vincular, você escolhe como entrar: com sua senha de sempre ou pelo gov.br.
+            </Aviso>
+
+            <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                    <Campo
+                        rotulo="Senha da conta existente"
+                        placeholder="Sua senha"
+                        senha
+                        value={value}
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        erro={errors.password?.message}
+                    />
+                )}
+            />
+
+            <View style={estilos.acoes}>
+                <Botao
+                    titulo="Vincular e entrar"
+                    tamanho="alto"
+                    carregando={isSubmitting}
+                    onPress={handleSubmit(enviar)}
+                />
+                <Botao titulo="Cancelar" variante="contorno" desabilitado={isSubmitting} onPress={onCancelar} />
+            </View>
+        </TelaDeAcesso>
     );
 }
 
 // ────────────────────────────── auxiliares ──────────────────────────────
 
-function Campo({ control, name, label, placeholder, formatar, maxLength, keyboardType, erro, icone, ajuda }: {
-    control: any;
+function CampoDoPerfil({ control, name, rotulo, placeholder, formatar, maxLength, keyboardType, erro, ajuda }: {
+    control: Control<PerfilFormValues>;
     name: keyof PerfilFormValues;
-    label: string;
+    rotulo: string;
     placeholder: string;
     formatar?: (t: string) => string;
     maxLength?: number;
     keyboardType?: 'numeric' | 'phone-pad';
     erro?: string;
-    icone: string;
     ajuda?: string;
 }) {
-    const theme = useTheme();
-    const styles = makeStyles(theme);
     return (
         <Controller
             control={control}
             name={name}
             render={({ field: { onChange, onBlur, value } }) => (
-                <View style={styles.campo}>
-                    <Text variant="labelMedium" style={styles.rotulo}>{label}</Text>
-                    <TextInput
-                        mode="outlined"
-                        placeholder={placeholder}
-                        value={value}
-                        onBlur={onBlur}
-                        onChangeText={(t) => onChange(formatar ? formatar(t) : t)}
-                        maxLength={maxLength}
-                        keyboardType={keyboardType}
-                        error={!!erro}
-                        left={<TextInput.Icon icon={icone} />}
-                    />
-                    {ajuda && !erro && <HelperText type="info" visible>{ajuda}</HelperText>}
-                    {erro && <HelperText type="error" visible>{erro}</HelperText>}
-                </View>
+                <Campo
+                    rotulo={rotulo}
+                    placeholder={placeholder}
+                    value={value}
+                    onBlur={onBlur}
+                    onChangeText={(t) => onChange(formatar ? formatar(t) : t)}
+                    maxLength={maxLength}
+                    keyboardType={keyboardType}
+                    erro={erro}
+                    ajuda={ajuda}
+                />
             )}
         />
     );
@@ -436,21 +390,8 @@ function mensagemDeErro(e: unknown) {
     return 'Não foi possível concluir o login. Tente novamente.';
 }
 
-const makeStyles = (theme: MD3Theme) => StyleSheet.create({
-    centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
-    processandoTexto: { color: theme.colors.onSurfaceVariant },
-    erroTitulo: { marginTop: 8 },
-    erroTexto: { color: theme.colors.onSurfaceVariant, textAlign: 'center' },
-    scroll: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-    card: { padding: 24, borderRadius: 16, backgroundColor: theme.colors.surface, gap: 4 },
-    selo: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
-    seloTexto: { color: theme.colors.primary },
-    titulo: { marginBottom: 4 },
-    subtitulo: { color: theme.colors.onSurfaceVariant, marginBottom: 16 },
-    aviso: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: theme.colors.background, padding: 12, borderRadius: 8, marginBottom: 16 },
-    avisoTexto: { flex: 1, color: theme.colors.onSurfaceVariant },
-    campo: { marginBottom: 8 },
-    rotulo: { marginBottom: 6, color: theme.colors.onSurface },
-    botao: { marginTop: 16, borderRadius: 12 },
-    botaoConteudo: { paddingVertical: 6 },
+const estilos = StyleSheet.create({
+    abertura: { gap: espaco.l },
+    campos: { gap: espaco.l },
+    acoes: { gap: espaco.s },
 });

@@ -22,6 +22,13 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "preview-local": {
+      "extends": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://locomotiva-api-dev.inova.ma.gov.br/api",
+        "ORG_GRADLE_PROJECT_reactNativeArchitectures": "arm64-v8a"
+      }
     }
   },
   "submit": {

@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text, TextInput, Button, Surface, useTheme, HelperText } from 'react-native-paper';
-import ScrollComTeclado from '../../components/ScrollComTeclado';
+import { StyleSheet, View } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +8,9 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { PublicStackParamList } from '../../navigation/PublicNavigator';
 import { useORPC } from '../../locomotiva-api/context';
 import { useMutation } from '@tanstack/react-query';
+import { TelaDeAcesso, TituloDaTela } from '../../components/acesso/TelaDeAcesso';
+import { TrajetoDaRecuperacao } from '../../components/acesso/TrajetoDaRecuperacao';
+import { Aviso, BarraDeVoltar, Botao, Campo, espaco } from '../../ui';
 
 const newPasswordSchema = z.object({
     password: z.string()
@@ -28,8 +29,6 @@ type NewPasswordFormValues = z.infer<typeof newPasswordSchema>;
 export default function NovaSenhaScreen() {
     const navigation = usePublicStackNavigation();
     const route = useRoute<RouteProp<PublicStackParamList, 'NovaSenha'>>();
-    const theme = useTheme();
-    const styles = makeStyles(theme);
     const orpc = useORPC();
 
     const updatePasswordMutation = useMutation({
@@ -37,7 +36,6 @@ export default function NovaSenhaScreen() {
     });
     const submitting = updatePasswordMutation.isPending;
     const [globalError, setGlobalError] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
 
     const { cpf, code } = route.params;
 
@@ -56,10 +54,10 @@ export default function NovaSenhaScreen() {
     const onSubmit = async (data: NewPasswordFormValues) => {
         setGlobalError('');
         try {
-            const response = await updatePasswordMutation.mutateAsync({ 
-                cpf, 
-                code, 
-                newPassword: data.password 
+            const response = await updatePasswordMutation.mutateAsync({
+                cpf,
+                code,
+                newPassword: data.password
             });
             if (response.success) {
                  navigation.navigate('Login'); // Returns to login cleanly
@@ -72,169 +70,64 @@ export default function NovaSenhaScreen() {
         }
     };
 
+    // Não sai no meio da troca, como nas etapas anteriores.
+    const voltar = () => {
+        if (!submitting) navigation.goBack();
+    };
+
     return (
-        <ScrollComTeclado
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-            style={styles.container}
-        >
-            <Surface style={styles.card} elevation={1}>
-                <View style={styles.titles}>
-                    <Text variant="headlineSmall" style={styles.welcomeText}>Nova Senha</Text>
-                    <Text variant="bodyMedium" style={styles.subtitleText}>
-                        Defina e confirme sua nova senha de acesso.
-                    </Text>
-                </View>
+        <TelaDeAcesso topo={<BarraDeVoltar onVoltar={voltar} />}>
+            <TrajetoDaRecuperacao atual={2} />
 
-                {globalError ? <Text style={styles.globalError}>{globalError}</Text> : null}
+            <TituloDaTela titulo="Nova senha" explicacao="Defina e confirme sua nova senha de acesso." />
 
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Nova Senha</Text>
-                    <Controller
-                        control={control}
-                        name="password"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="Digite sua nova senha"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    error={!!errors.password}
-                                    secureTextEntry={!showPassword}
-                                    left={<TextInput.Icon icon="lock" color={theme.colors.onSurfaceVariant} />}
-                                    right={
-                                        <TextInput.Icon
-                                            icon={showPassword ? "eye" : "eye-off"}
-                                            color={theme.colors.onSurfaceVariant}
-                                            onPress={() => setShowPassword(!showPassword)}
-                                        />
-                                    }
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                />
-                                {errors.password && (
-                                    <HelperText type="error" visible={!!errors.password} style={styles.errorText}>
-                                        {errors.password.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
+            {globalError ? <Aviso tom="erro">{globalError}</Aviso> : null}
 
-                <View style={styles.inputContainer}>
-                    <Text variant="labelMedium" style={styles.inputLabel}>Confirmar Nova Senha</Text>
-                    <Controller
-                        control={control}
-                        name="confirmPassword"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <>
-                                <TextInput
-                                    mode="outlined"
-                                    placeholder="Confirme sua nova senha"
-                                    value={value}
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    error={!!errors.confirmPassword}
-                                    secureTextEntry={!showPassword}
-                                    left={<TextInput.Icon icon="lock-check" color={theme.colors.onSurfaceVariant} />}
-                                    outlineColor={theme.colors.outline}
-                                    activeOutlineColor={theme.colors.primary}
-                                    style={styles.input}
-                                    outlineStyle={styles.inputOutline}
-                                />
-                                {errors.confirmPassword && (
-                                    <HelperText type="error" visible={!!errors.confirmPassword} style={styles.errorText}>
-                                        {errors.confirmPassword.message}
-                                    </HelperText>
-                                )}
-                            </>
-                        )}
-                    />
-                </View>
+            <View style={estilos.campos}>
+                <Controller
+                    control={control}
+                    name="password"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                        <Campo
+                            rotulo="Nova senha"
+                            placeholder="Digite sua nova senha"
+                            senha
+                            value={value}
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            erro={errors.password?.message}
+                            ajuda="Use pelo menos 8 caracteres, com uma letra maiúscula, um número e um símbolo."
+                        />
+                    )}
+                />
 
-                <Button
-                    mode="contained"
-                    onPress={handleSubmit(onSubmit)}
-                    style={styles.actionButton}
-                    loading={submitting}
-                    disabled={submitting}
-                    buttonColor={theme.colors.primary}
-                    contentStyle={{ paddingVertical: 6 }}
-                    labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
-                >
-                    Confirmar Senha
-                </Button>
-            </Surface>
-        </ScrollComTeclado>
+                <Controller
+                    control={control}
+                    name="confirmPassword"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                        <Campo
+                            rotulo="Confirmar nova senha"
+                            placeholder="Confirme sua nova senha"
+                            senha
+                            value={value}
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            erro={errors.confirmPassword?.message}
+                        />
+                    )}
+                />
+            </View>
+
+            <Botao
+                titulo="Confirmar senha"
+                tamanho="alto"
+                carregando={submitting}
+                onPress={handleSubmit(onSubmit)}
+            />
+        </TelaDeAcesso>
     );
 }
 
-const makeStyles = (theme: any) => StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: theme.colors.background,
-    },
-    scrollContent: {
-        flexGrow: 1,
-        paddingHorizontal: 24,
-        paddingTop: 60,
-        paddingBottom: 24,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    card: {
-        width: '100%',
-        backgroundColor: theme.colors.surface,
-        borderRadius: 20,
-        padding: 24,
-    },
-    titles: {
-        alignItems: 'center',
-        marginBottom: 32,
-    },
-    welcomeText: {
-        fontWeight: 'bold',
-        color: theme.colors.onSurface,
-        fontSize: 24,
-        marginBottom: 8,
-    },
-    subtitleText: {
-        color: theme.colors.onSurfaceVariant,
-        fontSize: 14,
-        textAlign: 'center',
-    },
-    inputContainer: {
-        marginBottom: 20,
-    },
-    inputLabel: {
-        fontWeight: '600',
-        color: theme.colors.onSurface,
-        marginBottom: 4,
-    },
-    input: {
-        backgroundColor: theme.colors.surface,
-    },
-    inputOutline: {
-        borderRadius: 8,
-    },
-    errorText: {
-        paddingHorizontal: 0,
-        paddingTop: 4,
-    },
-    globalError: {
-        color: theme.colors.error,
-        textAlign: 'center',
-        marginBottom: 16,
-        fontWeight: 'bold',
-    },
-    actionButton: {
-        borderRadius: 8,
-        marginTop: 8,
-        marginBottom: 16,
-    },
+const estilos = StyleSheet.create({
+    campos: { gap: espaco.l },
 });

@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Pressable, ActivityIndicator, Platform } from 'react-native';
-import { Text, useTheme, MD3Theme } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import * as WebBrowser from 'expo-web-browser';
 import { useORPC } from '../locomotiva-api/context';
 import { entregarRetornoGovbr, linkDoAppParaCallback } from '../govbr/link';
+import { Texto, cores, espaco } from '../ui';
+
+type OpcoesDoLoginGovbr = {
+    redirectTo?: string | null;
+    onErro?: (mensagem: string) => void;
+};
 
 /**
- * Botão "Entrar com gov.br".
- *
- * O Passo 1 do roteiro de integração exige que a chamada de autenticação parta
- * de um botão com o texto "Entrar com gov.br", seguindo o Design System do
- * governo — é item verificado na homologação, não recomendação.
+ * Lógica do "Entrar com gov.br", separada do desenho para ser usada tanto
+ * pelo bloco completo (login e cadastro) quanto pelo botão solto da entrada.
  *
  * A API monta a URL: o `state`, o `nonce` e o `code_verifier` são gerados e
  * guardados no servidor. O cliente só recebe o endereço para onde navegar.
@@ -19,12 +22,7 @@ import { entregarRetornoGovbr, linkDoAppParaCallback } from '../govbr/link';
  * no navegador do sistema (o roteiro do gov.br pede para não usar WebView) e
  * o retorno volta pelo link do app — ver `govbr/link.ts`.
  */
-export default function BotaoGovbr({ redirectTo, onErro }: {
-    redirectTo?: string | null;
-    onErro?: (mensagem: string) => void;
-}) {
-    const theme = useTheme();
-    const styles = makeStyles(theme);
+export function useLoginGovbr({ redirectTo, onErro }: OpcoesDoLoginGovbr = {}) {
     const orpc = useORPC();
     const [carregando, setCarregando] = useState(false);
 
@@ -79,54 +77,73 @@ export default function BotaoGovbr({ redirectTo, onErro }: {
         }
     };
 
-    if (disponivel !== true) return null;
+    return { disponivel: disponivel === true, carregando, entrar };
+}
+
+/**
+ * O botão em si. O Passo 1 do roteiro de integração exige que a chamada de
+ * autenticação parta de um botão com o texto "Entrar com gov.br", seguindo o
+ * Design System do governo — é item verificado na homologação, não
+ * recomendação. Por isso ele não segue o tema do aplicativo.
+ */
+export function BotaoGovbrPilula({ onPress, carregando }: { onPress: () => void; carregando: boolean }) {
+    return (
+        <Pressable
+            onPress={onPress}
+            disabled={carregando}
+            accessibilityRole="button"
+            accessibilityLabel="Entrar com gov.br"
+            accessibilityState={{ disabled: carregando, busy: carregando }}
+            style={({ pressed }) => [
+                estilosDoBotao.botao,
+                pressed && estilosDoBotao.botaoPressionado,
+                carregando && estilosDoBotao.botaoDesabilitado,
+            ]}
+        >
+            {carregando
+                ? <ActivityIndicator size="small" color="#FFFFFF" />
+                : (
+                    <Text style={estilosDoBotao.rotulo}>
+                        Entrar com <Text style={estilosDoBotao.marca}>GOV.BR</Text>
+                    </Text>
+                )}
+        </Pressable>
+    );
+}
+
+/**
+ * Bloco "ou / Entrar com gov.br / explicação", usado no login e no cadastro.
+ * Some sozinho quando o gov.br está desligado na API.
+ */
+export default function BotaoGovbr({ redirectTo, onErro }: OpcoesDoLoginGovbr) {
+    const { disponivel, carregando, entrar } = useLoginGovbr({ redirectTo, onErro });
+
+    if (!disponivel) return null;
 
     return (
-        <View style={styles.container}>
-            <View style={styles.separador}>
-                <View style={styles.linha} />
-                <Text variant="bodySmall" style={styles.separadorTexto}>ou</Text>
-                <View style={styles.linha} />
+        <View style={estilosDoBloco.bloco}>
+            <View style={estilosDoBloco.separador}>
+                <View style={estilosDoBloco.linha} />
+                <Texto variante="apoio" cor={cores.textoSecundario}>ou</Texto>
+                <View style={estilosDoBloco.linha} />
             </View>
 
-            <Pressable
-                onPress={entrar}
-                disabled={carregando}
-                accessibilityRole="button"
-                accessibilityLabel="Entrar com gov.br"
-                style={({ pressed }) => [
-                    styles.botao,
-                    pressed && styles.botaoPressionado,
-                    carregando && styles.botaoDesabilitado,
-                ]}
-            >
-                {carregando
-                    ? <ActivityIndicator size="small" color="#FFFFFF" />
-                    : (
-                        <Text style={styles.rotulo}>
-                            Entrar com <Text style={styles.marca}>GOV.BR</Text>
-                        </Text>
-                    )}
-            </Pressable>
+            <BotaoGovbrPilula onPress={entrar} carregando={carregando} />
 
-            <Text variant="bodySmall" style={styles.explicacao}>
+            <Texto variante="apoio" cor={cores.textoSecundario} style={estilosDoBloco.explicacao}>
                 Use sua conta gov.br. Seus dados são confirmados pelo governo.
-            </Text>
+            </Texto>
         </View>
     );
 }
 
-const makeStyles = (theme: MD3Theme) => StyleSheet.create({
-    container: { marginTop: 20 },
-    separador: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 12 },
-    linha: { flex: 1, height: 1, backgroundColor: theme.colors.outline, opacity: 0.5 },
-    separadorTexto: { color: theme.colors.onSurfaceVariant },
-    // Valores conferidos no pacote oficial @govbr-ds/core@3.7.0:
-    //   #1351b4          token --blue-warm-vivid-70
-    //   border-radius    100em (pílula) -> 999 no React Native
-    //   height           48px = --button-large
-    //   font-weight      semi-bold
-    // Fixos de propósito: é marca de terceiro e não segue o tema do aplicativo.
+// Valores conferidos no pacote oficial @govbr-ds/core@3.7.0:
+//   #1351b4          token --blue-warm-vivid-70
+//   border-radius    100em (pílula) -> 999 no React Native
+//   height           48px = --button-large
+//   font-weight      semi-bold
+// Fixos de propósito: é marca de terceiro e não segue o tema do aplicativo.
+const estilosDoBotao = StyleSheet.create({
     botao: {
         backgroundColor: '#1351B4',
         borderRadius: 999,
@@ -141,5 +158,11 @@ const makeStyles = (theme: MD3Theme) => StyleSheet.create({
     // O Text do Paper aninhado NÃO herda a cor do pai — aplica a cor do tema
     // (quase preta). Sem redeclarar o branco, "GOV.BR" sai escuro sobre azul.
     marca: { fontWeight: '800', color: '#FFFFFF' },
-    explicacao: { color: theme.colors.onSurfaceVariant, textAlign: 'center', marginTop: 10 },
+});
+
+const estilosDoBloco = StyleSheet.create({
+    bloco: { gap: espaco.m },
+    separador: { flexDirection: 'row', alignItems: 'center', gap: espaco.m, marginBottom: espaco.xs },
+    linha: { flex: 1, height: 1, backgroundColor: cores.linha },
+    explicacao: { textAlign: 'center' },
 });

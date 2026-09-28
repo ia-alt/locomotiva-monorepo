@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "dev": "expo start --web",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "build": "npm run typecheck && expo export --platform web"
+    "build": "npm run typecheck && expo export --platform web",
+    "build:apk:local": "eas build -p android --profile preview-local --local --output dist/locomotiva-preview.apk"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.6",
@@ -28,6 +29,7 @@
     "@tanstack/react-query": "^5.90.21",
     "date-fns": "^4.1.0",
     "expo": "~55.0.31",
+    "expo-camera": "~55.0.23",
     "expo-dev-client": "~55.0.40",
     "expo-document-picker": "~55.0.17",
     "expo-file-system": "~55.0.22",

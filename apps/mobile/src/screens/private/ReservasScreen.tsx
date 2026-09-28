@@ -1,143 +1,117 @@
-import React from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
-import { Text, FAB } from 'react-native-paper';
-import { BookingsProvider, useBookings } from '../../contexts/ReservasContext';
-import BookingCard from '../../components/BookingCard';
-import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import React, { useState } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useAuth } from '../../contexts/auth-context';
+import { useMolduraDaTela } from '../../contexts/layout-context';
+import { AbaDeReservas, useMinhasReservas } from '../../hooks/useReservas';
+import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { Botao, Segmentado, Texto, cores, espaco } from '../../ui';
+import { BilheteDaReserva } from '../../components/reservas/BilheteDaReserva';
+import { perfilEstaCompleto } from '../../utils/perfil';
 
-function ReservasList() {
+const ABAS = [
+    { valor: 'proximas', rotulo: 'Próximas' },
+    { valor: 'anteriores', rotulo: 'Anteriores' },
+] as const;
+
+const TEXTO_VAZIO: Record<AbaDeReservas, { titulo: string; detalhe: string }> = {
+    proximas: {
+        titulo: 'Nenhuma reserva marcada',
+        detalhe: 'Quando você reservar uma sala, o bilhete aparece aqui.',
+    },
+    anteriores: {
+        titulo: 'Nada por aqui ainda',
+        detalhe: 'As reservas que já passaram ficam guardadas aqui.',
+    },
+};
+
+export default function ReservasScreen() {
+    useMolduraDaTela({ corDoTopo: cores.chao });
     const navigation = usePrivateStackNavigation();
     const { authUser } = useAuth();
+    const [aba, setAba] = useState<AbaDeReservas>('proximas');
     const {
-        bookings,
+        reservas,
         isLoading,
+        isRefetching,
+        refetch,
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
-        refetch,
-        isRefetching
-    } = useBookings();
+    } = useMinhasReservas(aba);
 
-    const renderItem = (item: typeof bookings[0]) => (
-        <BookingCard
-            booking={item}
-            onPressDetails={() => {
-                navigation.navigate('DetalhesMinhaReserva', { bookingId: item.id });
-            }}
-        />
-    );
-
-    const renderFooter = () => {
-        if (!isFetchingNextPage) return <View style={{ height: 60 }} />;
-        return (
-            <View style={styles.loadingFooter}>
-                <ActivityIndicator size="small" color="#3B82F6" />
-            </View>
-        );
+    const novaReserva = () => {
+        if (perfilEstaCompleto(authUser)) navigation.navigate('CriarReserva');
+        else navigation.navigate('PerfilIncompleto', { next: 'CriarReserva' });
     };
 
-    if (isLoading && !isRefetching && bookings.length === 0) {
-        return (
-            <View style={styles.centerContainer}>
-                <ActivityIndicator size="large" color="#3B82F6" />
-            </View>
-        );
-    }
-
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text variant="headlineMedium" style={styles.title}>Minhas Reservas</Text>
+        <View style={estilos.tela}>
+            <View style={estilos.cabecalho}>
+                <Texto variante="titulo" accessibilityRole="header">Reservas</Texto>
+                <Botao titulo="Nova" accessibilityLabel="Nova reserva" icone="mais" tamanho="compacto" onPress={novaReserva} />
+            </View>
+
+            <View style={estilos.abas}>
+                <Segmentado opcoes={ABAS} valor={aba} aoMudar={setAba} accessibilityLabel="Filtrar reservas" />
             </View>
 
             <FlatList
-                data={bookings}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => renderItem(item)}
-                contentContainerStyle={styles.listContent}
+                data={reservas}
+                keyExtractor={(reserva) => reserva.id}
+                renderItem={({ item }) => (
+                    <BilheteDaReserva
+                        reserva={item}
+                        onPress={() => navigation.navigate('DetalhesMinhaReserva', { bookingId: item.id })}
+                    />
+                )}
+                ItemSeparatorComponent={Separador}
+                contentContainerStyle={estilos.lista}
                 onEndReached={() => {
-                    if (hasNextPage && !isFetchingNextPage) {
-                        fetchNextPage();
-                    }
+                    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
                 }}
                 onEndReachedThreshold={0.5}
-                ListFooterComponent={renderFooter}
-                refreshControl={
-                    <RefreshControl refreshing={isRefetching && !isLoading} onRefresh={refetch} />
-                }
+                refreshControl={<RefreshControl refreshing={isRefetching && !isLoading} onRefresh={refetch} />}
                 ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>Você ainda não possui reservas.</Text>
-                    </View>
+                    isLoading
+                        ? <ActivityIndicator style={estilos.carregando} color={cores.azul} />
+                        : <ListaVazia aba={aba} />
                 }
-            />
-
-            <FAB
-                icon="plus"
-                color="#FFFFFF"
-                style={styles.fab}
-                onPress={() => {
-                    const profileComplete = !!(authUser as any)?.company && !!(authUser as any)?.jobTitle && !!(authUser as any)?.phone;
-                    navigation.navigate(profileComplete ? 'CriarReserva' : 'PerfilIncompleto');
-                }}
-                label='Nova Reserva'
+                ListFooterComponent={isFetchingNextPage ? <ActivityIndicator style={estilos.carregando} color={cores.azul} /> : null}
             />
         </View>
     );
 }
 
-export default function ReservasScreen() {
+function Separador() {
+    return <View style={estilos.separador} />;
+}
+
+function ListaVazia({ aba }: { aba: AbaDeReservas }) {
+    const texto = TEXTO_VAZIO[aba];
     return (
-        <BookingsProvider>
-            <ReservasList />
-        </BookingsProvider>
+        <View style={estilos.vazia}>
+            <Texto variante="destaque">{texto.titulo}</Texto>
+            <Texto variante="explicacao" cor={cores.textoSecundario} style={estilos.centralizado}>
+                {texto.detalhe}
+            </Texto>
+        </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9FAFB',
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingTop: 24,
-        paddingBottom: 16,
-        backgroundColor: '#F9FAFB',
-    },
-    title: {
-        fontWeight: 'bold',
-        color: '#111827',
-    },
-    centerContainer: {
-        flex: 1,
-        justifyContent: 'center',
+const estilos = StyleSheet.create({
+    tela: { flex: 1, backgroundColor: cores.chao },
+    cabecalho: {
+        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F9FAFB',
+        justifyContent: 'space-between',
+        gap: espaco.m,
+        paddingHorizontal: espaco.l,
+        paddingTop: espaco.s,
     },
-    listContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 100, // Make room for FAB
-    },
-    loadingFooter: {
-        paddingVertical: 20,
-        alignItems: 'center',
-        height: 60,
-    },
-    emptyContainer: {
-        paddingVertical: 40,
-        alignItems: 'center',
-    },
-    emptyText: {
-        fontSize: 16,
-        color: '#6B7280',
-    },
-    fab: {
-        position: 'absolute',
-        margin: 16,
-        right: 0,
-        bottom: 0,
-        backgroundColor: '#1E88E5',
-    },
+    abas: { paddingHorizontal: espaco.l, paddingTop: 18 },
+    lista: { paddingHorizontal: espaco.l, paddingTop: 18, paddingBottom: espaco.xxl, flexGrow: 1 },
+    separador: { height: espaco.m },
+    carregando: { marginTop: espaco.xxl },
+    vazia: { alignItems: 'center', gap: 6, paddingTop: 48, paddingHorizontal: espaco.xxl },
+    centralizado: { textAlign: 'center' },
 });

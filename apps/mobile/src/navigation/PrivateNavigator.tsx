@@ -1,7 +1,5 @@
 import React from 'react';
-import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import InicioScreen from '../screens/private/InicioScreen';
 import ReservasScreen from '../screens/private/ReservasScreen';
 import PerfilScreen from '../screens/private/PerfilScreen';
@@ -21,13 +19,23 @@ import DetalhesMinhaImpressaoScreen from '../screens/private/DetalhesMinhaImpres
 import EditarPerfilScreen from '../screens/private/EditarPerfilScreen';
 import AlterarSenhaScreen from '../screens/private/AlterarSenhaScreen';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NavigatorScreenParams, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { ORPCOutputs } from '../locomotiva-api/types';
+import { BarraDeAbas, Icone, cores, fontes } from '../ui';
 
 type RoomFromList = ORPCOutputs["booking"]["listRooms"][0]
 
+/** As quatro abas da barra de baixo. */
+export type AbasParamList = {
+    /** `code` chega pelo link do QR code de check-in (ver `navigation/index.tsx`). */
+    'Início': { code?: string } | undefined;
+    Reservas: undefined;
+    'Impressões': undefined;
+    Perfil: undefined;
+};
+
 export type PrivateStackParamList = {
-    Drawer: undefined;
+    Abas: NavigatorScreenParams<AbasParamList> | undefined;
     CriarReserva: undefined;
     DisponibilidadeReserva: {
         room: RoomFromList
@@ -70,94 +78,82 @@ export type PrivateStackParamList = {
     PerfilIncompleto: { next: 'CriarReserva' | 'CriarImpressao' } | undefined;
 };
 
-const Tab = createBottomTabNavigator();
-const Drawer = createDrawerNavigator();
+const Abas = createBottomTabNavigator<AbasParamList>();
 const Stack = createStackNavigator<PrivateStackParamList>();
 
-function BottomTabs() {
+function AbasPrincipais() {
     return (
-        <Tab.Navigator
+        <Abas.Navigator
             initialRouteName="Início"
-            screenOptions={({ route }) => ({
-                headerShown: false,
-                tabBarStyle: { height: 60, paddingBottom: 5, paddingTop: 5 },
-                tabBarIcon: ({ focused, color, size }) => {
-                    let iconName;
-
-                    if (route.name === 'Início') {
-                        iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'Reservas') {
-                        iconName = focused ? 'calendar' : 'calendar-outline';
-                    } else if (route.name === 'Perfil') {
-                        iconName = focused ? 'person' : 'person-outline';
-                    }
-
-                    return <Ionicons name={iconName as any} size={size} color={color} />;
-                },
-            })}
+            tabBar={(props) => <BarraDeAbas {...props} />}
+            screenOptions={{ headerShown: false }}
         >
-            <Tab.Screen name="Início" component={InicioScreen} />
-            <Tab.Screen name="Reservas" component={ReservasScreen} />
-            <Tab.Screen name="Perfil" component={PerfilScreen} />
-        </Tab.Navigator>
-    );
-}
-
-function DrawerRoutes() {
-    return (
-        <Drawer.Navigator initialRouteName="Menu principal">
-            <Drawer.Screen
-                name="Menu principal"
-                component={BottomTabs}
-                options={{
-                    title: 'Locomotiva',
-                    drawerIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
-                }}
+            <Abas.Screen
+                name="Início"
+                component={InicioScreen}
+                options={{ tabBarIcon: ({ color }) => <Icone nome="inicio" cor={color} /> }}
             />
-            <Drawer.Screen
-                name="Impressões 3D"
+            <Abas.Screen
+                name="Reservas"
+                component={ReservasScreen}
+                options={{ tabBarIcon: ({ color }) => <Icone nome="reservas" cor={color} /> }}
+            />
+            <Abas.Screen
+                name="Impressões"
                 component={ImpressoesScreen}
-                options={{
-                    drawerIcon: ({ color, size }) => <Ionicons name="print-outline" size={size} color={color} />,
-                }}
+                options={{ tabBarIcon: ({ color }) => <Icone nome="impressoes" cor={color} /> }}
             />
-        </Drawer.Navigator>
+            <Abas.Screen
+                name="Perfil"
+                component={PerfilScreen}
+                options={{ tabBarIcon: ({ color }) => <Icone nome="perfil" cor={color} /> }}
+            />
+        </Abas.Navigator>
     );
 }
 
 export default function PrivateNavigator() {
     return (
-        <Stack.Navigator initialRouteName="Drawer" screenOptions={{
+        <Stack.Navigator initialRouteName="Abas" screenOptions={{
             animation: 'slide_from_right',
-            cardStyle: { flex: 1 },
+            cardStyle: { flex: 1, backgroundColor: cores.chao },
             cardStyleInterpolator: ({ current }) => ({
                 cardStyle: { opacity: current.progress },
             }),
+            // A MolduraSegura (layout-context) já reserva a barra de status.
+            // Sem zerar aqui, o cabeçalho reservava de novo e sobrava um vão em cima.
+            headerStatusBarHeight: 0,
+            headerStyle: { backgroundColor: cores.chao },
+            headerShadowVisible: false,
+            headerTintColor: cores.grafite,
+            headerTitleAlign: 'left',
+            headerTitleStyle: { fontFamily: fontes.placaMedia, fontSize: 18 },
+            headerBackButtonDisplayMode: 'minimal',
         }}>
             <Stack.Screen
-                name="Drawer"
-                component={DrawerRoutes}
+                name="Abas"
+                component={AbasPrincipais}
                 options={{ headerShown: false }}
             />
             <Stack.Screen
                 name="CriarReserva"
                 component={CriarReservaScreen}
-                options={{ title: 'Nova Reserva' }}
+                options={{ title: 'Nova reserva' }}
             />
             <Stack.Screen
                 name="DisponibilidadeReserva"
                 component={DisponibilidadeReservaScreen}
-                options={{ title: 'Data e Horário' }}
+                options={{ title: 'Data e horário' }}
             />
             <Stack.Screen
                 name="DetalhesReserva"
                 component={DetalhesReservaScreen}
-                options={{ title: 'Detalhes da Reserva' }}
+                options={{ title: 'Detalhes da reserva' }}
             />
             <Stack.Screen
                 name="ConfirmarReserva"
                 component={ConfirmarReservaScreen}
-                options={{ title: 'Confirmar Reserva' }}
+                options={{ title: 'Confirmar reserva' }}
             />
             <Stack.Screen
                 name="ReservaSucesso"
@@ -167,21 +163,21 @@ export default function PrivateNavigator() {
             <Stack.Screen
                 name="DetalhesMinhaReserva"
                 component={DetalhesMinhaReservaScreen}
-                options={{ title: 'Detalhes da Reserva', animation: 'slide_from_right' }}
+                options={{ title: 'Detalhes da reserva', animation: 'slide_from_right' }}
             />
-            <Stack.Screen name="CriarImpressao" component={CriarImpressaoScreen} options={{ title: 'Nova Impressão' }} />
-            <Stack.Screen name="ConfirmarImpressao" component={ConfirmarImpressaoScreen} options={{ title: 'Confirmar Pedido' }} />
+            <Stack.Screen name="CriarImpressao" component={CriarImpressaoScreen} options={{ title: 'Nova impressão' }} />
+            <Stack.Screen name="ConfirmarImpressao" component={ConfirmarImpressaoScreen} options={{ title: 'Confirmar pedido' }} />
             <Stack.Screen name="ImpressaoSucesso" component={ImpressaoSucessoScreen} options={{ headerShown: false, gestureEnabled: false }} />
-            <Stack.Screen name="DetalhesMinhaImpressao" component={DetalhesMinhaImpressaoScreen} options={{ title: 'Detalhes da Impressão', animation: 'slide_from_right' }} />
+            <Stack.Screen name="DetalhesMinhaImpressao" component={DetalhesMinhaImpressaoScreen} options={{ title: 'Detalhes da impressão', animation: 'slide_from_right' }} />
             <Stack.Screen
                 name="EditarPerfil"
                 component={EditarPerfilScreen}
-                options={{ title: 'Editar Perfil' }}
+                options={{ title: 'Editar perfil' }}
             />
             <Stack.Screen
                 name="AlterarSenha"
                 component={AlterarSenhaScreen}
-                options={{ title: 'Alterar Senha' }}
+                options={{ title: 'Alterar senha' }}
             />
             <Stack.Screen
                 name="PerfilIncompleto"

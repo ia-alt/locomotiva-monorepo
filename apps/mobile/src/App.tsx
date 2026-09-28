@@ -11,9 +11,10 @@ import Navigation from './navigation';
 import GovbrCallbackScreen from './screens/public/GovbrCallbackScreen';
 import GovbrSaidaScreen from './screens/public/GovbrSaidaScreen';
 import { lerSaidaGovbr, useUrlRetornoGovbr, useRetornoGovbrPendente, SaidaGovbr } from './govbr/link';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
-import { LayoutProvider, useLayout } from './contexts/layout-context';
+import { LayoutProvider, MolduraSegura, useLayout } from './contexts/layout-context';
+import { arquivosDasFontes } from './ui/tema';
 
 // Sistema de Toast Global acessível fora do fluxo do React
 type ToastShow = (message: string) => void;
@@ -69,31 +70,37 @@ const queryClient = new QueryClient({
   }),
 });
 
-import { MD3LightTheme } from 'react-native-paper';
+import { MD3LightTheme, configureFonts } from 'react-native-paper';
+import { cores, fontes } from './ui/tema';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+// Os componentes do Paper que sobraram (diálogo, aviso de erro) seguem as
+// cores e a fonte da identidade — ver `ui/tema`.
 const theme = {
   ...MD3LightTheme,
+  fonts: configureFonts({ config: { fontFamily: fontes.regular } }),
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#1A7BFF',
-    background: '#F3F6FA',
-    surface: '#FFFFFF',
-    onSurface: '#1E293B',
-    outline: '#CBD5E1',
-    onSurfaceVariant: '#94A3B8',
+    primary: cores.azul,
+    background: cores.chao,
+    surface: cores.papel,
+    onSurface: cores.grafite,
+    outline: cores.linha,
+    onSurfaceVariant: cores.textoSecundario,
+    error: cores.erro,
   },
 };
 
 export default function Main() {
   const [fontsLoaded] = Font.useFonts({
     'HankenGrotesk': require('../assets/fonts/HankenGrotesk-Variable.ttf'),
+    ...arquivosDasFontes,
   });
 
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaProvider style={{ flex: 1 }}>
+    <SafeAreaProvider style={{ flex: 1 }} initialMetrics={initialWindowMetrics}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         {/* Acompanha o teclado no aplicativo (na web não faz nada) — ver
             `components/ScrollComTeclado.tsx`. Fica acima do PaperProvider
@@ -106,11 +113,13 @@ export default function Main() {
                   <AuthProvider>
                     <QRCodeReaderProvider>
 
-                      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                        <LayoutProvider>
+                      {/* A moldura faz o papel do SafeAreaView, com a cor de
+                          cada tela nas faixas do sistema — ver layout-context. */}
+                      <LayoutProvider>
+                        <MolduraSegura corPadrao={theme.colors.background}>
                           <App />
-                        </LayoutProvider>
-                      </SafeAreaView>
+                        </MolduraSegura>
+                      </LayoutProvider>
 
                     </QRCodeReaderProvider>
                   </AuthProvider>

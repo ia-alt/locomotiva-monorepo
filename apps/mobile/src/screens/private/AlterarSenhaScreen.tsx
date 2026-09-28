@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, TextInput, Button, HelperText } from 'react-native-paper';
 import ScrollComTeclado from '../../components/ScrollComTeclado';
 import { useMutation } from '@tanstack/react-query';
 import { useORPC } from '../../locomotiva-api/context';
 import { usePrivateStackNavigation } from '../../navigation/PrivateNavigator';
+import { Aviso, Botao, Campo, cores, espaco } from '../../ui';
 
 export default function AlterarSenhaScreen() {
     const orpc = useORPC();
@@ -13,9 +13,6 @@ export default function AlterarSenhaScreen() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [showCurrent, setShowCurrent] = useState(false);
-    const [showNew, setShowNew] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const confirmError = confirmPassword && confirmPassword !== newPassword
@@ -50,114 +47,63 @@ export default function AlterarSenhaScreen() {
     }
 
     return (
-        <ScrollComTeclado contentContainerStyle={styles.container}>
-            <Text variant="titleMedium" style={styles.sectionTitle}>
-                Alterar senha
-            </Text>
-
-            <TextInput
-                label="Senha atual"
+        <ScrollComTeclado style={estilos.tela} contentContainerStyle={estilos.conteudo}>
+            {/* O título "Alterar Senha" já está no cabeçalho da pilha. */}
+            <Campo
+                rotulo="Senha atual"
+                senha
                 value={currentPassword}
                 onChangeText={setCurrentPassword}
-                mode="outlined"
-                secureTextEntry={!showCurrent}
-                right={
-                    <TextInput.Icon
-                        icon={showCurrent ? 'eye-off' : 'eye'}
-                        onPress={() => setShowCurrent((v) => !v)}
-                    />
-                }
-                style={styles.input}
             />
 
-            <TextInput
-                label="Nova senha"
+            <Campo
+                rotulo="Nova senha"
+                senha
                 value={newPassword}
                 onChangeText={setNewPassword}
-                mode="outlined"
-                secureTextEntry={!showNew}
-                error={!!newPasswordError}
-                right={
-                    <TextInput.Icon
-                        icon={showNew ? 'eye-off' : 'eye'}
-                        onPress={() => setShowNew((v) => !v)}
-                    />
-                }
-                style={styles.input}
+                erro={newPasswordError ?? undefined}
             />
-            {newPasswordError && <HelperText type="error">{newPasswordError}</HelperText>}
 
-            <TextInput
-                label="Confirmar nova senha"
+            <Campo
+                rotulo="Confirmar nova senha"
+                senha
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                mode="outlined"
-                secureTextEntry={!showConfirm}
-                error={!!confirmError}
-                right={
-                    <TextInput.Icon
-                        icon={showConfirm ? 'eye-off' : 'eye'}
-                        onPress={() => setShowConfirm((v) => !v)}
-                    />
-                }
-                style={styles.input}
+                erro={confirmError ?? undefined}
             />
-            {confirmError && <HelperText type="error">{confirmError}</HelperText>}
 
-            {error && (
-                <HelperText type="error" style={styles.globalError}>
-                    {error}
-                </HelperText>
-            )}
+            {error ? <Aviso tom="erro">{error}</Aviso> : null}
 
-            <View style={styles.actions}>
-                <Button
-                    mode="outlined"
-                    onPress={() => navigation.goBack()}
-                    style={styles.cancelButton}
-                    disabled={changePasswordMutation.isPending}
-                >
-                    Cancelar
-                </Button>
-                <Button
-                    mode="contained"
-                    onPress={handleSave}
-                    loading={changePasswordMutation.isPending}
-                    disabled={!canSubmit || changePasswordMutation.isPending}
-                    style={styles.saveButton}
-                >
-                    Salvar
-                </Button>
+            <View style={estilos.acoes}>
+                <View style={estilos.acao}>
+                    <Botao
+                        titulo="Cancelar"
+                        variante="contorno"
+                        onPress={() => navigation.goBack()}
+                        desabilitado={changePasswordMutation.isPending}
+                    />
+                </View>
+                <View style={estilos.acao}>
+                    <Botao
+                        titulo="Salvar"
+                        onPress={handleSave}
+                        carregando={changePasswordMutation.isPending}
+                        desabilitado={!canSubmit || changePasswordMutation.isPending}
+                    />
+                </View>
             </View>
         </ScrollComTeclado>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        padding: 24,
-        gap: 4,
+const estilos = StyleSheet.create({
+    tela: { flex: 1, backgroundColor: cores.chao },
+    conteudo: {
+        gap: espaco.l,
+        paddingHorizontal: espaco.l,
+        paddingTop: espaco.s,
+        paddingBottom: espaco.xxl,
     },
-    sectionTitle: {
-        marginBottom: 12,
-        opacity: 0.7,
-    },
-    input: {
-        marginBottom: 2,
-    },
-    globalError: {
-        marginTop: 8,
-        fontSize: 14,
-    },
-    actions: {
-        flexDirection: 'row',
-        gap: 12,
-        marginTop: 24,
-    },
-    cancelButton: {
-        flex: 1,
-    },
-    saveButton: {
-        flex: 1,
-    },
+    acoes: { flexDirection: 'row', gap: espaco.m, marginTop: espaco.s },
+    acao: { flex: 1 },
 });
