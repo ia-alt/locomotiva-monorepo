@@ -218,6 +218,15 @@ export namespace PrintRequest {
 
     export const StatusSchema = z.enum(Status);
 
+    /** Status que só se alcança depois do aceite (o pedido foi aprovado em algum momento). */
+    export const AcceptedStatus = [
+        Status.APPROVED,
+        Status.IN_PRODUCTION,
+        Status.COMPLETED,
+        Status.DELIVERED,
+        Status.DISCARDED,
+    ];
+
     export const JsonSchema = z.object({
         id: z.string(),
         userId: z.string(),
