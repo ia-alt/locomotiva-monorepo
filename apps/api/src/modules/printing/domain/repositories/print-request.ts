@@ -16,6 +16,8 @@ interface PrintRequestRepository {
     existsActiveByPrinterId(printerId: UniqueId): Promise<boolean>;
     /** Há pedido (qualquer status) referenciando o filamento? (guarda da exclusão do catálogo) */
     existsByFilamentId(filamentId: UniqueId): Promise<boolean>;
+    /** Pedidos criados no mês (qualquer status), para o relatório mensal. */
+    findAllByMonth(year: number, month: number): Promise<PrintRequest[]>;
 }
 
 namespace PrintRequestRepository {

@@ -10,6 +10,9 @@ import {
   Group as GroupIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Print as PrintIcon,
+  CheckCircle as CheckCircleIcon,
+  Inventory2 as InventoryIcon,
 } from '@mui/icons-material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { LineChart } from '@mui/x-charts/LineChart';
@@ -21,6 +24,8 @@ import { addMonths, subMonths } from 'date-fns';
 import { useMonthReport } from '../hooks/useMonthReport';
 import { useGenerateMonthReportPdf } from '../hooks/useGenerateMonthReportPdf';
 import { StatCard } from '../components/dashboard/StatCard';
+import { PrintRequestStatusChip } from '../components/printing/PrintRequestStatusChip';
+import { PRINT_REQUEST_STATUS_CONFIG } from '../components/printing/printRequestStatus';
 import { onlyDateStrToBrDate, onlyDateStrToShortBrDate, onlyTimeObjToTimeStr } from '../utils/datetime-formatters';
 
 const DAY_PT: Record<number, string> = { 0: 'Dom', 1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb' };
@@ -55,6 +60,13 @@ const ReportPage: React.FC = () => {
   const wdValues = (data?.totalPeopleByWeekDay ?? []).map((w) => w.total);
   const maxWd = Math.max(...wdValues, 0);
   const wdColors = wdValues.map((v) => (v === maxWd && maxWd > 0 ? '#1565C0' : '#90CAF9'));
+
+  const printing = data?.printing;
+  const printStatusLabels = (printing?.byStatus ?? []).map((st) => PRINT_REQUEST_STATUS_CONFIG[st.status]?.label ?? st.status);
+  const printStatusValues = (printing?.byStatus ?? []).map((st) => st.total);
+  const printStatusColors = (printing?.byStatus ?? []).map((st) => PRINT_REQUEST_STATUS_CONFIG[st.status]?.color ?? '#90CAF9');
+  const printPerDayLabels = (printing?.perDay ?? []).map((d) => String(d.day));
+  const printPerDayValues = (printing?.perDay ?? []).map((d) => d.total);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
@@ -191,6 +203,110 @@ const ReportPage: React.FC = () => {
           </Grid>
         </Grid>
 
+        {/* Impressão 3D */}
+        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
+          Impressão 3D
+        </Typography>
+
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              title="pedidos de impressão"
+              subtitle="Recebidos no mês"
+              value={isLoading ? undefined : printing?.total ?? 0}
+              loading={isLoading}
+              icon={<PrintIcon />}
+              color="primary.main"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              title="pedidos"
+              subtitle={
+                isLoading ? undefined
+                  : printing?.acceptanceRate != null ? `Aceitos · ${printing.acceptanceRate}% dos analisados` : 'Aceitos'
+              }
+              value={isLoading ? undefined : printing?.accepted ?? 0}
+              loading={isLoading}
+              icon={<CheckCircleIcon />}
+              color="success.main"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              title="peças"
+              subtitle="Entregues"
+              value={isLoading ? undefined : printing?.delivered ?? 0}
+              loading={isLoading}
+              icon={<InventoryIcon />}
+              color="secondary.main"
+            />
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Situação dos Pedidos</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Status atual dos pedidos recebidos no mês
+                </Typography>
+                {isLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <BarChart
+                    layout="horizontal"
+                    yAxis={[{ scaleType: 'band', data: printStatusLabels, colorMap: { type: 'ordinal', colors: printStatusColors }, disableLine: true, disableTicks: true, width: 120, tickLabelStyle: { fontSize: 12 } }]}
+                    xAxis={[{ disableLine: true, disableTicks: true, tickLabelStyle: { fontSize: 11, fill: '#9e9e9e' }, tickNumber: 4 }]}
+                    series={[{ data: printStatusValues }]}
+                    height={260}
+                    margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+                    grid={{ vertical: true }}
+                    slots={{ legend: () => null }}
+                    sx={{ '& .MuiChartsGrid-line': { stroke: '#f5f5f5', strokeDasharray: '4 4' } }}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Pedidos por Dia</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Pedidos de impressão recebidos em cada dia do mês
+                </Typography>
+                {isLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : printPerDayValues.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
+                    Nenhum pedido de impressão neste mês.
+                  </Typography>
+                ) : (
+                  <BarChart
+                    xAxis={[{ scaleType: 'band', data: printPerDayLabels, ...chartAxisStyle.xAxis[0] }]}
+                    yAxis={chartAxisStyle.yAxis}
+                    series={[{ data: printPerDayValues, color: '#1565C0' }]}
+                    height={260}
+                    margin={{ top: 8, right: 8, bottom: 32, left: 32 }}
+                    grid={{ horizontal: true }}
+                    slots={{ legend: () => null }}
+                    sx={{ '& .MuiChartsGrid-line': { stroke: '#f5f5f5', strokeDasharray: '4 4' } }}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
         {/* Tabela de Agendamentos */}
         <Paper sx={{ borderRadius: 2, overflow: 'hidden', mb: 4 }}>
           <Box sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -264,7 +380,7 @@ const ReportPage: React.FC = () => {
         </Paper>
 
         {/* Tabela de Coworking */}
-        <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <Paper sx={{ borderRadius: 2, overflow: 'hidden', mb: 4 }}>
           <Box sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>Coworking</Typography>
           </Box>
@@ -344,6 +460,71 @@ const ReportPage: React.FC = () => {
                       </React.Fragment>
                     ));
                   })()}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Paper>
+
+        {/* Tabela de Pedidos de Impressão */}
+        <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Box sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>Pedidos de Impressão 3D</Typography>
+          </Box>
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: 'action.selected' }}>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>DATA</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>SOLICITANTE</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>MATERIAL</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>IMPRESSORA</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>STATUS</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(data?.printRequests ?? []).length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                        Nenhum pedido de impressão neste mês.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    (data?.printRequests ?? []).map((item) => (
+                      <TableRow key={item.printRequest.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={500}>
+                            {new Date(item.printRequest.createdAt).toLocaleDateString('pt-BR')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: 'primary.light' }}>
+                              {item.user.name.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="body2" fontWeight={500}>{item.user.name}</Typography>
+                              <Typography variant="caption" color="text.secondary">{item.user.email}</Typography>
+                            </Box>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.filament.name}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.printer?.name ?? '—'}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <PrintRequestStatusChip status={item.printRequest.status} />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

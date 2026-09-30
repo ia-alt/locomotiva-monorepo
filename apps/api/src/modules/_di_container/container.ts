@@ -466,7 +466,8 @@ export class DiContainer {
         if (!this._reportService) {
             this._reportService = new ReportService(
                 this.getBookingService(),
-                this.getAccessLogService()
+                this.getAccessLogService(),
+                this.getPrintRequestService(),
             );
         }
         return this._reportService;
@@ -554,6 +555,7 @@ export class DiContainer {
                 this.getPrinterRepository(),
                 this.getFilamentRepository(),
                 this.getStoredFileService(),
+                this.getUserRepository(),
             );
         }
         return this._printRequestService;

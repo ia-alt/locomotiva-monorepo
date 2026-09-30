@@ -16,6 +16,7 @@ import { usePrintRequestsAdmin, type PrintRequestAdminItem } from '../hooks/useP
 import { PrintRequestStatusChip } from '../components/printing/PrintRequestStatusChip';
 import { PrintRequestDetailDialog } from '../components/printing/PrintRequestDetailDialog';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { orpc } from '../services/api';
 
 const PAGE_SIZE = 8;
@@ -35,10 +36,14 @@ const PrintRequestsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
+  // ?status=pending (vindo do card do dashboard) já abre a lista filtrada
+  const [searchParams] = useSearchParams();
+  const initialStatuses = searchParams.getAll('status').filter((st) => STATUS_FILTER_OPTIONS.some((opt) => opt.value === st));
+
   const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null);
-  const [pendingStatuses, setPendingStatuses] = useState<string[]>([]);
+  const [pendingStatuses, setPendingStatuses] = useState<string[]>(initialStatuses);
   const [pendingPrinterId, setPendingPrinterId] = useState('');
-  const [appliedStatuses, setAppliedStatuses] = useState<string[]>([]);
+  const [appliedStatuses, setAppliedStatuses] = useState<string[]>(initialStatuses);
   const [appliedPrinterId, setAppliedPrinterId] = useState('');
 
   const [selected, setSelected] = useState<PrintRequestAdminItem | null>(null);
