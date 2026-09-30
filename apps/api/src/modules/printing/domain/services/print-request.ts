@@ -2,7 +2,9 @@ import { UniqueId } from "@core/base-classes";
 import { PrintRequestRepository, PrinterRepository, FilamentRepository } from "@printing/domain/repositories";
 import { StoredFile } from "@storage/domain/entities";
 import { StoredFileService } from "@storage/domain/services";
+import { UserRepository } from "src/modules/identity/domain/repositories";
 import { PrintRequest } from "../entities/print-request";
+import { PrintRequestWithDetails } from "../value-objects/print-request-with-details";
 import { NoPrinterAvailableError, MaterialNotAvailableError, PrinterBusyError, InvalidPrintFileError } from "../errors";
 
 type PrintFileKind = "stl" | "gcode";
@@ -23,6 +25,7 @@ class PrintRequestService {
         private readonly printerRepository: PrinterRepository,
         private readonly filamentRepository: FilamentRepository,
         private readonly storedFileService: StoredFileService,
+        private readonly userRepository: UserRepository,
     ) { }
 
     async createPrintRequest(params: PrintRequestService.CreatePrintRequestParams): Promise<PrintRequest> {
@@ -65,6 +68,36 @@ class PrintRequestService {
         if (inProduction && !(ignorePrintRequestId && inProduction.id.equals(ignorePrintRequestId))) {
             throw new PrinterBusyError();
         }
+    }
+
+    /**
+     * Pedidos criados no mês com quem pediu, o material e a impressora — para o
+     * relatório. Impressoras e filamentos vêm do catálogo inteiro (inclui
+     * desativados), porque o histórico pode apontar para itens já desligados.
+     */
+    async findAllByMonthWithDetails(year: number, month: number): Promise<PrintRequestWithDetails[]> {
+        const printRequests = await this.printRequestRepository.findAllByMonth(year, month);
+        if (printRequests.length === 0) return [];
+
+        const [users, filaments, printers] = await Promise.all([
+            this.userRepository.findManyByIds(printRequests.map(pr => pr.userId)),
+            this.filamentRepository.findAll(),
+            this.printerRepository.findAll(),
+        ]);
+
+        const userMap = new Map(users.map(u => [u.id.value, u]));
+        const filamentMap = new Map(filaments.map(f => [f.id.value, f]));
+        const printerMap = new Map(printers.map(p => [p.id.value, p]));
+
+        const items: PrintRequestWithDetails[] = [];
+        for (const printRequest of printRequests) {
+            const user = userMap.get(printRequest.userId.value);
+            const filament = filamentMap.get(printRequest.filamentId.value);
+            if (!user || !filament) continue;
+            const printer = printRequest.printerId ? printerMap.get(printRequest.printerId.value) ?? null : null;
+            items.push(new PrintRequestWithDetails({ printRequest, user, filament, printer }));
+        }
+        return items;
     }
 
     private checkPrintFile(file: StoredFile, kind: PrintFileKind): void {

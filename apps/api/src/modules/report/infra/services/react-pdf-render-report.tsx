@@ -47,6 +47,18 @@ async function buildBarChart(labels: string[], values: number[]): Promise<string
 
 const DAY_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
+// Mesmos rótulos do chip de status do admin.
+const PRINT_STATUS_PT: Record<string, string> = {
+    pending: "Em análise",
+    approved: "Aprovado",
+    in_production: "Em produção",
+    completed: "Pronto p/ retirada",
+    delivered: "Entregue",
+    discarded: "Descartado",
+    rejected: "Recusado",
+    cancelled: "Cancelado",
+};
+
 const s = StyleSheet.create({
     page: { padding: 32, fontSize: 9, fontFamily: "Helvetica", color: "#222" },
 
@@ -98,6 +110,15 @@ const s = StyleSheet.create({
     colMemberCompany: { flex: 3 },
     colTime: { width: 40 },
     colDuration: { width: 50, textAlign: "right" },
+
+    // Seção de impressão 3D
+    sectionTitle: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 10 },
+
+    // Colunas pedidos de impressão
+    colRequester: { flex: 3 },
+    colMaterial: { flex: 2 },
+    colPrinter: { flex: 2 },
+    colStatus: { width: 80 },
 });
 
 function fmtTime(iso: string): string {
@@ -170,6 +191,43 @@ const MonthReportDocument = ({ report, lineChartImg, barChartImg }: { report: Mo
                         <Text style={s.chartTitle}>Dias Mais Movimentados</Text>
                         <Text style={s.chartCaption}>Total de pessoas por dia da semana no mês</Text>
                         <Image src={barChartImg} />
+                    </View>
+                </View>
+
+                {/* Impressão 3D */}
+                <View wrap={false}>
+                    <Text style={s.sectionTitle}>Impressão 3D</Text>
+                    <View style={s.kpiRow}>
+                        <View style={s.kpiCard}>
+                            <Text style={s.kpiValue}>{json.printing.total}</Text>
+                            <Text style={s.kpiTitle}>pedidos de impressão</Text>
+                            <Text style={s.kpiSubtitle}>Recebidos no mês</Text>
+                        </View>
+                        <View style={s.kpiCard}>
+                            <Text style={s.kpiValue}>{json.printing.accepted}</Text>
+                            <Text style={s.kpiTitle}>pedidos</Text>
+                            <Text style={s.kpiSubtitle}>
+                                Aceitos{json.printing.acceptanceRate !== null ? ` (${json.printing.acceptanceRate}% dos analisados)` : ""}
+                            </Text>
+                        </View>
+                        <View style={s.kpiCard}>
+                            <Text style={s.kpiValue}>{json.printing.delivered}</Text>
+                            <Text style={s.kpiTitle}>peças</Text>
+                            <Text style={s.kpiSubtitle}>Entregues</Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={s.chartsRow} wrap={false}>
+                    <View style={s.chartCard}>
+                        <Text style={s.chartTitle}>Situação dos Pedidos</Text>
+                        <Text style={s.chartCaption}>Status atual dos pedidos recebidos no mês</Text>
+                        {json.printing.byStatus.map((item) => (
+                            <View key={item.status} style={s.dataRow}>
+                                <Text style={s.dataLabel}>{PRINT_STATUS_PT[item.status] ?? item.status}</Text>
+                                <Text style={s.dataValue}>{item.total}</Text>
+                            </View>
+                        ))}
                     </View>
                 </View>
 
@@ -246,6 +304,36 @@ const MonthReportDocument = ({ report, lineChartImg, barChartImg }: { report: Mo
                                     </View>
                                 ))}
                             </React.Fragment>
+                        ))
+                    )}
+                </View>
+
+                {/* Tabela de Pedidos de Impressão */}
+                <View style={s.tableSection}>
+                    <View style={s.tableSectionHeader}>
+                        <Text style={s.tableSectionTitle}>Pedidos de Impressão 3D</Text>
+                    </View>
+                    <View style={s.tableHeader}>
+                        <Text style={[s.colDate, s.headerCell]}>DATA</Text>
+                        <Text style={[s.colRequester, s.headerCell]}>SOLICITANTE</Text>
+                        <Text style={[s.colMaterial, s.headerCell]}>MATERIAL</Text>
+                        <Text style={[s.colPrinter, s.headerCell]}>IMPRESSORA</Text>
+                        <Text style={[s.colStatus, s.headerCell]}>STATUS</Text>
+                    </View>
+                    {json.printRequests.length === 0 ? (
+                        <Text style={s.empty}>Nenhum pedido de impressão neste mês.</Text>
+                    ) : (
+                        json.printRequests.map((item) => (
+                            <View key={item.printRequest.id} style={s.tableRow}>
+                                <Text style={[s.colDate, s.cell]}>{fmtDate(item.printRequest.createdAt)}</Text>
+                                <View style={s.colRequester}>
+                                    <Text style={s.cell}>{item.user.name}</Text>
+                                    <Text style={s.cellSub}>{item.user.email}</Text>
+                                </View>
+                                <Text style={[s.colMaterial, s.cell]}>{item.filament.name}</Text>
+                                <Text style={[s.colPrinter, s.cell]}>{item.printer?.name ?? "—"}</Text>
+                                <Text style={[s.colStatus, s.cell]}>{PRINT_STATUS_PT[item.printRequest.status] ?? item.printRequest.status}</Text>
+                            </View>
                         ))
                     )}
                 </View>

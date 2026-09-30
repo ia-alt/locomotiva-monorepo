@@ -97,6 +97,17 @@ export class PrismaPrintRequestRepository implements PrintRequestRepository {
         return count > 0;
     }
 
+    async findAllByMonth(year: number, month: number): Promise<PrintRequest[]> {
+        const from = new Date(year, month - 1, 1, 0, 0, 0, 0);
+        const to = new Date(year, month, 0, 23, 59, 59, 999);
+
+        const rows = await this.prisma.printRequest.findMany({
+            where: { createdAt: { gte: from, lte: to } },
+            orderBy: { createdAt: "asc" },
+        });
+        return rows.map((row) => this.printRequestDbToEntity(row));
+    }
+
     private printRequestDbToEntity(row: PrintRequestDb): PrintRequest {
         return new PrintRequest(
             UniqueId.fromString(row.id),
